@@ -1,27 +1,26 @@
 #pragma once
 #include "stdafx.h"
 
-public ref class ConstrainSettings
+
+class Circle
 {
 public:
-	int minSize;
-	int maxSize;
-	ConstrainSettings(int min, int max)
+	int x;
+	int y;
+	int radius;
+	Circle(int xx, int yy, int rr)
 	{
-		minSize = min;
-		maxSize = max;
+		x = xx;
+		y = yy;
+		radius = rr;
 	}
 };
-
 
 class EngineImpl
 {
 public:
-	void Load(std::string sFile);
 	EngineImpl();
-	std::string MarkClones(ConstrainSettings^ constrains, std::vector<cv::Point>& centers,cv::Point ptMass);
-	void FindCalibPositions(int& top, int& left, int& bottom, int& right);
-	void FindRefPositions(int& top, int& left, int& bottom, int& right);
+	std::vector<int> Analysis(std::string sFile, std::vector<Circle> rois);
 private:
 	void Rotate90(cv::Mat &matImage, bool cw);
 	cv::Point GetMassCenter(std::vector<cv::Point>& pts);
@@ -31,12 +30,18 @@ private:
 	
 	void  FindContours(const cv::Mat& thresholdImg, std::vector<std::vector<cv::Point>>& contours, int min, int max = 999999);
 	double  GetDistance(double x1, double y1, double x2, double y2);
-	std::vector<std::vector<cv::Point>> MarkAllContoursGray(cv::Mat& src, cv::Mat& org);
-	std::vector<std::vector<cv::Point>> MarkAllContours(cv::Mat& src,ConstrainSettings^ constrainSettings, std::string filePath2Save);
+
+
+
+	void GoThrough(cv::Mat& sub, Circle &c);
+	void CountRed(int x, int y, cv::Point ptCenter, Circle& c, bool bLight);
+	void CountLightRed(int x, int y, cv::Point ptCenter, Circle& c);
+	void CountDarkRed(int x, int y, cv::Point ptCenter, Circle& c);
 	std::string workingFolder;
 	cv::Mat img;
 	//std::vector<cv::Point> edgeContour;
-
+	int lightRedCnt;
+	int darkRedCnt;
 	cv::Point ptMass;
 };
 

@@ -4,45 +4,31 @@
 
 namespace EngineDll
 {
-	public ref class MPoint
+
+	public ref class ROI
 	{
 	public:
-		bool isCurrent;
 		int x;
 		int y;
-		int ID = -1;
-		int size;
-		MPoint(int xx, int yy)
+		int radius;
+		
+		ROI(int xx, int yy, int rr)
 		{
 			x = xx;
 			y = yy;
-			this->size = size;
-			isCurrent = false;
-		}
-		MPoint(int xx, int yy, int id)
-		{
-			x = xx;
-			y = yy;
-			ID = id;
-			isCurrent = false;
+			radius = rr;
 		}
 	};
 
-	public ref class RefPositions
-	{
-	public:
-		int top;
-		int left;
-		int right;
-		int bottom;
-	};
+
+
+
 	public ref class IEngine
 	{
 	public:
 		IEngine();
 		~IEngine();
-		void Load(System::String^ sFile);
-		System::String^ MarkClones(ConstrainSettings^ ConstrainSettings, RefPositions^ calibPositions, int% actualCnt, array<MPoint^>^ %features);
+		array<int>^ Analysis(System::String^ sFile,array<ROI^>^ rois);
 	private :
 		EngineImpl* m_EngineImpl;
 	};

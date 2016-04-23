@@ -13,5 +13,22 @@ namespace BloodClotID
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            bool isCalibration = e.Args.Length > 0;
+            if(isCalibration)
+            {
+                CalibWindow calibWindow = new CalibWindow();
+                calibWindow.Show();
+            }
+            else
+            {
+                AnalysisWindow analysisWindow = new AnalysisWindow();
+                analysisWindow.Show();
+            }
+        }
+
+     
+
     }
 }

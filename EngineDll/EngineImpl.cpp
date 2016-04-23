@@ -4,8 +4,8 @@
 using namespace std;
 using namespace cv;
 static string dbgFolder = "d:\\temp\\";
-static int innderRadius = 630;
-static int outterRadius = 730;
+static int innderRadius = 30;
+
 EngineImpl::EngineImpl()
 {
 
@@ -114,64 +114,6 @@ void EngineImpl::GetCircleROI(Mat& src)
 #endif
 }
 
-
-vector<vector<cv::Point>> EngineImpl::MarkAllContours(Mat& src,ConstrainSettings^ constrainSettings, string filePath2Save)
-{
-	Mat tmp = src.clone();
-	vector<vector<cv::Point>> contours;
-	int minPts = constrainSettings->minSize;
-	int maxPts = constrainSettings->maxSize;
-	Mat gray;
-	RemovePtsNotInROI(tmp, ptMass);
-	cvtColor(tmp, gray, CV_BGR2GRAY);
-	//equalizeHist(gray, gray);
-	int blockSize = 25;
-	int constValue = 10;
-	Mat adaptive;
-	adaptiveThreshold(gray, adaptive, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, blockSize, constValue);
-	imwrite(dbgFolder + "adaptive.jpg", adaptive);
-#if _DEBUG	//threshold(gray, gray, 200, 255, 0);
-	erode(adaptive, adaptive, Mat(), Point(-1, -1), 3);
-	imwrite(dbgFolder + "erode.jpg", adaptive);
-#endif
-	//threshold(gray, gray, 200, 255, 0);
-	FindContours(adaptive, contours, minPts, maxPts);
-	for (int i = 0; i< contours.size(); i++)
-	{
-		
-		drawContours(tmp, contours, i, Scalar(0, 0, 255));
-	}
-	imwrite(filePath2Save, tmp);
-	return contours;
-}
-
-
-string EngineImpl::MarkClones(ConstrainSettings^ constrains, std::vector<cv::Point>& centers, 
-	cv::Point ptMass)
-{
-	this->ptMass = ptMass;
-	string resultFile = workingFolder + "\\output\\clones.jpg";
-	auto contours = MarkAllContours(img, constrains, resultFile);
-	sort(contours.begin(), contours.end(), [](const vector<cv::Point> & a, const vector<cv::Point> & b) -> bool
-	{
-		return a.size() > b.size();
-	});
-
-	for (auto contour : contours)
-	{
-		cv::Point pt = GetMassCenter(contour);
-		centers.push_back(pt);
-	}
-	return resultFile;
-}
-
-enum ChannelType
-{
-	blue = 0,
-	red = 1,
-	green = 2
-};
-
 cv::Point EngineImpl::GetMassCenter(vector<cv::Point>& pts)
 {
 	int size = pts.size();
@@ -184,32 +126,6 @@ cv::Point EngineImpl::GetMassCenter(vector<cv::Point>& pts)
 }
 
 
-//first convert the image into HSV format,call inRange to filter the color
-vector<vector<cv::Point>> EngineImpl::MarkAllContoursGray(Mat& src, Mat& org)
-{
-	Mat gray = src.clone();
-	Mat tmp = org.clone();
-
-	vector<vector<cv::Point>> contours;
-	int minPts = 10;
-	int maxPts = 500;
-
-	//adaptiveThreshold(gray, gray, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY_INV, 11, 5);
-	threshold(gray, gray, 200, 255, 0);
-#if _DEBUG
-	imwrite(dbgFolder + "adaptiveYellow.jpg", gray);
-#endif
-	FindContours(gray, contours, minPts, maxPts);
-	for (int i = 0; i< contours.size(); i++)
-	{
-		drawContours(tmp, contours, i, Scalar(0, 0, 255),1);
-		
-	}
-#if _DEBUG
-	imwrite(dbgFolder + "featuresYellow.jpg", tmp);
-#endif
-	return contours;
-}
 
 
 void EngineImpl::Rotate90(cv::Mat &matImage, bool cw){
@@ -225,61 +141,67 @@ void EngineImpl::Rotate90(cv::Mat &matImage, bool cw){
 }
 
 
-void EngineImpl::Load(string sFile)
+void EngineImpl::CountRed(int x, int y, Point ptCenter, Circle& c, bool bLight)
 {
-	int index = sFile.rfind("\\Data");
-	workingFolder = sFile.substr(0, index);
-	img = imread(sFile);
-	//pyrDown(img, img);
-	const int marginX = 200;
-	Rect roi(marginX, 0, img.cols - marginX*2, img.rows);
-	img = img(roi);
-	Rotate90(img, false);
-	imwrite(sFile, img);
-	//GetCircleROI(img);
+	double dis = cv::norm(cv::Mat(ptCenter), Mat(Point(x, y)));
+	if (dis < c.radius)
+	{
+		if (bLight)
+			lightRedCnt++;
+		else
+			darkRedCnt++;
+	}
 }
 
-void EngineImpl::FindRefPositions(int& top, int& left, int& bottom, int& right)
+void EngineImpl::CountLightRed(int x, int y, Point ptCenter, Circle& c)
 {
-	Mat gray;
-	Mat src = img.clone();
-	//cvtColor(img, gray, CV_BGR2GRAY);
-#if _DEBUG
-	imwrite(dbgFolder + "beforeRemovePetriDish.jpg", src);
-#endif
-	circle(src, Point(src.cols / 2, src.rows / 2), outterRadius, Scalar(0,0, 0),CV_FILLED);
-	cvtColor(src, gray, CV_BGR2GRAY);
-	threshold(gray, gray, 200, 255, 0);
-#if _DEBUG
-	imwrite(dbgFolder + "removePetriDish.jpg", gray);
-#endif
-	vector<vector<cv::Point>> contours;
-	int minPts = 10;
-	int maxPts = 200;
-	FindContours(gray, contours, minPts, maxPts);
-	vector<Point> pts;
-	for (auto contour : contours)
+	CountRed(x, y, ptCenter, c, true);
+}
+
+void EngineImpl::CountDarkRed(int x, int y, Point ptCenter, Circle& c)
+{
+	CountRed(x, y, ptCenter, c, false);
+}
+
+void EngineImpl::GoThrough(Mat& sub, Circle &c)
+{
+	int height = sub.rows;
+	int width = sub.cols;
+	int channels = sub.channels();
+	int nc = width * channels;
+	Point ptCenter = Point(width / 2, height / 2);
+	for (int y = 0; y < height; y++)
 	{
-		pts.push_back(GetMassCenter(contour));
+		uchar *data = sub.ptr(y);
+		int col = 0;
+		for (int x = 0; x < nc; x += channels)
+		{
+			int r = data[x + 2];
+			int g = data[x + 1];
+			int b = data[x];
+			if (r > g && r > b)
+			{
+				if (g > 50 || b > 50)
+				{
+					CountLightRed(col, y, ptCenter, c);
+				}
+				else if (g < 30 && b < 30)
+				{
+					CountDarkRed(col, y, ptCenter, c);
+				}
+				col++;
+				continue;
+			}
+			col++;
+		}
 	}
-	int tmpTop = 10000;
-	int tmpLeft = 10000;
-	int tmpRight = 0;
-	int tmpBottom = 0;
-	for (auto pt : pts)
-	{
-		if (pt.y < tmpTop)
-			tmpTop = pt.y;
-		if (pt.y > tmpBottom)
-			tmpBottom = pt.y;
-		if (pt.x < tmpLeft)
-			tmpLeft = pt.x;
-		if (pt.x > tmpRight)
-			tmpRight = pt.x;
-	}
-	top = tmpTop;
-	bottom = tmpBottom;
-	left = tmpLeft;
-	right = tmpRight;
+}
+
+vector<int> EngineImpl::Analysis(string sFile, vector<Circle> roi)
+{
+	img = imread(sFile);
+	vector<int> results;
+	results.push_back(1);
+	return results;
 }
 
