@@ -4,7 +4,7 @@
 using namespace std;
 using namespace cv;
 static string dbgFolder = "d:\\temp\\";
-static int innderRadius = 30;
+static int innerRadius = 30;
 
 EngineImpl::EngineImpl()
 {
@@ -56,7 +56,7 @@ void EngineImpl::RemovePtsNotInROI(Mat& src, CvPoint ptMass)
 		uchar *data = src.ptr(y);
 		for (int x = 0; x < width; x++)
 		{
-			if (GetDistance(x, y, ptMass.x, ptMass.y) > innderRadius)
+			if (GetDistance(x, y, ptMass.x, ptMass.y) > innerRadius)
 			{
 				int xStart = x*channels;
 				for (int i = 0; i< channels; i++)
