@@ -38,6 +38,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -55,15 +56,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AnalysisWindow.xaml.cs">
-      <DependentUpon>AnalysisWindow.xaml</DependentUpon>
+    <Compile Include="About.cs">
+      <SubType>Form</SubType>
     </Compile>
+    <Compile Include="About.Designer.cs">
+      <DependentUpon>About.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GdiPlusLib.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="myCanvas.cs" />
-    <Page Include="AnalysisWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <Compile Include="Scanner\ListViewEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Scanner\MainFrame.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Scanner\TwainDefs.cs" />
+    <Compile Include="Scanner\TwainLib.cs" />
     <Page Include="Calibration.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -91,10 +100,14 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="About.resx">
+      <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Scanner\MainFrame.resx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -105,14 +118,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CameraControl\CameraControl.csproj">
-      <Project>{ebce2ab7-09ea-490a-93e1-e141ba40e68d}</Project>
-      <Name>CameraControl</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\EngineDll\EngineDll.vcxproj">
       <Project>{9f46951f-d766-4801-9aed-44dc5f017eb9}</Project>
       <Name>EngineDll</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="image\setting.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="image\barcode.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="image\exit.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
