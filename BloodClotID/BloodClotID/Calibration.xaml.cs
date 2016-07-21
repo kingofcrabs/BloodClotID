@@ -29,8 +29,7 @@ namespace BloodClotID
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(@"D:\Projects\BloodClotID.git\trunk\test.jpg");
-            myCanvas.UpdateBackGroundImage(bmp);
+            myCanvas.UpdateBackGroundImage(GetImage(1));
             myCanvas.IsHitTestVisible = false;
             scrollViewer.PreviewMouseLeftButtonDown += scrollViewer_PreviewMouseLeftButtonDown;
             scrollViewer.MouseLeftButtonUp += scrollViewer_MouseLeftButtonUp;
@@ -71,15 +70,27 @@ namespace BloodClotID
 
         }
 
+        private string GetImage(int cameraID)
+        {
+            return FolderHelper.GetImageFolder() + string.Format("{0}.jpg",cameraID);
+        }
+
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
-            myCanvas.SaveConfig();
+            int cameraID = cmbPlateNum.SelectedIndex + 1;
+            myCanvas.SaveConfig(cameraID);
 
         }
 
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
-            myCanvas.LoadConfig();
+            int cameraID = cmbPlateNum.SelectedIndex + 1;
+            myCanvas.LoadConfig(cameraID);
+        }
+
+        private void cmbPlateNum_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

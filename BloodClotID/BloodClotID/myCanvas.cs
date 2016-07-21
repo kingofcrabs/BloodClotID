@@ -65,75 +65,51 @@ namespace BloodClotID
     public class RenderCanvas : Canvas
     {
         BitmapImage _img = null;
-        List<Circle> circles = new List<Circle>();
+        protected List<Circle> circles = new List<Circle>();
         List<Circle> hilightCircles = new List<Circle>();
-        //public void SetBkGroundImage(string sFile)
-        //{
-        //    _img = new BitmapImage();
-        //    _img.BeginInit();
-        //    _img.CacheOption = BitmapCacheOption.OnLoad;
-        //    _img.UriSource = new Uri(sFile, UriKind.Absolute);
-        //    _img.EndInit();
-        //    ImageBrush imageBrush = new ImageBrush();
-        //    imageBrush.ImageSource = _img;
-        //    this.Background = imageBrush;
-        //}
 
-        public void UpdateBackGroundImage(System.Drawing.Bitmap bitmap)
+        public void UpdateBackGroundImage(string file)
         {
-            BitmapImage bitmapImage;
-            System.Drawing.Bitmap cloneBitmpa = (System.Drawing.Bitmap)bitmap.Clone();
-            using (MemoryStream memory = new MemoryStream())
-            {
-                cloneBitmpa.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
-                memory.Position = 0;
-                bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-            }
-            ImageBrush imgBrush = new ImageBrush();
-            imgBrush.ImageSource = bitmapImage;
-            Background = imgBrush;
-            this.InvalidateVisual();
+            Background = RenderHelper.CreateBrushFromFile(file);
         }
 
 
-        public void HilightCircle(List<int> ids)
+        public void HilightCircle(List<int> ids, int cameraID)
         {
-            LoadConfig();
+            LoadConfig(cameraID);
             hilightCircles = circles.Where(x => ids.Contains(x.id)).ToList();
             InvalidateVisual();
         }
 
         private string GetConfigFolder()
         {
-            string sFolder = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Config\\";
+            string sFolder = FolderHelper.GetExeParentFolder() + "\\Config\\";
             if (!System.IO.Directory.Exists(sFolder))
                 System.IO.Directory.CreateDirectory(sFolder);
             return sFolder;
         }
 
-        private string GetConfigFile()
+        private string GetConfigFile(int cameraID)
         {
-            return GetConfigFolder() + "ROIs.xml";
+            return GetConfigFolder() + string.Format("ROIs_{0}.xml",cameraID);
         }
-        internal void SaveConfig()
+
+        internal void SaveConfig(int cameraID)
         {
-            string sFile = GetConfigFile();
+            string sFile = GetConfigFile(cameraID);
             SerializeHelper.SaveConfig(circles, sFile);
             MessageBox.Show(string.Format("已经保存到{0}！", sFile));
         }
 
-        internal void LoadConfig()
+        internal void LoadConfig(int cameraID)
         {
-            string sFile = GetConfigFile();
+            string sFile = GetConfigFile(cameraID);
             if (!System.IO.File.Exists(sFile))
             {
                 throw new Exception(string.Format("配置文件不存在于{0}！", sFile));
             }
             SerializeHelper.LoadConfig(ref circles, sFile);
+            hilightCircles = circles;
             InvalidateVisual();
         }
 
@@ -150,7 +126,6 @@ namespace BloodClotID
 
     public class CalibCanvas : RenderCanvas
     {
-        List<Circle> circles = new List<Circle>();
         
         Point ptStart;
 

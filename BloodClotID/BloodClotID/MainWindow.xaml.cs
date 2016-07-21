@@ -44,6 +44,7 @@ namespace BloodClotID.Camera
             rootGrid.IsEnabled = true;
         }
 
+        #region loader
 
         protected void ShowLoader()
         {
@@ -72,6 +73,7 @@ namespace BloodClotID.Camera
             _progressThread = null;
         }
 
+        #endregion
 
         private void ShowPhotos()
         {
@@ -95,7 +97,16 @@ namespace BloodClotID.Camera
             this.Close();
         }
 
-        
+        private void HelpCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            AboutForm aboutForm = new AboutForm();
+            aboutForm.ShowDialog();
+        }
+
+        private void HelpCmdCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
     }
 
    

@@ -67,7 +67,11 @@
             <TextBox Name="txtInfo" Grid.Row="1"></TextBox>
             
         </Grid>
-        
+       
     </Grid>
-    
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Help"
+                        Executed="HelpCmdExecuted"
+                        CanExecute="HelpCmdCanExecute"/>
+    </Window.CommandBindings>
 </Window>

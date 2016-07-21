@@ -62,10 +62,18 @@ namespace BloodClotID
                     {
                         try
                         {
-                            MainWindow mainWindow = new MainWindow();
-                            mainWindow.ShowDialog();
-                            //CalibWindow calibWindow = new CalibWindow();
-                            //calibWindow.ShowDialog();
+                            if(e.Args.Length == 0)
+                            {
+                                MainWindow mainWindow = new MainWindow();
+                                mainWindow.ShowDialog();
+                            }
+                            else
+                            {
+                                CalibWindow calibWindow = new CalibWindow();
+                                calibWindow.ShowDialog();
+                            }
+
+
                         }
                         catch (Exception ex)
                         {
