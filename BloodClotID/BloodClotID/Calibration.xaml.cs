@@ -29,10 +29,9 @@ namespace BloodClotID
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(@"H:\Projects\BloodClotID.git\trunk\test.jpg");
+            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(@"D:\Projects\BloodClotID.git\trunk\test.jpg");
             myCanvas.UpdateBackGroundImage(bmp);
             myCanvas.IsHitTestVisible = false;
-            //ImgContainer.DataContext = this;
             scrollViewer.PreviewMouseLeftButtonDown += scrollViewer_PreviewMouseLeftButtonDown;
             scrollViewer.MouseLeftButtonUp += scrollViewer_MouseLeftButtonUp;
             this.KeyDown += MainWindow_KeyDown;

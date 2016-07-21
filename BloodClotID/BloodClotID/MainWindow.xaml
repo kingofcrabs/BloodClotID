@@ -1,0 +1,73 @@
+﻿<Window x:Class="BloodClotID.Camera.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BloodClotID.Camera"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:loaders="clr-namespace:Loaders;assembly=MrMitch.Loaders"
+        mc:Ignorable="d"
+        Title="BloodClot" Height="600" Width="800">
+    <Grid Name="rootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="220"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel  Orientation="Horizontal">
+            <Button Name="btnTakePhote" Click="btnTakePhote_Click" ToolTip="采集图片.">
+                <StackPanel Orientation="Vertical">
+                    <Image Source="/Images/camera.png" Height="55" Width="80"/>
+                    <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">拍照</TextBlock>
+                </StackPanel>
+            </Button>
+
+            <Button Name="btnExit" Click="btnExit_Click"  ToolTip="打开定义文件.">
+                <StackPanel Orientation="Vertical" >
+                    <Image Source="/Images/exit.png"  Height="55" Width="80"/>
+                    <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">退出</TextBlock>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <Label Content="图片：" FontSize="16" Grid.Row="1"/>
+        <Grid Name="pictureContainers" Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Name="pic1">
+            </Grid>
+            <Grid Name="pic2" Grid.Column="1"></Grid>
+            <Grid Name="pic3" Grid.Row="1"></Grid>
+            <Grid Name="pic4" Grid.Column="1" Grid.Row="1"></Grid>
+        </Grid>
+        <ListView Name="lstviewResult" FontSize="14" FontFamily="SimSun" Grid.Column="1" Grid.Row="2"  Margin="5,0,0,0">
+            <ListView.View>
+                <GridView x:Name="gridView1">
+                    <GridViewColumn Header="样品编号" Width="100" DisplayMemberBinding="{Binding Path= TestName}"></GridViewColumn>
+                    <GridViewColumn Header="分析结果" Width="100" DisplayMemberBinding="{Binding Path=TestCount}"></GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Grid Grid.Row="3" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label Content="信息：" FontSize="16"/>
+            <TextBox Name="txtInfo" Grid.Row="1"></TextBox>
+            
+        </Grid>
+        
+    </Grid>
+    
+</Window>

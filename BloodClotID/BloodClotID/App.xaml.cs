@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BloodClotID.Camera;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -8,7 +9,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using TwainGui;
+
 
 namespace BloodClotID
 {
@@ -61,8 +62,10 @@ namespace BloodClotID
                     {
                         try
                         {
-                            MainFrame mainFrame = new MainFrame();
-                            mainFrame.ShowDialog();
+                            MainWindow mainWindow = new MainWindow();
+                            mainWindow.ShowDialog();
+                            //CalibWindow calibWindow = new CalibWindow();
+                            //calibWindow.ShowDialog();
                         }
                         catch (Exception ex)
                         {

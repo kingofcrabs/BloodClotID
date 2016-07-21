@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 
 namespace BloodClotID
@@ -80,6 +84,14 @@ namespace BloodClotID
             return sOutputFolder;
         }
 
+        internal static string GetImageFolder()
+        {
+            string sExeParent = GetExeParentFolder();
+            string sImageFolder = sExeParent + "AcquiredImages\\";
+            CreateIfNotExist(sImageFolder);
+            return sImageFolder;
+        }
+
         static public string GetLatestImagePath()
         {
             bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
@@ -132,10 +144,39 @@ namespace BloodClotID
             return sDataFolder;
 
         }
-
-
     }
+   
 
+
+    public class RenderHelper
+    {
+        static public ImageBrush CreateBrushFromFile(string file)
+        {
+            System.Drawing.Bitmap bitmap;
+            using (var bmpTemp = new Bitmap(file))
+            {
+                bitmap = new Bitmap(bmpTemp);
+            }
+            
+            BitmapImage bitmapImage;
+            System.Drawing.Bitmap cloneBitmpa = (System.Drawing.Bitmap)bitmap.Clone();
+            using (MemoryStream memory = new MemoryStream())
+            {
+                cloneBitmpa.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+                bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+            }
+
+            ImageBrush imgBrush = new ImageBrush();
+            imgBrush.ImageSource = bitmapImage;
+            imgBrush.ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
+            return imgBrush;
+        }
+    }
 
     public class ConfigValues
     {
