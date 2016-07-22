@@ -20,17 +20,19 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <WrapPanel.Resources>
+                <Canvas  HorizontalAlignment="Center">
+                <Canvas.Resources>
                         <Style TargetType="loaders:ChromeLoader">
                             <Setter Property="Thickness" Value="50" />
                             <Setter Property="IsIndeterminate" Value="True" />
                             <Setter Property="Width" Value="200" />
                             <Setter Property="Height" Value="200" />
                         </Style>
-                    </WrapPanel.Resources>
-                    <loaders:ChromeLoader Fill="LightGreen" />
-                </WrapPanel>
+                    </Canvas.Resources>
+                    
+                    <loaders:ChromeLoader Fill="LightGreen" Canvas.Left="-100" />
+                    <Label Name="lblTimeUsed" Content="Time" Canvas.Left="-20" Canvas.Top="90"/>
+            </Canvas>
 
 
             </StackPanel>
