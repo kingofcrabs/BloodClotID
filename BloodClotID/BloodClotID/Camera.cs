@@ -8,8 +8,28 @@ using System.Threading.Tasks;
 
 namespace BloodClotID
 {
-    public class FourCamera
+    public class FourCamera:IDisposable
     {
+        List<MemoryStream> memStreams = new List<MemoryStream>();
+        public FourCamera()
+        {
+            for(int i = 0; i< 4; i++)
+                memStreams.Add(new MemoryStream());
+        }
+
+        public MemoryStream this[int index]
+        {
+            get
+            {
+                return memStreams[index];
+            }
+        }
+
+        public void Dispose()
+        {
+            memStreams.ForEach(x => x.Close());
+        }
+
         public void TakePhote()
         {
             List<Task> tasks = new List<Task>();
@@ -34,15 +54,18 @@ namespace BloodClotID
 
             //创建本地文件写入流
             Stream stream = new FileStream(path, FileMode.Create);
-
             byte[] bArr = new byte[1024];
+            var ms = memStreams[cameraIndex];
 
             int size = responseStream.Read(bArr, 0, (int)bArr.Length);
             while (size > 0)
             {
-                stream.Write(bArr, 0, size);
+                ms.Write(bArr, 0, size);
                 size = responseStream.Read(bArr, 0, (int)bArr.Length);
             }
+            ms.Position = 0;
+            ms.CopyTo(stream);
+            ms.Position = 0;
             stream.Close();
             responseStream.Close();
 
@@ -65,5 +88,7 @@ namespace BloodClotID
         {
             HttpDownloadFile(3);
         }
+
+      
     }
 }

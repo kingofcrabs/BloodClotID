@@ -33,13 +33,12 @@ namespace BloodClotID.Camera
 
         private void btnTakePhote_Click(object sender, RoutedEventArgs e)
         {
-
             ShowLoader();
             rootGrid.IsEnabled = false;
             this.Refresh();
             FourCamera fourCamera = new FourCamera();
             fourCamera.TakePhote();
-            ShowPhotos();
+            ShowPhotos(fourCamera);
             HideLoader();
             rootGrid.IsEnabled = true;
         }
@@ -75,21 +74,15 @@ namespace BloodClotID.Camera
 
         #endregion
 
-        private void ShowPhotos()
+        private void ShowPhotos(FourCamera fourCamera)
         {
             string imgFolder = FolderHelper.GetImageFolder();
             int cameraIndex = 0;
             foreach(var uiElement in pictureContainers.Children)
             {
-                string path = imgFolder + string.Format("{0}.jpg", cameraIndex + 1);
-                if (!File.Exists(path))
-                    throw new Exception(string.Format("图像{0}未能找到！", cameraIndex));
-
-                ((Grid)uiElement).Background = RenderHelper.CreateBrushFromFile(path);
+                ((Grid)uiElement).Background = RenderHelper.CreateBrushFromStream(fourCamera[cameraIndex]);
                 cameraIndex++;
             }
-            
-           
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)

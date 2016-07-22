@@ -157,7 +157,11 @@ namespace BloodClotID
             {
                 bitmap = new Bitmap(bmpTemp);
             }
-            
+            return CreateBrushFromBitmap(bitmap);
+        }
+
+        static private ImageBrush CreateBrushFromBitmap(Bitmap bitmap)
+        {
             BitmapImage bitmapImage;
             System.Drawing.Bitmap cloneBitmpa = (System.Drawing.Bitmap)bitmap.Clone();
             using (MemoryStream memory = new MemoryStream())
@@ -175,6 +179,17 @@ namespace BloodClotID
             imgBrush.ImageSource = bitmapImage;
             imgBrush.ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
             return imgBrush;
+        }
+
+
+        internal static System.Windows.Media.Brush CreateBrushFromStream(MemoryStream memoryStream)
+        {
+            System.Drawing.Bitmap bitmap;
+            using (var bmpTemp = new Bitmap(memoryStream))
+            {
+                bitmap = new Bitmap(bmpTemp);
+            }
+            return CreateBrushFromBitmap(bitmap);
         }
     }
 
