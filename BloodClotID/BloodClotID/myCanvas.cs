@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -67,6 +68,7 @@ namespace BloodClotID
         BitmapImage _img = null;
         protected List<Circle> circles = new List<Circle>();
         List<Circle> hilightCircles = new List<Circle>();
+ 
 
         public void UpdateBackGroundImage(string file)
         {
@@ -128,10 +130,13 @@ namespace BloodClotID
     {
         
         Point ptStart;
-
+        public delegate void circleCnt(int cnt);
+        public event circleCnt onCircleCntChanged;
         public void AddCircle(Circle newCircle)
         {
             circles.Add(newCircle);
+            if (onCircleCntChanged != null)
+                onCircleCntChanged(circles.Count);
             this.InvalidateVisual();
         }
 
@@ -163,6 +168,7 @@ namespace BloodClotID
         protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
+            int circleID = 1;
             foreach (Circle circle in circles)
             {
                 Color green = Color.FromArgb(128, 0, 128, 50);
@@ -170,6 +176,10 @@ namespace BloodClotID
                 Color color = circle.bSelected ? blue : green;
                 Brush brush = new SolidColorBrush(color);
                 drawingContext.DrawEllipse(brush, new Pen(Brushes.Black, 1), circle.ptCenter, circle.radius, circle.radius);
+                FormattedText formattedText = new FormattedText(circleID.ToString(), CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Red);
+                drawingContext.DrawText(formattedText, circle.ptCenter);
+                circleID++;
             }
         }
 

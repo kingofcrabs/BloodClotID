@@ -14,6 +14,7 @@ using System.Xml.Serialization;
 
 namespace BloodClotID
 {
+
     public class SerializeHelper
     {
 

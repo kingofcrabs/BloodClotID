@@ -36,6 +36,8 @@ namespace BloodClotID
             this.KeyDown += MainWindow_KeyDown;
         }
 
+       
+
         void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             Debug.WriteLine("key pressed:{0}", e.Key);
@@ -90,7 +92,7 @@ namespace BloodClotID
 
         private void cmbPlateNum_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
+            myCanvas.UpdateBackGroundImage(GetImage(cmbPlateNum.SelectedIndex+1));
         }
     }
 }
