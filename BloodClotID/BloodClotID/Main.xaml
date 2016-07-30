@@ -20,7 +20,14 @@
             <ColumnDefinition Width="220"/>
         </Grid.ColumnDefinitions>
         <StackPanel  Orientation="Horizontal">
-            <Button Name="btnTakePhote" Click="btnTakePhote_Click" ToolTip="采集图片.">
+            <Button Name="btnPrepare" Click="btnPrepare_Click" ToolTip="设置.">
+                <StackPanel Orientation="Vertical">
+                    <Image Source="/Images/setting.jpg" Height="55" Width="80"/>
+                    <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">设置</TextBlock>
+                </StackPanel>
+            </Button>
+            
+            <Button Name="btnTakePhote" Click="btnTakePhote_Click" IsEnabled="False" ToolTip="采集图片.">
                 <StackPanel Orientation="Vertical">
                     <Image Source="/Images/camera.png" Height="55" Width="80"/>
                     <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">拍照</TextBlock>
@@ -34,12 +41,13 @@
                 </StackPanel>
             </Button>
         </StackPanel>
-        <Label Content="图片：" FontSize="16" Grid.Row="1"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <Label Content="提示：" FontSize="16" Grid.Row="1"/>
+            <TextBlock Name="txtProgress"/>
+        </StackPanel>
+        
         <Grid Name="pictureContainers" Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+         
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -47,8 +55,6 @@
             <Grid Name="pic1">
             </Grid>
             <Grid Name="pic2" Grid.Column="1"></Grid>
-            <Grid Name="pic3" Grid.Row="1"></Grid>
-            <Grid Name="pic4" Grid.Column="1" Grid.Row="1"></Grid>
         </Grid>
         <ListView Name="lstviewResult" FontSize="14" FontFamily="SimSun" Grid.Column="1" Grid.Row="2"  Margin="5,0,0,0">
             <ListView.View>
@@ -63,11 +69,15 @@
                 <RowDefinition Height="30"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="220"/>
+            </Grid.ColumnDefinitions>
             <Label Content="信息：" FontSize="16"/>
             <TextBox Name="txtInfo" Grid.Row="1"></TextBox>
-            
+            <Button Margin="5,5,5,5" Grid.Column="1" Name="btnNext" IsEnabled="False" Content="换板" Grid.Row="1" Width="100" Height="32" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </Grid>
-       
+        
     </Grid>
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Help"

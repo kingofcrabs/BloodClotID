@@ -61,6 +61,15 @@ namespace BloodClotID.Properties {
         }
         
         /// <summary>
+        ///   查找类似 \Groups\ 的本地化字符串。
+        /// </summary>
+        internal static string groupFolder {
+            get {
+                return ResourceManager.GetString("groupFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 latest.jpg 的本地化字符串。
         /// </summary>
         internal static string latestImage {

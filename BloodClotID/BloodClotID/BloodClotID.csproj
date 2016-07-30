@@ -16,7 +16,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -70,16 +70,17 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Camera.cs" />
     <Compile Include="loader.xaml.cs">
       <DependentUpon>loader.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Main.xaml.cs">
+      <DependentUpon>Main.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GdiPlusLib.cs" />
-    <Compile Include="Helper.cs" />
     <Compile Include="myCanvas.cs" />
+    <Compile Include="SettingWindow.xaml.cs">
+      <DependentUpon>SettingWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="treeview\VirtualToggleButton.cs" />
     <Page Include="Calibration.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -96,7 +97,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Main.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -140,10 +145,25 @@
       <Project>{9f46951f-d766-4801-9aed-44dc5f017eb9}</Project>
       <Name>EngineDll</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CamerasControl\CameraControl.csproj">
+      <Project>{EBCE2AB7-09EA-490A-93E1-E141BA40E68D}</Project>
+      <Name>CameraControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{c198c3f8-053c-4da9-9eb8-e424cb882fac}</Project>
+      <Name>Utility</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\camera.png" />
     <Resource Include="images\exit.png" />
+    <Resource Include="images\vertical.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\setting.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\horizontal.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

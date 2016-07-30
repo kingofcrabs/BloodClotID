@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Utility;
 
 namespace BloodClotID
 {
@@ -74,7 +75,7 @@ namespace BloodClotID
 
         private string GetImage(int cameraID)
         {
-            return FolderHelper.GetImageFolder() + string.Format("{0}.jpg",cameraID);
+            return FolderHelper.GetAcquiredImageFolder() + string.Format("{0}.jpg",cameraID);
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)

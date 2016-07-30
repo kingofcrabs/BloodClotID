@@ -8,13 +8,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 
-namespace BloodClotID
+namespace Utility
 {
-
     public class SerializeHelper
     {
 
@@ -77,7 +77,7 @@ namespace BloodClotID
             return sConfigFolder;
         }
 
-        internal static string GetOutputFolder()
+        public static string GetOutputFolder()
         {
             string sExeParent = GetExeParentFolder();
             string sOutputFolder = sExeParent + "Output\\";
@@ -85,7 +85,7 @@ namespace BloodClotID
             return sOutputFolder;
         }
 
-        internal static string GetImageFolder()
+        public static string GetAcquiredImageFolder()
         {
             string sExeParent = GetExeParentFolder();
             string sImageFolder = sExeParent + "AcquiredImages\\";
@@ -108,6 +108,7 @@ namespace BloodClotID
             CreateIfNotExist(sDataFolder);
             return sDataFolder;
         }
+
 
         //static public string GetLatestImage()
         //{
@@ -146,8 +147,51 @@ namespace BloodClotID
 
         }
     }
-   
 
+
+
+    public struct GlobalVals
+    {
+        static public int totalSample;
+        static public int curBatch;
+        static public int samplesPerCamera;
+        static public int samplesThisBatch;
+        static private int maxSamplesPerBatch = 8;
+
+        static public List<string> allowedCameraNames = new List<string>()
+        {
+
+                "CC5010000642","CD501000241","CD501000064","CD501000068"
+        };
+        public static List<string> assays;
+
+        static public void NextBatch()
+        {
+            curBatch++;
+            samplesThisBatch = CalculateSamplesThisBatch();
+          
+        }
+
+        private static int CalculateSamplesThisBatch()
+        {
+            int cnt = maxSamplesPerBatch;
+            if (GlobalVals.totalSample < GlobalVals.maxSamplesPerBatch * GlobalVals.curBatch)
+                cnt = GlobalVals.totalSample % GlobalVals.maxSamplesPerBatch;
+            return cnt;
+        }
+
+        public static void SetSampleCount(int val)
+        {
+            totalSample = val;
+            curBatch = 1;
+            samplesThisBatch = CalculateSamplesThisBatch();
+        }
+
+        public static void SetLayout(bool isHorizontal)
+        {
+            maxSamplesPerBatch = isHorizontal ? 8 : 12;
+        }
+    }
 
     public class RenderHelper
     {
@@ -183,7 +227,7 @@ namespace BloodClotID
         }
 
 
-        internal static System.Windows.Media.Brush CreateBrushFromStream(MemoryStream memoryStream)
+        public static System.Windows.Media.Brush CreateBrushFromStream(MemoryStream memoryStream)
         {
             System.Drawing.Bitmap bitmap;
             using (var bmpTemp = new Bitmap(memoryStream))
@@ -193,11 +237,18 @@ namespace BloodClotID
             return CreateBrushFromBitmap(bitmap);
         }
     }
-
+ 
     public class ConfigValues
     {
         static bool useTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
-       
+        
+        static public string Vendor
+        {
+            get
+            {
+                return "Do3Think";
+            }
+        }
         static public bool UseTestImage
         {
             get
@@ -205,7 +256,23 @@ namespace BloodClotID
                 return useTestImage;
             }
         }
-
+        public static List<AssayGroup> ReadGroups()
+        {
+            string s = FolderHelper.GetExeParentFolder();
+            string sPanelFolder = s + "\\Groups\\";
+            IEnumerable<string> allPanelFiles = Directory.EnumerateFiles(sPanelFolder, "*.txt");
+            List<AssayGroup> assayGroups = new List<AssayGroup>();
+            foreach (string sFile in allPanelFiles)
+            {
+                List<string> assays = new List<string>();
+                int slashIndex = sFile.LastIndexOf("\\");
+                string shortName = sFile.Substring(slashIndex + 1);
+                shortName = shortName.Substring(0, shortName.Length - 4);
+                assays = File.ReadAllLines(sFile).ToList();
+                assayGroups.Add(new AssayGroup(shortName, assays));
+            }
+            return assayGroups;
+        }
 
         //public static string PlateType
         //{
