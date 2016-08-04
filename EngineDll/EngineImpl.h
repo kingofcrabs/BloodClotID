@@ -16,11 +16,12 @@ public:
 	}
 };
 
+
 class EngineImpl
 {
 public:
 	EngineImpl();
-	std::vector<int> Analysis(std::string sFile, std::vector<Circle> rois);
+	std::vector<int> Analysis(std::string sFile, std::vector<Circle> rois, std::vector<std::vector<cv::Point2f>>);
 private:
 	void Rotate90(cv::Mat &matImage, bool cw);
 	cv::Point GetMassCenter(std::vector<cv::Point>& pts);

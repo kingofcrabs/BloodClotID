@@ -197,7 +197,7 @@ void EngineImpl::GoThrough(Mat& sub, Circle &c)
 	}
 }
 
-vector<int> EngineImpl::Analysis(string sFile, vector<Circle> roi)
+vector<int> EngineImpl::Analysis(string sFile, vector<Circle> roi,vector<vector<cv::Point2f>> rotatedRects)
 {
 	img = imread(sFile);
 	vector<int> results;
