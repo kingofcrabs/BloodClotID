@@ -29,13 +29,14 @@ namespace BloodClotID
             InitializeComponent();
             List<AssayGroup> assayGroups = ConfigValues.ReadGroups();
             InitTreeview(assayGroups);
+            panelVM.UpdateState(new ObservableCollection<string>() { "H5R-6" });
         }
 
         private void InitTreeview(List<AssayGroup> assayGroups)
         {
             panelVM = PanelViewModel.CreateViewModel(assayGroups);
-            tree.ItemsSource = new ObservableCollection<PanelViewModel>() { panelVM };
-            this.tree.Focus();
+            treeview.ItemsSource = new ObservableCollection<PanelViewModel>() { panelVM };
+            this.treeview.Focus();
             
             panelVM.PropertyChanged += panelVM_PropertyChanged;
         }

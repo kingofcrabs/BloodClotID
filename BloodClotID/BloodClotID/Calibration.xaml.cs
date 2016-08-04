@@ -81,14 +81,14 @@ namespace BloodClotID
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             int cameraID = cmbPlateNum.SelectedIndex + 1;
-            myCanvas.SaveConfig(cameraID);
+            myCanvas.SaveCalib(cameraID);
 
         }
 
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             int cameraID = cmbPlateNum.SelectedIndex + 1;
-            myCanvas.LoadConfig(cameraID);
+            myCanvas.LoadCalib(cameraID);
         }
 
         private void cmbPlateNum_SelectionChanged(object sender, SelectionChangedEventArgs e)

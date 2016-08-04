@@ -21,6 +21,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Utility;
+using EngineDll;
 
 namespace BloodClotID.Camera
 {
@@ -41,6 +42,8 @@ namespace BloodClotID.Camera
             try
             {
                 imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer(ConfigValues.Vendor);
+                pictureContainers.PreviewMouseLeftButtonDown += PictureContainers_PreviewMouseLeftButtonDown;
+                pictureContainers.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
                 this.Closed += MainWindow_Closed;
                 settingWindow.setOk += SettingWindow_setOk;
            
@@ -51,6 +54,46 @@ namespace BloodClotID.Camera
             }
 
         }
+        #region mouse event handler
+        private void PictureContainers_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            
+        }
+
+        private void PictureContainers_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Point pt = e.GetPosition(pictureContainers);
+            ResultCanvas resultCanvas;
+            Point adjustPt = new Point(pt.X, pt.Y);
+            if(pt.X > pic1.ActualWidth)
+            {
+                adjustPt.X -= pic1.ActualWidth;
+                if (pt.Y <= pic2.ActualHeight)
+                {
+                    resultCanvas = pic2;
+                }
+                else
+                {
+                    adjustPt.Y -= pic2.ActualHeight;
+                    resultCanvas = pic4;
+                }
+            }
+            else
+            {
+                if (pt.Y <= pic1.ActualHeight)
+                {
+                    resultCanvas = pic1;
+                }
+                else
+                {
+                    adjustPt.Y -= pic1.ActualHeight;
+                    resultCanvas = pic3;
+                }
+            }
+            resultCanvas.LeftMoseDown(adjustPt,false);
+        }
+        #endregion
+
 
         private void MainWindow_Closed(object sender, EventArgs e)
         {
@@ -66,37 +109,7 @@ namespace BloodClotID.Camera
 
         #region take photo
      
-        //private void ImgAcquirer_onFinished(object sender, EventArgs e)
-        //{
-        //    this.Dispatcher.BeginInvoke(
-        //     (Action)delegate ()
-        //     {
-        //         HideLoader();
-        //         rootGrid.IsEnabled = true;
-        //         string sErrMsg = ((MyEventArgs)e).ErrMsg;
-        //         if (sErrMsg != "")
-        //         {
-        //             foreach (var uiElement in pictureContainers.Children)
-        //             {
-        //                 ((Grid)uiElement).Background = null;
-        //             }
-
-        //             SetInfo(sErrMsg + "请重新连接相机线,再来一次。");
-        //             return;
-        //         }
-        //         var FinishedPhoto = ((MyEventArgs)e).FinishedPhoto;
-        //         if(FinishedPhoto == FinishedPhoto.All)
-        //         {
-        //             btnNext.IsEnabled = AcquireInfo.Instance.curPlate != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
-
-        //             RefreshImage();
-                     
-        //             //DoMeasure();
-        //         }
-                 
-
-        //     });
-        //}
+        
         private void btnNext_Click(object sender, RoutedEventArgs e)
         {
             UpdateProgress();
@@ -109,9 +122,9 @@ namespace BloodClotID.Camera
             pieCollection[1].Value = AcquireInfo.Instance.GetTotalPlateCnt() - AcquireInfo.Instance.curPlate;
         }
 
-        private void DoMeasure()
+        private void Analysis()
         {
-            throw new NotImplementedException();
+          
         }
 
         private void ShowResult(List<int> results)
@@ -137,7 +150,11 @@ namespace BloodClotID.Camera
 
                 ResultCanvas canvas = (ResultCanvas)uiElement;
                 if (File.Exists(file))
+                {
                     canvas.UpdateBackGroundImage(file);
+                    canvas.LoadCalib(id);
+                }
+                    
                 else
                     canvas.Background = null;
                 id++;
@@ -160,6 +177,7 @@ namespace BloodClotID.Camera
             HideLoader();
             btnNext.IsEnabled = AcquireInfo.Instance.curPlate != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
             RefreshImage();
+            Analysis();
         }
 
 

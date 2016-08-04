@@ -12,8 +12,9 @@
         <Grid Name="ImgContainer" Grid.Row="0">
             <ScrollViewer x:Name="scrollViewer" VerticalScrollBarVisibility="Visible"
                    HorizontalScrollBarVisibility="Visible"  >
-                <local:CalibCanvas x:Name="myCanvas" >
-                </local:CalibCanvas>
+                <local:ResultCanvas  x:Name="myCanvas" >
+                <!--<local:ResultCanvas Width="2592" Height="1944"  x:Name="myCanvas" >-->
+                </local:ResultCanvas>
             </ScrollViewer>
         </Grid>
         <Grid Grid.Column="1">

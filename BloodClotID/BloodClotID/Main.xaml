@@ -62,7 +62,7 @@
             <myCanvas:ResultCanvas Grid.Column="1" x:Name="pic2" >
             </myCanvas:ResultCanvas>
 
-            <myCanvas:ResultCanvas Grid.Column="2" x:Name="pic3" >
+            <myCanvas:ResultCanvas Grid.Row="1" x:Name="pic3" >
             </myCanvas:ResultCanvas>
 
             <myCanvas:ResultCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >

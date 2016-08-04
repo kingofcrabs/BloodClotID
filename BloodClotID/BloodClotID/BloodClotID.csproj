@@ -68,6 +68,7 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Analyzer.cs" />
     <Compile Include="loaderControl\Block.xaml.cs" />
     <Compile Include="loaderControl\LoadingAnimation.xaml.cs" />
     <Compile Include="Loader.xaml.cs">
