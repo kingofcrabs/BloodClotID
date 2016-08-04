@@ -27,7 +27,6 @@ namespace Utility
                 foreach (var assay in group.Assays)
                 {
                     PanelViewModel secondLevel = new PanelViewModel(assay);
-                    secondLevel.IsChecked = false;
                     firstLevel.Children.Add(secondLevel);
                 }
                 firstLevel.Initialize();
@@ -36,7 +35,7 @@ namespace Utility
             }
             return root;
         }
-
+     
         public void UpdateState(ObservableCollection<string> assays)
         {
             bFreeezeEvent = true;

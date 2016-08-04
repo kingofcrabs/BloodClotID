@@ -46,7 +46,7 @@ void RemovePtsNotInCircle(Mat& src)
 			{
 				int xStart = x*channels;
 				for (int i = 0; i< channels; i++)
-					data[xStart + i] = 0;
+					data[xStart + i] = 255;
 			}
 		}
 	}
@@ -68,28 +68,73 @@ void FilterRed(Mat& sub)
 			int r = data[x + 2];
 			int g = data[x + 1];
 			int b = data[x];
-			if ( r > 100 && r + r - g - b > 100)
-			{
+			int val = r > 100 && r + r - g - b > 100 ? 0 : 255;
+			
 				for (int i = 0; i< channels; i++)
-					data[x+i] = 0;
-			}
+					data[x+i] = val;
+			
 			
 		}
 	}
 }
 
 
+std::vector<cv::Point> FindMaxContour(Mat& src)
+{
+
+	std::vector< std::vector<cv::Point> > contours;
+
+	cv::findContours(src, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+	int maxSize = 0;
+	vector<cv::Point> maxContour;
+	int height = src.rows;
+	int width = src.cols;
+	int toobig = (height + width) * 1.5;
+	for (size_t i = 0; i<contours.size(); i++)
+	{
+		int contourSize = contours[i].size();
+		if (contourSize > toobig)
+			continue;
+		if (contourSize > maxSize)
+		{
+			maxSize = contourSize;
+			maxContour = contours[i];
+		}
+	}
+	return maxContour;
+		 
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Mat src = imread("H:\\Projects\\BloodClotID.git\\trunk\\sample.png");
+	Mat src = imread("D:\\temp\\test.png");
 	RemovePtsNotInCircle(src);
-	imwrite("h:\\opencvResult\\src.png",src);
+	imwrite("D:\\temp\src.png",src);
+
 	vector<Mat> rgb(3);
 	FilterRed(src);
-	imwrite("h:\\opencvResult\\filter.png",src);
-	/*imwrite("h:\\opencvResult\\r.png",rgb[0]);
-	imwrite("h:\\opencvResult\\g.png",rgb[1]);
-	imwrite("h:\\opencvResult\\b.png",rgb[2]);*/
+	Mat gray,binary;
+	cvtColor(src, gray, COLOR_BGR2GRAY);
+	threshold(gray, binary, 100, 255, THRESH_BINARY);
+	imwrite("D:\\temp\\threshold.png", binary);
+	vector<cv::Point> contour = FindMaxContour(binary);
+	auto rotatedRect = minAreaRect(contour);
+	
+	Point2f vertices[4];
+	rotatedRect.points(vertices);
+	double maxDistance = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		auto pt1 = vertices[i];
+		auto pt2 = vertices[(i + 1) % 4];
+		auto distance =GetDistance(pt1.x, pt1.y, pt2.x, pt2.y);
+		if (distance > maxDistance)
+			maxDistance = distance;
+		line(src,pt1 ,pt2 , Scalar(0, 0, 255));
+
+	}
+		
+	imwrite("D:\\temp\\filter.png", src);
 	return 0;
 }
 

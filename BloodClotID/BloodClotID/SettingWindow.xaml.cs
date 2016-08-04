@@ -23,7 +23,7 @@ namespace BloodClotID
     public partial class SettingWindow : Window
     {
         PanelViewModel panelVM;
-        public EventHandler setOk;
+        public event EventHandler setOk;
         public SettingWindow()
         {
             InitializeComponent();
@@ -36,16 +36,17 @@ namespace BloodClotID
             panelVM = PanelViewModel.CreateViewModel(assayGroups);
             tree.ItemsSource = new ObservableCollection<PanelViewModel>() { panelVM };
             this.tree.Focus();
+            
             panelVM.PropertyChanged += panelVM_PropertyChanged;
         }
 
         private void panelVM_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var assays = panelVM.GetAssays().ToList();
-            GlobalVals.assays = assays;
+            AcquireInfo.Instance.assays = assays;
         }
 
-        private void btnExit_Click(object sender, RoutedEventArgs e)
+        private void btnConfirm_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -54,7 +55,9 @@ namespace BloodClotID
             catch(Exception ex)
             {
                 SetInfo(ex.Message);
+                return;
             }
+            this.Close();
         }
 
         private void SetInfo(string message, bool error = true)
@@ -66,7 +69,7 @@ namespace BloodClotID
 
         private void CheckSettings()
         {
-            if (GlobalVals.assays == null || GlobalVals.assays.Count == 0)
+            if (AcquireInfo.Instance.assays == null || AcquireInfo.Instance.assays.Count == 0)
                 throw new Exception("请先选择测试项目！");
 
             string smpCnt = txtSampleCnt.Text;
@@ -78,11 +81,11 @@ namespace BloodClotID
             }
             if (val <= 0)
                 throw new Exception("样品数必须大于0！");
-            GlobalVals.SetSampleCount(val);
-            GlobalVals.SetLayout((bool)rdbHorizontalLayout.IsChecked);
+            AcquireInfo.Instance.SetSampleCount(val);
+            AcquireInfo.Instance.SetLayout((bool)rdbHorizontalLayout.IsChecked);
             if (setOk != null)
-                setOk();
-
+                setOk(this, null);
+            
         }
     }
 }

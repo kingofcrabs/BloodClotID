@@ -11,36 +11,17 @@ using MvApi = MVSDK.MvApi;
 using MVSDK;
 using System.Drawing;
 using Utility;
+using System.Threading.Tasks;
+using System.Net;
 
 namespace CameraControl
 {
     public interface IImageAcquirer
     {
-        event EventHandler onFinished;
+        void TakePhoto();
         void Stop();
-        void Start(string sFile, int cameraID);
-        FinishedPhoto FinishedPhoto { get; set; }
     }
 
-    public enum FinishedPhoto
-    {
-        None = 0,
-        First = 1,
-        Second = 2,
-        All = 3
-    }
-
-    public class MyEventArgs : EventArgs
-    {
-        public MyEventArgs(FinishedPhoto finished,string errMsg)
-        {
-            FinishedPhoto = finished;
-            ErrMsg = errMsg;
-        }
-
-        public FinishedPhoto FinishedPhoto { get; set; }
-        public string ErrMsg { get; set; }
-    }
 
     public class ImageAcquirerFactory
     {
@@ -50,258 +31,96 @@ namespace CameraControl
             {
                 return new Do3ThinkImageAcquirer();
             }
+            else if(vendorName == "OV")
+            {
+                return new FourCamera();
+            }
             else
             {
-                return new MindVisionImageAcquirer();
+                throw new Exception("不支持的相机！");
             }
         }
     }
 
 
-    public class MindVisionImageAcquirer : IImageAcquirer
-    {
-        #region variable
-
-        //Camera1
-        protected CameraHandle m_hCamera1 = 0;
-        protected IntPtr m_ImageBuffer1;
-        protected tSdkCameraCapbility tCameraCapability1;
-        protected int m_iDisplayedFrames = 0;
-        protected tSdkFrameHead m_tFrameHead1;
-
-
-        //Camera2
-        protected CameraHandle m_hCamera2 = 0;
-        protected IntPtr m_ImageBuffer2;
-        protected tSdkCameraCapbility tCameraCapability2;
-        protected tSdkFrameHead m_tFrameHead2;
-
-        #endregion
-
-        const int cameraCnt = 2;
-        bool bInitialized = false;
-
-        public FinishedPhoto FinishedPhoto
+        public class FourCamera : IImageAcquirer
         {
-            get;set;
-        }
-
-        public event EventHandler onFinished;
-
-        public void Init()
-        {
-            tSdkCameraDevInfo[] tCameraDevInfoList = new tSdkCameraDevInfo[cameraCnt];
-            IntPtr ptr;
-            int i;
-
-            ptr = Marshal.AllocHGlobal(Marshal.SizeOf(new tSdkCameraDevInfo()) * cameraCnt);
-            int iCameraCounts = cameraCnt;//max 2 camera2
-
-            if (MvApi.CameraEnumerateDevice(ptr, ref iCameraCounts) != CameraSdkStatus.CAMERA_STATUS_SUCCESS)
-                throw new Exception("未能找到相机");
-            if (iCameraCounts < cameraCnt)
-                throw new Exception(string.Format("未能找到{0}台相机", iCameraCounts));
-            for (i = 0; i < cameraCnt; i++)
+       
+        
+            public void TakePhoto()
             {
-                tCameraDevInfoList[i] = (tSdkCameraDevInfo)Marshal.PtrToStructure((IntPtr)((int)ptr + i * Marshal.SizeOf(new tSdkCameraDevInfo())), typeof(tSdkCameraDevInfo));
+                List<Task> tasks = new List<Task>();
+                tasks.Add(Task.Factory.StartNew(DownloadFile1));
+                tasks.Add(Task.Factory.StartNew(DownloadFile2));
+                tasks.Add(Task.Factory.StartNew(DownloadFile3));
+                tasks.Add(Task.Factory.StartNew(DownloadFile4));
+                tasks.ForEach(x => x.Wait());
             }
 
-            Marshal.FreeHGlobal(ptr);
-            bool containFirst = tCameraDevInfoList.Any(x => IsFirst(x.acFriendlyName));
-            bool containSecond = tCameraDevInfoList.Any(x => IsSecond(x.acFriendlyName));
-
-            if (!containFirst || (cameraCnt == 2 && !containSecond))
+            private void HttpDownloadFile(int cameraIndex)
             {
-                throw new Exception("程序未注册，请先注册！");
-            }
-            tSdkCameraDevInfo firstDevInfo = tCameraDevInfoList.Where(x => IsFirst(x.acFriendlyName)).First();
-            InitCamera(firstDevInfo, true);
-          
-
-            tSdkCameraDevInfo secondDevInfo = tCameraDevInfoList.Where(x => IsSecond(x.acFriendlyName)).First();
-            InitCamera(secondDevInfo, false);
-          
-        }
-
-        public void Stop()
-        {
-            if (m_hCamera1 != 0)
-            {
-                MvApi.CameraUnInit(m_hCamera1);
-                Marshal.FreeHGlobal(m_ImageBuffer1);
-                m_hCamera1 = 0;
-            }
-
-            if (m_hCamera2 != 0)
-            {
-                MvApi.CameraUnInit(m_hCamera2);
-                Marshal.FreeHGlobal(m_ImageBuffer2);
-                m_hCamera2 = 0;
-            }
-
-        }
-
-        private void InitCamera(tSdkCameraDevInfo devInfo, bool isFirst)
-        {
-
-            CameraHandle m_hCamera = 0;
-            if (MvApi.CameraInit(ref devInfo, -1, -1, ref m_hCamera) == CameraSdkStatus.CAMERA_STATUS_SUCCESS)
-            {
-                IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(new tSdkCameraCapbility()));
-                MvApi.CameraGetCapability(m_hCamera, ptr);
-                tSdkCameraCapbility tCameraCapability = (tSdkCameraCapbility)Marshal.PtrToStructure(ptr, typeof(tSdkCameraCapbility));
-                Marshal.FreeHGlobal(ptr);
-                var tmpBuffer = Marshal.AllocHGlobal(tCameraCapability.sResolutionRange.iWidthMax * tCameraCapability.sResolutionRange.iHeightMax * 3 + 1024);
-                if (isFirst)
+                bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
+                if (bUseTestImage)
                 {
-                    m_ImageBuffer1 = tmpBuffer;
-                }
-                else
-                {
-                    m_ImageBuffer2 = tmpBuffer;
-                }
-
-                tSdkImageResolution tResolution;
-                tResolution.uSkipMode = 0;
-                tResolution.uBinAverageMode = 0;
-                tResolution.uBinSumMode = 0;
-                tResolution.uResampleMask = 0;
-                tResolution.iVOffsetFOV = 0;
-                tResolution.iHOffsetFOV = 0;
-                tResolution.iWidthFOV = 1280;//tCameraCapability.sResolutionRange.iWidthMax;
-                tResolution.iHeightFOV = 960;//tCameraCapability.sResolutionRange.iHeightMax;
-                tResolution.iWidth = tCameraCapability.sResolutionRange.iWidthMax;
-                tResolution.iHeight = tCameraCapability.sResolutionRange.iHeightMax;
-                tResolution.iIndex = 0xff;
-                tResolution.acDescription = new byte[32];
-                tResolution.iWidthZoomHd = 0;
-                tResolution.iHeightZoomHd = 0;
-                tResolution.iWidthZoomSw = 0;
-                tResolution.iHeightZoomSw = 0;
-                MvApi.CameraSetResolutionForSnap(m_hCamera, ref tResolution);
-            }
-            else
-            {
-                if (isFirst)
-                    m_hCamera1 = 0;
-                else
-                    m_hCamera2 = 0;
-                throw new Exception("初始化相机失败！");
-            }
-            if (isFirst)
-                m_hCamera1 = m_hCamera;
-            else
-                m_hCamera2 = m_hCamera;
-        }
-
-        private bool IsFirst(byte[] byteArray)
-        {
-            string friendName = System.Text.Encoding.ASCII.GetString(byteArray);
-            return friendName.Contains("rex001");
-        }
-
-        private bool IsSecond(byte[] byteArray)
-        {
-            string friendName = System.Text.Encoding.ASCII.GetString(byteArray);
-            return friendName.Contains("rex002");
-        }
-
-
-        private string Convert2String(byte[] byteArray)
-        {
-            return System.Text.Encoding.ASCII.GetString(byteArray);
-        }
-
-
-        public void Start(string sFile, int cameraID)
-        {
-            if (cameraID == 1)
-                FinishedPhoto = FinishedPhoto.None;
-            string errMsg = "";
-            try
-            {
-                StartImpl(sFile, cameraID);
-            }
-            catch (Exception ex)
-            {
-                errMsg = ex.Message;
-            }
-            if (cameraID == 1)
-                FinishedPhoto |= FinishedPhoto.First;
-            else
-                FinishedPhoto |= FinishedPhoto.Second;
-            if ( onFinished != null)
-                onFinished(this,new MyEventArgs(FinishedPhoto, errMsg));
-        }
-
-        private void StartImpl(string sFile, CameraHandle cameraID)
-        {
-            
-            if (!bInitialized)
-            {
-                Init();
-                bInitialized = true;
-            }
-
-            tSdkFrameHead frameHead;
-            uint uRawBuffer;
-            CameraHandle cameraHandle = m_hCamera1;
-            IntPtr imgBuffer = m_ImageBuffer1;
-            PrepareCamera(cameraID == 1, ref cameraHandle, ref imgBuffer);
-            if (cameraHandle <= 0)
-            {
-                throw new Exception("相机未初始化！");
-            }
-            MvApi.CameraPlay(cameraHandle);
-            bool bContinue = true;
-            int retryTimes = 10;
-            while (bContinue)
-            {
-                var eStatus = MvApi.CameraGetImageBuffer(cameraHandle, out frameHead, out uRawBuffer, 500);
-                int redGain = 0, greenGain = 0, blueGain = 0;
-                MvApi.CameraGetGain(cameraHandle, ref redGain, ref greenGain, ref blueGain);
-                if (eStatus == CameraSdkStatus.CAMERA_STATUS_SUCCESS)
-                {
-                    MvApi.CameraImageProcess(cameraHandle, uRawBuffer, imgBuffer, ref frameHead);
-                    MvApi.CameraImageOverlay(cameraHandle, imgBuffer, ref frameHead);
-                    MvApi.CameraDisplayRGB24(cameraHandle, imgBuffer, ref frameHead);
-                    MvApi.CameraReleaseImageBuffer(cameraHandle, uRawBuffer);
-                    int dotPosition = sFile.LastIndexOf('.');
-                    string sOrgFile = sFile;
-                    sFile = sFile.Substring(0, dotPosition);
-                    byte[] file_path_bytes = Encoding.Default.GetBytes(sFile);
-                    MvApi.CameraSaveImage(cameraHandle, file_path_bytes, imgBuffer, ref frameHead, emSdkFileType.FILE_BMP, 100);
-                    Image img = Image.FromFile(sOrgFile);
-                    var newImg = resizeImage(img, new Size(1280, 960));
-                    img.Dispose();
-                    newImg.Save(sOrgFile);
-                    bContinue = false;
-                }
-                else
-                {
-                    retryTimes--;
                     Thread.Sleep(1000);
-                    if (retryTimes == 0)
-                        throw new Exception("采集图片失败！");
+                    return;
                 }
+                    
+                string url = string.Format("http://192.168.1.{0}:8000/camera1.jpg", cameraIndex + 105);
+                string imgFolder = FolderHelper.CurrentAcquiredImageFolder;
+                string path = imgFolder + string.Format("{0}.jpg", cameraIndex + 1);
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+
+                //发送请求并获取相应回应数据
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                //直到request.GetResponse()程序才开始向目标网页发送Post请求
+                Stream responseStream = response.GetResponseStream();
+
+                //创建本地文件写入流
+                Stream stream = new FileStream(path, FileMode.Create);
+                byte[] bArr = new byte[1024];
+                int size = responseStream.Read(bArr, 0, (int)bArr.Length);
+                while (size > 0)
+                {
+                    stream.Write(bArr, 0, size);
+                    size = responseStream.Read(bArr, 0, (int)bArr.Length);
+                }
+             
+            
+                stream.Close();
+                responseStream.Close();
+
             }
-            MvApi.CameraPause(cameraHandle);
+
+            private void DownloadFile1()
+            {
+                HttpDownloadFile(0);
+            }
+
+            private void DownloadFile2()
+            {
+                HttpDownloadFile(1);
+            }
+            private void DownloadFile3()
+            {
+                HttpDownloadFile(2);
+            }
+            private void DownloadFile4()
+            {
+                HttpDownloadFile(3);
+            }
+
+
+
+            public void Stop()
+            {
+                
+            }
         }
 
-        private void PrepareCamera(bool isFirst, ref CameraHandle cameraHanlde, ref IntPtr imgBuffer)
-        {
-            cameraHanlde = isFirst ? m_hCamera1 : m_hCamera2;
-            imgBuffer = isFirst ? m_ImageBuffer1 : m_ImageBuffer2;
-        }
-        
 
-        public static Image resizeImage(Image imgToResize, Size size)
-        {
-            return (Image)(new Bitmap(imgToResize, size));
-        }
 
-        
-    }
+ 
 
     public class Do3ThinkImageAcquirer: IImageAcquirer
     {
@@ -310,9 +129,9 @@ namespace CameraControl
         public int[] m_iCameraIDs;
         private string[] m_sCameraExpectedNameList;
         private string[] m_sCameraRealNameList;
-        string firstCamera = ConfigurationManager.AppSettings["FirstCameraID"];
-        string secondCamera = ConfigurationManager.AppSettings["SecondCameraID"];
-       
+        string firstCamera = ConfigurationManager.AppSettings["firstCameraID"];
+        string secondCamera = ConfigurationManager.AppSettings["secondCameraID"];
+        bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
         tDSCameraDevInfo[] pCameraInfo;
         bool bInitialized = false;
         Camera.DelegateProc psub = new Camera.DelegateProc(SnapThreadCallback);
@@ -320,12 +139,7 @@ namespace CameraControl
       
         static int frames = 0;
 
-        public FinishedPhoto FinishedPhoto
-        {
-            get;set;
-        }
-
-        public event EventHandler onFinished;
+        
 
         public static int SnapThreadCallback(int m_iCam, ref Byte pbyBuffer, ref tDSFrameInfo sFrInfo)
         {
@@ -337,6 +151,8 @@ namespace CameraControl
 
         private void Init()
         {
+           
+
             if (bInitialized)
                 return;
             m_iCameraIDs = new int[2];
@@ -359,6 +175,7 @@ namespace CameraControl
                 Camera.CameraPlay(m_iCameraIDs[i]);
             }
             bInitialized = true;
+            Thread.Sleep(1000);
         }
 
         private void CheckCameraNames(List<string> sCameraNames)
@@ -376,8 +193,8 @@ namespace CameraControl
 
         private void CheckAllowed()
         {
-            bool firstReg = GlobalVals.allowedCameraNames.Contains(firstCamera);
-            bool secondReg = GlobalVals.allowedCameraNames.Contains(secondCamera);
+            bool firstReg = RegistInfo.allowedCameraNames.Contains(firstCamera);
+            bool secondReg = RegistInfo.allowedCameraNames.Contains(secondCamera);
             string notFoundCameraName = "";
             if(!firstReg)
                 notFoundCameraName = firstCamera;
@@ -412,7 +229,7 @@ namespace CameraControl
 
             for (int i = 0; i < capabilites.Count; i++)
             {
-                if (capabilites[i].IndexOf("1280") != -1)
+                if (capabilites[i].IndexOf("1920") != -1)
                     return i;
 
             }
@@ -438,33 +255,53 @@ namespace CameraControl
             }
         }
 
-
-        public void  Start(string sFile, int cameraID)
+        
+        public void  TakePhoto()
         {
-            if (cameraID == 1)
-                FinishedPhoto = FinishedPhoto.None;
             string errMsg = "";
             try
             {
-                StartImpl(sFile, cameraID);
+                List<Task> tasks = new List<Task>();
+                tasks.Add(Task.Factory.StartNew(TakePhoto1));
+                tasks.Add(Task.Factory.StartNew(TakePhoto2));
+                tasks.Add(Task.Factory.StartNew(TakePhoto3));
+                tasks.Add(Task.Factory.StartNew(TakePhoto4));
+                tasks.ForEach(x => x.Wait());
             }
             catch(Exception ex)
             {
                 errMsg = ex.Message;
             }
-            if (cameraID == 1)
-                FinishedPhoto |= FinishedPhoto.First;
-            else
-                FinishedPhoto |= FinishedPhoto.Second;
-
-            if (onFinished != null)
-                onFinished(this,new MyEventArgs(FinishedPhoto, errMsg));
         }
 
-        private void StartImpl(string sFile, int cameraID)
+        private void TakePhoto1()
         {
+            TakePhoto(FolderHelper.CurrentAcquiredImageFolder + "1.jpg", 1);
+        }
+
+        private void TakePhoto2()
+        {
+            TakePhoto(FolderHelper.CurrentAcquiredImageFolder + "2.jpg", 2);
+        }
+        private void TakePhoto3()
+        {
+            TakePhoto(FolderHelper.CurrentAcquiredImageFolder + "3.jpg", 3);
+        }
+        private void TakePhoto4()
+        {
+            TakePhoto(FolderHelper.CurrentAcquiredImageFolder + "4.jpg", 4);
+        }
+         
+
+        private void TakePhoto(string sFile, int cameraID)
+        {
+            if (bUseTestImage)
+            {
+                Thread.Sleep(1000);
+                return;
+            }
+                
             Init();
-            Thread.Sleep(1000);
             if (!IsRightOrder(m_sCameraRealNameList[cameraID - 1], m_sCameraExpectedNameList[cameraID - 1]))
             {
                 cameraID = 3 - cameraID;
@@ -536,5 +373,7 @@ namespace CameraControl
 
             return sCameraList;
         }
+
+        
     }
 }

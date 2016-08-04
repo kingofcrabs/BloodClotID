@@ -24,7 +24,7 @@ namespace BloodClotID
 
         public void UpdateBackGroundImage(string file)
         {
-            //Background = RenderHelper.CreateBrushFromFile(file);
+            Background = RenderHelper.CreateBrushFromFile(file);
         }
 
 
@@ -55,7 +55,7 @@ namespace BloodClotID
             MessageBox.Show(string.Format("已经保存到{0}！", sFile));
         }
 
-        internal void LoadConfig(int cameraID)
+        public void LoadConfig(int cameraID)
         {
             string sFile = GetConfigFile(cameraID);
             if (!System.IO.File.Exists(sFile))
@@ -78,7 +78,7 @@ namespace BloodClotID
     }
 
 
-    public class CalibCanvas : RenderCanvas
+    public class ResultCanvas : RenderCanvas
     {
         
         Point ptStart;

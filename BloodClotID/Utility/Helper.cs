@@ -57,6 +57,7 @@ namespace Utility
     }
     public class FolderHelper
     {
+        
         static public string GetExeFolder()
         {
             string s = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -84,11 +85,13 @@ namespace Utility
             CreateIfNotExist(sOutputFolder);
             return sOutputFolder;
         }
-
-        public static string GetAcquiredImageFolder()
+        static public string CurrentAcquiredImageFolder { get; set; }
+        public static string GetAcquiredImageRootFolder()
         {
             string sExeParent = GetExeParentFolder();
-            string sImageFolder = sExeParent + "AcquiredImages\\";
+            bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
+            string subFolder = bUseTestImage ? "TestImages\\" : "AcquiredImages";
+            string sImageFolder = sExeParent + subFolder;
             CreateIfNotExist(sImageFolder);
             return sImageFolder;
         }
@@ -110,19 +113,6 @@ namespace Utility
         }
 
 
-        //static public string GetLatestImage()
-        //{
-        //    string dir = ConfigurationManager.AppSettings["imageFolder"];
-        //    var files = Directory.EnumerateFiles(dir, "*.jpg");
-        //    List<FileInfo> fileInfos = new List<FileInfo>();
-        //    foreach (var file in files)
-        //    {
-        //        fileInfos.Add(new FileInfo(file));
-        //    }
-        //    var latest = fileInfos.OrderBy(x => x.CreationTime).Last();
-        //    return latest.FullName;
-        //}
-
         private static void CreateIfNotExist(string sFolder)
         {
             if (!Directory.Exists(sFolder))
@@ -140,56 +130,95 @@ namespace Utility
             return GetDataFolder() + "test.jpg";
         }
 
+        public static string GetImagePath(int cameraId)
+        {
+            return CurrentAcquiredImageFolder + string.Format("{0}.jpg", cameraId);
+        }
+
         internal static string GetIconFolder()
         {
             string sDataFolder = GetExeParentFolder() + "Icons\\";
             return sDataFolder;
 
         }
+
+        public static void CreateAcquiredImageFolder()
+        {
+            bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
+            string subFolder = bUseTestImage ? "" : DateTime.Now.ToString("yyMMddhhmm") + "\\";
+            CurrentAcquiredImageFolder = GetAcquiredImageRootFolder() + subFolder;
+            CreateIfNotExist(CurrentAcquiredImageFolder);
+        }
     }
 
-
-
-    public struct GlobalVals
+    public struct RegistInfo
     {
-        static public int totalSample;
-        static public int curBatch;
-        static public int samplesPerCamera;
-        static public int samplesThisBatch;
-        static private int maxSamplesPerBatch = 8;
-
-        static public List<string> allowedCameraNames = new List<string>()
+        public static List<string> allowedCameraNames = new List<string>()
         {
 
-                "CC5010000642","CD501000241","CD501000064","CD501000068"
+              "CC5010000642","CD501000241","CD501000064","CD501000068","CD500002346","CD500002342"
         };
-        public static List<string> assays;
+    }
 
-        static public void NextBatch()
+    public class AcquireInfo
+    {
+        public int totalSample;
+        public int curBatch;
+        public int curPlate;
+        public int samplesPerCamera;
+        public int samplesThisBatch;
+        public List<string> assays;
+        private int maxSamplesPerBatch = 8;
+        private static AcquireInfo instance;
+       
+        
+        static public AcquireInfo Instance
         {
-            curBatch++;
-            samplesThisBatch = CalculateSamplesThisBatch();
-          
+            get
+            {
+                if (instance == null)
+                    instance = new AcquireInfo();
+                return instance;
+            }
         }
 
-        private static int CalculateSamplesThisBatch()
+        public void NextPlate()
+        {
+            if (curPlate % assays.Count == 0)
+                NextBatch();
+            curPlate++;
+        }
+
+        private void NextBatch()
+        {
+            curBatch++;
+        }
+
+        private int CalculateSamplesThisBatch()
         {
             int cnt = maxSamplesPerBatch;
-            if (GlobalVals.totalSample < GlobalVals.maxSamplesPerBatch * GlobalVals.curBatch)
-                cnt = GlobalVals.totalSample % GlobalVals.maxSamplesPerBatch;
+            if (totalSample < maxSamplesPerBatch * curBatch)
+                cnt = totalSample % maxSamplesPerBatch;
             return cnt;
         }
 
-        public static void SetSampleCount(int val)
+        public void SetSampleCount(int val)
         {
             totalSample = val;
             curBatch = 1;
-            samplesThisBatch = CalculateSamplesThisBatch();
+            curPlate = 1;
+
         }
 
-        public static void SetLayout(bool isHorizontal)
+        public  void SetLayout(bool isHorizontal)
         {
             maxSamplesPerBatch = isHorizontal ? 8 : 12;
+        }
+
+
+        public  int GetTotalPlateCnt()
+        {
+            return  (totalSample + maxSamplesPerBatch - 1) / maxSamplesPerBatch * assays.Count;
         }
     }
 
@@ -246,7 +275,7 @@ namespace Utility
         {
             get
             {
-                return "Do3Think";
+                return "OV";
             }
         }
         static public bool UseTestImage

@@ -10,7 +10,7 @@
         <StackPanel>
             <StackPanel Orientation="Horizontal" Margin="5,5,5,5">
                 <Label Content="样品数："/>
-                <TextBox Name="txtSampleCnt" Width="130"></TextBox>
+                <TextBox Name="txtSampleCnt" Text="8" Width="130"></TextBox>
             </StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -51,7 +51,7 @@
                 <Label Content="信息:"/>
                 <TextBox IsReadOnly="True" Name="txtInfo" Height="50"></TextBox>
             </StackPanel>
-            <Button Margin="5,5,5,5" Width="80" Content="退出" Name="btnExit" Click="btnExit_Click" HorizontalAlignment="Right" Height="32"></Button>
+            <Button Margin="5,5,5,5" Width="80" Content="确定" Name="btnConfirm" Click="btnConfirm_Click" HorizontalAlignment="Right" Height="32"></Button>
         </StackPanel>
         
     </Grid>

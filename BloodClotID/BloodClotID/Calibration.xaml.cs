@@ -75,7 +75,7 @@ namespace BloodClotID
 
         private string GetImage(int cameraID)
         {
-            return FolderHelper.GetAcquiredImageFolder() + string.Format("{0}.jpg",cameraID);
+            return FolderHelper.GetAcquiredImageRootFolder() + string.Format("{0}.jpg",cameraID);
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
