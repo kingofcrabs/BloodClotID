@@ -12,8 +12,20 @@ namespace Utility
     {
         public Point ptCenter;
         public double radius;
-        public bool bSelected;
+        private bool isSelected;
         public int id;
+
+        public bool Selected
+        {
+            get
+            {
+                return isSelected;
+            }
+            set
+            {
+                isSelected = value;
+            }
+        }
         public Circle(Point ptStart, Point ptEnd)
         {
             // TODO: Complete member initialization
@@ -21,7 +33,7 @@ namespace Utility
             double y = (ptStart.Y + ptEnd.Y) / 2.0;
             ptCenter = new Point(x, y);
             radius = GetDistance(ptStart, ptEnd) / 2;
-            bSelected = false;
+            isSelected = false;
         }
         public Circle()
         {
@@ -31,7 +43,7 @@ namespace Utility
         {
             ptCenter = ptEnd;
             radius = r;
-            bSelected = false;
+            isSelected = false;
             this.id = id;
         }
 

@@ -18,7 +18,7 @@ namespace Utility
     public class SerializeHelper
     {
 
-        static public void SaveConfig(List<Circle> circles, string sFile)
+        static public void SaveCalib(CalibrationInfo calibInfo, string sFile)
         {
             int pos = sFile.LastIndexOf("\\");
             string sDir = sFile.Substring(0, pos);
@@ -29,21 +29,22 @@ namespace Utility
             if (File.Exists(sFile))
                 File.Delete(sFile);
 
-            XmlSerializer xs = new XmlSerializer(typeof(List<Circle>));
+            XmlSerializer xs = new XmlSerializer(typeof(CalibrationInfo));
             Stream stream = new FileStream(sFile, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite);
-            xs.Serialize(stream, circles);
+            xs.Serialize(stream, calibInfo);
             stream.Close();
         }
 
-        static public void LoadConfig(ref List<Circle> circles, string sFile)
+        static public CalibrationInfo LoadCalib(string sFile)
         {
+            CalibrationInfo calibInfo;
             if (!File.Exists(sFile))
                 throw new FileNotFoundException(string.Format("位于：{0}的配置文件不存在", sFile));
             Stream stream = new FileStream(sFile, FileMode.Open, FileAccess.Read, FileShare.Read);
             try
             {
-                XmlSerializer xs = new XmlSerializer(typeof(List<Circle>));
-                circles = xs.Deserialize(stream) as List<Circle>;
+                XmlSerializer xs = new XmlSerializer(typeof(CalibrationInfo));
+                calibInfo = xs.Deserialize(stream) as CalibrationInfo;
             }
             catch (Exception ex)
             {
@@ -53,8 +54,27 @@ namespace Utility
             {
                 stream.Close();
             }
+            return calibInfo;
         }
     }
+
+    [Serializable]
+    public class CalibrationInfo
+    {
+        public System.Windows.Size size;
+        public List<Circle> circles;
+        public CalibrationInfo()
+        {
+            size = new System.Windows.Size(0, 0);
+            circles = new List<Circle>();
+        }
+        public CalibrationInfo(System.Windows.Size sz, List<Circle> cs)
+        {
+            size = sz;
+            circles = cs;
+        }
+    }
+
     public class FolderHelper
     {
         
@@ -110,6 +130,19 @@ namespace Utility
             string sDataFolder = GetExeParentFolder() + "Data\\";
             CreateIfNotExist(sDataFolder);
             return sDataFolder;
+        }
+
+        static private string GetCalibFolder()
+        {
+            string sFolder = GetExeParentFolder() + "\\Calib\\";
+            if (!System.IO.Directory.Exists(sFolder))
+                System.IO.Directory.CreateDirectory(sFolder);
+            return sFolder;
+        }
+
+        static public string GetCalibFile(int cameraID)
+        {
+            return GetCalibFolder() + string.Format("ROIs_{0}.xml", cameraID);
         }
 
 
@@ -237,10 +270,10 @@ namespace Utility
         static private ImageBrush CreateBrushFromBitmap(Bitmap bitmap)
         {
             BitmapImage bitmapImage;
-            System.Drawing.Bitmap cloneBitmpa = (System.Drawing.Bitmap)bitmap.Clone();
+            System.Drawing.Bitmap cloneBitmap = (System.Drawing.Bitmap)bitmap.Clone();
             using (MemoryStream memory = new MemoryStream())
             {
-                cloneBitmpa.Save(memory, ImageFormat.Png);
+                cloneBitmap.Save(memory, ImageFormat.Jpeg);
                 memory.Position = 0;
                 bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();

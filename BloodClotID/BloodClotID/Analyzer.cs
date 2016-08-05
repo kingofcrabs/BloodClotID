@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EngineDll;
 using Utility;
 using System.Windows;
+using EngineDll;
 
 namespace BloodClotID
 {
@@ -19,9 +20,7 @@ namespace BloodClotID
         //    //ROI[] rois = new ROI[24];
         //    //iEngine.Analysis()
         //}
-        double xRatio;
-        double yRatio;
-        private List<int> AnalysisPlate(int cameraID)
+        public List<AnalysisResult> AnalysisPlate(int cameraID)
         {
             var file = FolderHelper.GetImagePath(cameraID);
             var calibFile = FolderHelper.GetCalibFile(cameraID);

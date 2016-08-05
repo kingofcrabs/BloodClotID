@@ -11,25 +11,33 @@ EngineImpl::EngineImpl()
 
 }
 
-void  EngineImpl::FindContours(const cv::Mat& thresholdImg,
-	std::vector<std::vector<cv::Point>
-	>& contours,
-	int min, int max)
-{
-	std::vector< std::vector<cv::Point> > allContours;
+//void  EngineImpl::FindContours(const cv::Mat& thresholdImg,
+//	std::vector<std::vector<cv::Point>
+//	>& contours,
+//	int min, int max)
+//{
+//	std::vector< std::vector<cv::Point> > allContours;
+//
+//	cv::findContours(thresholdImg, allContours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+//	contours.clear();
+//	for (size_t i = 0; i<allContours.size(); i++)
+//	{
+//		int contourSize = allContours[i].size();
+//		
+//		if (contourSize > min && contourSize < max)
+//		{
+//			contours.push_back(allContours[i]);
+//		}
+//	}
+//}
 
-	cv::findContours(thresholdImg, allContours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-	contours.clear();
-	for (size_t i = 0; i<allContours.size(); i++)
-	{
-		int contourSize = allContours[i].size();
-		
-		if (contourSize > min && contourSize < max)
-		{
-			contours.push_back(allContours[i]);
-		}
-	}
+std::string WStringToString(const std::wstring &wstr)
+{
+	std::string str(wstr.length(), ' ');
+	std::copy(wstr.begin(), wstr.end(), str.begin());
+	return str;
 }
+
 double inline __declspec (naked) __fastcall sqrt14(double n)
 {
 	_asm fld qword ptr[esp + 4]
@@ -44,28 +52,31 @@ double  EngineImpl::GetDistance(double x1, double y1, double x2, double y2)
 	return sqrt14(xx + yy);
 }
 
-void EngineImpl::RemovePtsNotInROI(Mat& src, CvPoint ptMass)
+void EngineImpl::RemovePtsNotInCircle(Mat& src)
 {
 	int height = src.rows;
 	int width = src.cols;
 	int channels = src.channels();
 	int nc = width * channels;
-
+	int xx = (width + 1) / 2;
+	int yy = (height + 1) / 2;
+	int innerRadius = min(xx, yy);
 	for (int y = 0; y < height; y++)
 	{
 		uchar *data = src.ptr(y);
 		for (int x = 0; x < width; x++)
 		{
-			if (GetDistance(x, y, ptMass.x, ptMass.y) > innerRadius)
+			if (GetDistance(x, y, xx, yy) > innerRadius)
 			{
 				int xStart = x*channels;
 				for (int i = 0; i< channels; i++)
-					data[xStart + i] = 0;
+					data[xStart + i] = 255;
 			}
 		}
 	}
 	return;
 }
+
 
 bool CompareX(Point x,Point y) { return x.x<y.x; }
 
@@ -76,43 +87,6 @@ int EngineImpl::GetWidth(vector<Point> pts)
 	return right - left;
 }
 
-void EngineImpl::GetCircleROI(Mat& src)
-{
-	Mat gray;
-	cvtColor(src, gray, CV_BGR2GRAY);
-	threshold(gray, gray, 200, 255, 0);
-#if _DEBUG
-	imwrite(dbgFolder + "gray.jpg", gray);
-#endif
-	vector<vector<cv::Point>> contours;
-	int minPts = 1000;
-	FindContours(gray, contours, minPts);
-	if (contours.size() == 0)
-	{
-		return;
-	}
-	int max = 0;
-	int index = 0;
-	for (int i = 0; i< contours.size(); i++)
-	{
-		int width = GetWidth(contours[i]);
-		if (width > max)
-		{
-			max = width;
-			index = i;
-		}
-	}
-	//edgeContour = contours[index];
-#if _DEBUG	
-	Mat tmp = src.clone();
-
-	//for (int i = 0; i< contours.size(); i++)
-	{
-		drawContours(tmp, contours, index, Scalar(0, 255, 0), 2);
-	}
-	imwrite(dbgFolder + "circleROI.jpg", tmp);
-#endif
-}
 
 cv::Point EngineImpl::GetMassCenter(vector<cv::Point>& pts)
 {
@@ -126,82 +100,207 @@ cv::Point EngineImpl::GetMassCenter(vector<cv::Point>& pts)
 }
 
 
-
-
-void EngineImpl::Rotate90(cv::Mat &matImage, bool cw){
-	//1=CW, 2=CCW, 3=180
-	if (cw){
-		transpose(matImage, matImage);
-		flip(matImage, matImage, 1); //transpose+flip(1)=CW
-	}
-	else {
-		transpose(matImage, matImage);
-		flip(matImage, matImage, 0); //transpose+flip(0)=CCW     
-	}
-}
-
-
-void EngineImpl::CountRed(int x, int y, Point ptCenter, Circle& c, bool bLight)
-{
-	double dis = cv::norm(cv::Mat(ptCenter), Mat(Point(x, y)));
-	if (dis < c.radius)
-	{
-		if (bLight)
-			lightRedCnt++;
-		else
-			darkRedCnt++;
-	}
-}
-
-void EngineImpl::CountLightRed(int x, int y, Point ptCenter, Circle& c)
-{
-	CountRed(x, y, ptCenter, c, true);
-}
-
-void EngineImpl::CountDarkRed(int x, int y, Point ptCenter, Circle& c)
-{
-	CountRed(x, y, ptCenter, c, false);
-}
-
-void EngineImpl::GoThrough(Mat& sub, Circle &c)
+void EngineImpl::ThresholdByRed(Mat& sub)
 {
 	int height = sub.rows;
 	int width = sub.cols;
 	int channels = sub.channels();
 	int nc = width * channels;
-	Point ptCenter = Point(width / 2, height / 2);
 	for (int y = 0; y < height; y++)
 	{
 		uchar *data = sub.ptr(y);
-		int col = 0;
 		for (int x = 0; x < nc; x += channels)
 		{
 			int r = data[x + 2];
 			int g = data[x + 1];
 			int b = data[x];
-			if (r > g && r > b)
-			{
-				if (g > 50 || b > 50)
-				{
-					CountLightRed(col, y, ptCenter, c);
-				}
-				else if (g < 30 && b < 30)
-				{
-					CountDarkRed(col, y, ptCenter, c);
-				}
-				col++;
-				continue;
-			}
-			col++;
+			int val = r > 80 && g < 80 && b < 80 ? 0 : 255;
+
+			for (int i = 0; i < channels; i++)
+				data[x + i] = val;
+
+
 		}
 	}
 }
 
-vector<int> EngineImpl::Analysis(string sFile, vector<Circle> roi,vector<vector<cv::Point2f>> rotatedRects)
+std::vector<cv::Point> EngineImpl::FindMaxContour(Mat& src)
+{
+
+	std::vector< std::vector<cv::Point> > contours;
+
+	cv::findContours(src, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+	int maxSize = 0;
+	vector<cv::Point> maxContour;
+	int height = src.rows;
+	int width = src.cols;
+	int toobig = (height + width) * 1.5;
+	for (size_t i = 0; i<contours.size(); i++)
+	{
+		int contourSize = contours[i].size();
+		if (contourSize > toobig)
+			continue;
+		if (contourSize > maxSize)
+		{
+			maxSize = contourSize;
+			maxContour = contours[i];
+		}
+	}
+	return maxContour;
+
+}
+
+
+//}
+//
+//void EngineImpl::Rotate90(cv::Mat &matImage, bool cw){
+//	//1=CW, 2=CCW, 3=180
+//	if (cw){
+//		transpose(matImage, matImage);
+//		flip(matImage, matImage, 1); //transpose+flip(1)=CW
+//	}
+//	else {
+//		transpose(matImage, matImage);
+//		flip(matImage, matImage, 0); //transpose+flip(0)=CCW     
+//	}
+//}
+//
+//
+//void EngineImpl::CountRed(int x, int y, Point ptCenter, Circle& c, bool bLight)
+//{
+//	double dis = cv::norm(cv::Mat(ptCenter), Mat(Point(x, y)));
+//	if (dis < c.radius)
+//	{
+//		if (bLight)
+//			lightRedCnt++;
+//		else
+//			darkRedCnt++;
+//	}
+//}
+//
+//void EngineImpl::CountLightRed(int x, int y, Point ptCenter, Circle& c)
+//{
+//	CountRed(x, y, ptCenter, c, true);
+//}
+//
+//void EngineImpl::CountDarkRed(int x, int y, Point ptCenter, Circle& c)
+//{
+//	CountRed(x, y, ptCenter, c, false);
+//}
+//
+//void EngineImpl::GoThrough(Mat& sub, Circle &c)
+//{
+//	int height = sub.rows;
+//	int width = sub.cols;
+//	int channels = sub.channels();
+//	int nc = width * channels;
+//	Point ptCenter = Point(width / 2, height / 2);
+//	for (int y = 0; y < height; y++)
+//	{
+//		uchar *data = sub.ptr(y);
+//		int col = 0;
+//		for (int x = 0; x < nc; x += channels)
+//		{
+//			int r = data[x + 2];
+//			int g = data[x + 1];
+//			int b = data[x];
+//			if (r > g && r > b)
+//			{
+//				if (g > 50 || b > 50)
+//				{
+//					CountLightRed(col, y, ptCenter, c);
+//				}
+//				else if (g < 30 && b < 30)
+//				{
+//					CountDarkRed(col, y, ptCenter, c);
+//				}
+//				col++;
+//				continue;
+//			}
+//			col++;
+//		}
+//	}
+//}
+
+Rect EngineImpl::GetRect(Circle circle,Size imgSize)
+{
+	
+	double xStart, yStart, width, height;
+	xStart = circle.x - circle.radius;
+	yStart = circle.y - circle.radius;
+	xStart = max(xStart, 0.0);
+	yStart = max(yStart, 0.0);
+	double dis2XBound = imgSize.width - xStart;
+	double dis2YBound = imgSize.height - yStart;
+	double unit = circle.radius * 2;
+	double w = min(dis2XBound, unit);
+	double h = min(dis2YBound, unit);
+	Rect rc(xStart,yStart,w,h);
+	return rc;
+}
+
+
+int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
+{
+	static int id = 1;
+	wstringstream ss;
+	ss << "D:\\temp\\threshold" << id++<< ".jpg";
+	wstring ws = ss.str();
+	string s = WStringToString(ws);
+	ss.clear();
+
+
+	//ThresholdByRed(sub);
+	cvtColor(sub, sub, COLOR_BGR2HSV);
+	vector<Mat> channels;
+	split(sub, channels);
+	Mat gray, binary;
+	//cvtColor(sub, gray, COLOR_BGR2GRAY);
+	threshold(channels[0], binary, 15, 255, THRESH_BINARY);
+	imwrite(s, binary);
+	vector<cv::Point> contour = FindMaxContour(binary);
+	auto rotatedRect = minAreaRect(contour);
+	Point2f vertices[4];
+	rotatedRect.points(vertices);
+	double maxDistance = 0;
+
+	int height = sub.rows;
+	int width = sub.cols;
+	int xCenter = width / 2;
+	int yCenter = height / 2;
+
+	for (int i = 0; i < 4; i++)
+	{
+		auto pt1 = vertices[i];
+		auto pt2 = vertices[(i + 1) % 4];
+		auto distance = GetDistance(pt1.x, pt1.y, pt2.x, pt2.y);
+		if (distance > maxDistance)
+			maxDistance = distance;
+		pts.push_back(Point(vertices[i].x- xCenter,vertices[i].y-yCenter));
+	}
+	return maxDistance;
+}
+
+
+
+vector<int> EngineImpl::Analysis(string sFile, vector<Circle> rois,vector<vector<cv::Point2f>>& rotatedRects)
 {
 	img = imread(sFile);
 	vector<int> results;
-	results.push_back(1);
+	for (int i = 0; i < rois.size(); i++)
+	{
+		Rect rc = GetRect(rois[i],img.size());
+		vector<cv::Point2f> rotatedRect;
+		int val = AnalysisSub(img(rc), rotatedRect);
+		results.push_back(val);
+		rotatedRects.push_back(rotatedRect);
+		wstringstream ss;
+		ss << "D:\\temp\\rois" << i + 1 << ".jpg";
+		wstring ws = ss.str();
+		string s = WStringToString(ws);
+		//imwrite(s, img);
+		ss.clear();
+	}
 	return results;
 }
 

@@ -7,7 +7,6 @@
         xmlns:myCanvas="clr-namespace:BloodClotID"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:pie="clr-namespace:PieControls;assembly=PieControls"
-        xmlns:loaders="clr-namespace:Loaders;assembly=MrMitch.Loaders"
         mc:Ignorable="d"
         Title="BloodClot" Height="600" Width="850">
     <Grid Name="rootGrid">

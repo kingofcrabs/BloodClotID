@@ -34,12 +34,12 @@ namespace EngineDll
 		array<AnalysisResult^>^ vals = gcnew array<AnalysisResult^>(results.size());
 		for (int i = 0; i < results.size(); i++)
 		{
-			array<MPoint^>^ points = gcnew array<MPoint^>(4);
+			array<MSize^>^ points = gcnew array<MSize^>(4);
 			auto rotatedRect = rotatedRects[i];
 			for (int ii = 0; ii < 4; ii++)
 			{
 				auto pt = rotatedRect[ii];
-				points[ii] = gcnew MPoint(pt.x, pt.y);
+				points[ii] = gcnew MSize(pt.x, pt.y);
 			}
 			
 			RotatedRect^ rc = gcnew RotatedRect(points);

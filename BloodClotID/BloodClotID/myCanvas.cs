@@ -12,19 +12,24 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using EngineDll;
 using Utility;
 
 namespace BloodClotID
 {
     public class RenderCanvas : Canvas
     {
-       
-        List<Circle> hilightCircles = new List<Circle>();
-        protected CalibrationInfo calibInfo = new CalibrationInfo();
 
+        protected List<Circle> hilightCircles = new List<Circle>();
+        protected List<AnalysisResult> analysisResults = new List<AnalysisResult>();
+        protected CalibrationInfo calibInfo = new CalibrationInfo();
+        protected Size bkImgSize;
         public void UpdateBackGroundImage(string file)
         {
-            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(file);
+            using (var bmpTemp = new System.Drawing.Bitmap(file))
+            {
+                bkImgSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
+            }
             Background = RenderHelper.CreateBrushFromFile(file);
         }
 
@@ -77,11 +82,11 @@ namespace BloodClotID
 
         public void RemoveCorrespondingCircle(Point pt)
         {
-            Point translatePt = ConvertCoord2Real(pt);
+            Point translatePt = ConvertCoordCalib2Real(pt);
             calibInfo.circles.RemoveAll(c => c.IsPointInside(translatePt));
             this.InvalidateVisual();
         }
-
+        #region coordinate translation
         private Point ConvertCoord2Calib(Point pt)
         {
             if (calibInfo.size.Width == 0)
@@ -90,9 +95,15 @@ namespace BloodClotID
             double yRatio = this.ActualHeight / calibInfo.size.Height;
             return new Point(pt.X / xRatio, pt.Y / yRatio);
         }
+        private Point ConvertCoordImage2Real(Point offset,Size imgSize)
+        {
+            double xRatio = this.ActualWidth / imgSize.Width;
+            double yRatio = this.ActualHeight / imgSize.Height;
+            return new Point(offset.X * xRatio, offset.Y * yRatio);
+        }
 
 
-        private Point ConvertCoord2Real(Point pt)
+        private Point ConvertCoordCalib2Real(Point pt)
         {
             if (calibInfo.size.Width == 0)
                 return pt;
@@ -101,13 +112,13 @@ namespace BloodClotID
             return new Point(pt.X * xRatio, pt.Y * yRatio);
         }
 
-        private void ConvertCoord2Real(Circle circle, ref Point ptCenter, ref Size sz)
+        private void ConvertCoordCalib2Real(Circle circle, ref Point ptCenter, ref Size sz)
         {
-            ptCenter = ConvertCoord2Real(circle.ptCenter);
-            sz = ConvertCoord2Real(new Size(circle.radius, circle.radius));
+            ptCenter = ConvertCoordCalib2Real(circle.ptCenter);
+            sz = ConvertCoordCalib2Real(new Size(circle.radius, circle.radius));
         }
 
-        private Size ConvertCoord2Real(Size sz)
+        private Size ConvertCoordCalib2Real(Size sz)
         {
             if (calibInfo.size.Width == 0)
                 return sz;
@@ -115,6 +126,7 @@ namespace BloodClotID
             double yRatio = this.ActualHeight / calibInfo.size.Height;
             return new Size(sz.Width * xRatio, sz.Height * yRatio);
         }
+        #endregion
 
         public void SelectCircleAtPosition(Point pt)
         {
@@ -125,6 +137,12 @@ namespace BloodClotID
                 firstMatch.Selected = true;
             InvalidateVisual();
 
+        }
+
+        public void SetResult(List<AnalysisResult> result)
+        {
+            analysisResults = result;
+            InvalidateVisual();
         }
 
         public void ClearSelectFlag()
@@ -150,7 +168,7 @@ namespace BloodClotID
                 Brush brush = new SolidColorBrush(color);
                 Point ptCenter = circle.ptCenter;
                 Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
-                ConvertCoord2Real(circle, ref ptCenter, ref sz);
+                ConvertCoordCalib2Real(circle, ref ptCenter, ref sz);
 
                 drawingContext.DrawEllipse(brush, new Pen(Brushes.Black, 1), ptCenter,sz.Width, sz.Height);
                 FormattedText formattedText = new FormattedText(circleID.ToString(), CultureInfo.CurrentCulture,
@@ -158,6 +176,29 @@ namespace BloodClotID
                 drawingContext.DrawText(formattedText, ptCenter);
                 circleID++;
             }
+
+            if(this.Background != null && analysisResults != null)
+            {
+                for(int i = 0; i< analysisResults.Count; i++)// (AnalysisResult analysisResult in analysisResults)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        var result = analysisResults[i];
+                        MSize startPtMOffset = result.rect.points[j];
+                        MSize endPtMOffSet = result.rect.points[(j + 1) % 4];
+                        Point startPtOffset = new Point(startPtMOffset.x, startPtMOffset.y);
+                        Point endPtOffset = new Point(endPtMOffSet.x, endPtMOffSet.y);
+                        var translateStartOffset = ConvertCoordImage2Real(startPtOffset, bkImgSize);
+                        var translateEndOffset = ConvertCoordImage2Real(endPtOffset, bkImgSize);
+                        var ptCenter = calibInfo.circles[i].ptCenter;
+                        ptCenter = ConvertCoordCalib2Real(ptCenter);
+                        drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(ptCenter.X + translateStartOffset.X, ptCenter.Y + translateStartOffset.Y),
+                            new Point(ptCenter.X + translateEndOffset.X, ptCenter.Y + translateEndOffset.Y));
+                    }
+
+                }
+            }
+            
         }
 
         

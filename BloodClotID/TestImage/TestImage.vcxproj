@@ -95,6 +95,14 @@
     </ClCompile>
     <ClCompile Include="TestImage.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EngineDll\EngineDll.vcxproj">
+      <Project>{9f46951f-d766-4801-9aed-44dc5f017eb9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{c198c3f8-053c-4da9-9eb8-e424cb882fac}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

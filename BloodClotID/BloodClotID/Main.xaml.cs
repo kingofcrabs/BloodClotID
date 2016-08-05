@@ -33,26 +33,33 @@ namespace BloodClotID.Camera
         Thread _progressThread = null;
         Loader loaderWindow;
         IImageAcquirer imgAcquirer;
-        SettingWindow settingWindow = new SettingWindow();
+        SettingWindow settingWindow;
         ObservableCollection<PieSegment> pieCollection = new ObservableCollection<PieSegment>();
         public MainWindow()
         {
             
             InitializeComponent();
+            this.Loaded += MainWindow_Loaded;
+           
+
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
             try
             {
+                
                 imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer(ConfigValues.Vendor);
                 pictureContainers.PreviewMouseLeftButtonDown += PictureContainers_PreviewMouseLeftButtonDown;
                 pictureContainers.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
                 this.Closed += MainWindow_Closed;
-                settingWindow.setOk += SettingWindow_setOk;
-           
+            
+
             }
             catch (Exception ex)
             {
                 SetInfo(ex.Message);
             }
-
         }
         #region mouse event handler
         private void PictureContainers_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -98,6 +105,7 @@ namespace BloodClotID.Camera
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             imgAcquirer.Stop();
+
         }
 
         private void SetInfo(string message, bool error = true)
@@ -124,7 +132,9 @@ namespace BloodClotID.Camera
 
         private void Analysis()
         {
-          
+            Analyzer analyzer = new Analyzer();
+            var result = analyzer.AnalysisPlate(1);
+            pic1.SetResult(result);
         }
 
         private void ShowResult(List<int> results)
@@ -174,10 +184,11 @@ namespace BloodClotID.Camera
             {
                 SetInfo(ex.Message);
             }
-            HideLoader();
+           
             btnNext.IsEnabled = AcquireInfo.Instance.curPlate != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
             RefreshImage();
             Analysis();
+            HideLoader();
         }
 
 
@@ -245,14 +256,19 @@ namespace BloodClotID.Camera
         #region prepare
         private void btnPrepare_Click(object sender, RoutedEventArgs e)
         {
+            settingWindow = new SettingWindow();
+            settingWindow.setOk += SettingWindow_setOk;
             settingWindow.ShowDialog();
+            //FolderHelper.CreateAcquiredImageFolder();
             
+            //Debug.WriteLine(result.Count);
         }
 
         private void SettingWindow_setOk(object sender, EventArgs e)
         {
             FolderHelper.CreateAcquiredImageFolder();
             btnTakePhote.IsEnabled = true;
+            pieCollection.Clear();
             pieCollection.Add(new PieSegment { Color = Colors.Green, Value = 0, Name = "已完成" });
             pieCollection.Add(new PieSegment { Color = Colors.Yellow, Value = AcquireInfo.Instance.GetTotalPlateCnt(), Name = "未完成" });
             chart1.Data = pieCollection;

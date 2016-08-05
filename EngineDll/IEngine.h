@@ -20,13 +20,13 @@ namespace EngineDll
 		}
 	};
 
-	public ref class MPoint
+	public ref class MSize
 	{
 	public:
 		int x;
 		int y;
 	
-		MPoint(int xx, int yy)
+		MSize(int xx, int yy)
 		{
 			x = xx;
 			y = yy;
@@ -36,13 +36,13 @@ namespace EngineDll
 	public ref class RotatedRect
 	{
 	public:
-		array<MPoint^>^ points;
-		RotatedRect(array<MPoint^>^ pts)
+		array<MSize^>^ points;
+		RotatedRect(array<MSize^>^ pts)
 		{
-			points = gcnew array<MPoint^>(pts->Length);
+			points = gcnew array<MSize^>(pts->Length);
 			for (int i = 0; i < points->Length; i++)
 			{
-				points[i] = gcnew MPoint(pts[i]->x,pts[i]->y);
+				points[i] = gcnew MSize(pts[i]->x,pts[i]->y);
 			}
 		}
 	};
