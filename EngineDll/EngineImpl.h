@@ -28,7 +28,7 @@ private:
 	
 	
 	void RemovePtsNotInCircle(cv::Mat& src);
-	void ThresholdByRed(cv::Mat& sub);
+	void ThresholdByRed(cv::Mat& hue, cv::Mat& val);
 	std::vector<cv::Point> FindMaxContour(cv::Mat& src);
 
 

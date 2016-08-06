@@ -100,24 +100,24 @@ cv::Point EngineImpl::GetMassCenter(vector<cv::Point>& pts)
 }
 
 
-void EngineImpl::ThresholdByRed(Mat& sub)
+void EngineImpl::ThresholdByRed(Mat& hue,Mat& val)
 {
-	int height = sub.rows;
-	int width = sub.cols;
-	int channels = sub.channels();
+	int height = hue.rows;
+	int width = hue.cols;
+	int channels = hue.channels();
 	int nc = width * channels;
 	for (int y = 0; y < height; y++)
 	{
-		uchar *data = sub.ptr(y);
+		uchar *dataHue = hue.ptr(y);
+		uchar *dataVal = val.ptr(y);
 		for (int x = 0; x < nc; x += channels)
 		{
-			int r = data[x + 2];
-			int g = data[x + 1];
-			int b = data[x];
-			int val = r > 80 && g < 80 && b < 80 ? 0 : 255;
+			int hue = dataHue[x];
+			int val = dataVal[x];
+			int changedVal = hue < 15 && val < 100 ? 0 : 255;
 
 			for (int i = 0; i < channels; i++)
-				data[x + i] = val;
+				dataHue[i] = changedVal;
 
 
 		}
@@ -244,21 +244,40 @@ int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 {
 	static int id = 1;
 	wstringstream ss;
-	ss << "D:\\temp\\threshold" << id++<< ".jpg";
+	ss << "D:\\temp\\hue" << id<< ".jpg";
 	wstring ws = ss.str();
-	string s = WStringToString(ws);
-	ss.clear();
-
+	string sHue = WStringToString(ws);
+	ss.str(L"");
+	ss << "D:\\temp\\val" << id++ << ".jpg";
+	ws = ss.str();
+	string sVal = WStringToString(ws);
+	ss.str(L"");
 
 	//ThresholdByRed(sub);
-	cvtColor(sub, sub, COLOR_BGR2HSV);
+	cvtColor(sub, sub, COLOR_BGR2HLS);
 	vector<Mat> channels;
 	split(sub, channels);
-	Mat gray, binary;
+	Mat& hue = channels[0];
+	Mat& light = channels[1];
+	Mat binary;
 	//cvtColor(sub, gray, COLOR_BGR2GRAY);
-	threshold(channels[0], binary, 15, 255, THRESH_BINARY);
-	imwrite(s, binary);
+	
+	threshold(hue,hue, 15, 255, THRESH_BINARY_INV);
+	threshold(light, light, 100, 255, THRESH_BINARY_INV);
+	bitwise_and(hue, light, binary);
+	//imwrite(sHue, hue);
+	//imwrite(sVal, light);
 	vector<cv::Point> contour = FindMaxContour(binary);
+	if (contour.size() == 0)
+	{
+		
+		pts.push_back(Point(-3,-3));
+		pts.push_back(Point(3, -3));
+		pts.push_back(Point(3, 3));
+		pts.push_back(Point(-3, 3));
+		return 0;
+	}
+		
 	auto rotatedRect = minAreaRect(contour);
 	Point2f vertices[4];
 	rotatedRect.points(vertices);

@@ -44,28 +44,34 @@
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
             <Label Content="提示：" FontSize="16" Grid.Row="1"/>
-            <Label Name="lblProgress" FontSize="16" />
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Name="rdbRealPlate" VerticalAlignment="Center" Click="rdbVieweChanged" Content="实物" IsChecked="True" FontSize="16"></RadioButton>
+                <RadioButton VerticalAlignment="Center" Click="rdbVieweChanged" Content="示意" FontSize="16"></RadioButton>
+            </StackPanel>
         </StackPanel>
         
-        <Grid Name="pictureContainers" Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <myCanvas:ResultCanvas x:Name="pic1" >
-            </myCanvas:ResultCanvas>
-            <myCanvas:ResultCanvas Grid.Column="1" x:Name="pic2" >
-            </myCanvas:ResultCanvas>
+        <Grid  Grid.Row="2">
+            <Grid Name="sketchMapGrid" Visibility="Hidden"></Grid>
+            <Grid Name="pictureContainers">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <myCanvas:ResultCanvas x:Name="pic1" >
+                </myCanvas:ResultCanvas>
+                <myCanvas:ResultCanvas Grid.Column="1" x:Name="pic2" >
+                </myCanvas:ResultCanvas>
 
-            <myCanvas:ResultCanvas Grid.Row="1" x:Name="pic3" >
-            </myCanvas:ResultCanvas>
+                <myCanvas:ResultCanvas Grid.Row="1" x:Name="pic3" >
+                </myCanvas:ResultCanvas>
 
-            <myCanvas:ResultCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
-            </myCanvas:ResultCanvas>
+                <myCanvas:ResultCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
+                </myCanvas:ResultCanvas>
+            </Grid>
         </Grid>
         <Grid Grid.Column="1" Grid.Row="1" Grid.RowSpan="2">
             <Grid.RowDefinitions>

@@ -133,8 +133,17 @@ namespace BloodClotID.Camera
         private void Analysis()
         {
             Analyzer analyzer = new Analyzer();
-            var result = analyzer.AnalysisPlate(1);
-            pic1.SetResult(result);
+            Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
+            dict.Add(1, pic1);
+            dict.Add(2, pic2);
+            dict.Add(3, pic3);
+            dict.Add(4, pic4);
+            foreach(var pair in dict)
+            {
+                var result = analyzer.AnalysisPlate(pair.Key);
+                pair.Value.SetResult(result);
+            }
+        
         }
 
         private void ShowResult(List<int> results)
@@ -274,9 +283,21 @@ namespace BloodClotID.Camera
             chart1.Data = pieCollection;
         }
 
+
         #endregion
 
 
+        Visibility Bool2Visibility(bool bVisible)
+        {
+            return bVisible ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        private void rdbVieweChanged(object sender, RoutedEventArgs e)
+        {
+            bool realPlate = (bool)rdbRealPlate.IsChecked;
+            pictureContainers.Visibility = Bool2Visibility(realPlate);
+            sketchMapGrid.Visibility = Bool2Visibility(!realPlate);
+        }
     }
     public static class ExtensionMethods
     {

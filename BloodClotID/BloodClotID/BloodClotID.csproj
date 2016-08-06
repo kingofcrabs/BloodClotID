@@ -74,6 +74,7 @@
       <DependentUpon>Main.xaml</DependentUpon>
     </Compile>
     <Compile Include="myCanvas.cs" />
+    <Compile Include="plateViewer.cs" />
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
