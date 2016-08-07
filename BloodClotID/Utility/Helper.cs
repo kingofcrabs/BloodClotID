@@ -63,15 +63,17 @@ namespace Utility
     {
         public System.Windows.Size size;
         public List<Circle> circles;
+        public Rect rect;
         public CalibrationInfo()
         {
             size = new System.Windows.Size(0, 0);
             circles = new List<Circle>();
         }
-        public CalibrationInfo(System.Windows.Size sz, List<Circle> cs)
+        public CalibrationInfo(System.Windows.Size sz, List<Circle> cs,Rect rc)
         {
             size = sz;
             circles = cs;
+            rect = rc;
         }
     }
 
@@ -257,19 +259,19 @@ namespace Utility
 
     public class RenderHelper
     {
-        static public ImageBrush CreateBrushFromFile(string file)
+        static public ImageBrush CreateBrushFromFile(string file,CalibrationInfo calibInfo)
         {
             System.Drawing.Bitmap bitmap;
             using (var bmpTemp = new Bitmap(file))
             {
                 bitmap = new Bitmap(bmpTemp);
             }
-            return CreateBrushFromBitmap(bitmap);
+            return CreateBrushFromBitmap(bitmap,calibInfo);
         }
 
-        static private ImageBrush CreateBrushFromBitmap(Bitmap bitmap)
+        static private ImageBrush CreateBrushFromBitmap(Bitmap bitmap,CalibrationInfo calibInfo)
         {
-            BitmapImage bitmapImage;
+            BitmapImage bitmapImage;                                                                                                                                                                                                                                     
             System.Drawing.Bitmap cloneBitmap = (System.Drawing.Bitmap)bitmap.Clone();
             using (MemoryStream memory = new MemoryStream())
             {
@@ -284,26 +286,35 @@ namespace Utility
 
             ImageBrush imgBrush = new ImageBrush();
             imgBrush.ImageSource = bitmapImage;
+            if(!GlobalVars.IsCalibration && calibInfo != null)
+            {
+                double xStartRatio = calibInfo.rect.TopLeft.X / calibInfo.size.Width;
+                double yStartRatio = calibInfo.rect.TopLeft.Y / calibInfo.size.Height;
+                double widthRatio = calibInfo.rect.Width / calibInfo.size.Width;
+                double heightRatio = calibInfo.rect.Height / calibInfo.size.Height;
+                imgBrush.Viewbox = new Rect(xStartRatio, yStartRatio, widthRatio, heightRatio);
+            }
+            
             imgBrush.ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
             return imgBrush;
         }
-
-
-        public static System.Windows.Media.Brush CreateBrushFromStream(MemoryStream memoryStream)
-        {
-            System.Drawing.Bitmap bitmap;
-            using (var bmpTemp = new Bitmap(memoryStream))
-            {
-                bitmap = new Bitmap(bmpTemp);
-            }
-            return CreateBrushFromBitmap(bitmap);
-        }
     }
  
-    public class ConfigValues
+    public class GlobalVars
     {
         static bool useTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
-        
+        static bool isCalib;
+        static public bool IsCalibration
+        {
+            get
+            {
+                return isCalib;
+            }
+            set
+            {
+                isCalib = value;
+            }
+        }
         static public string Vendor
         {
             get

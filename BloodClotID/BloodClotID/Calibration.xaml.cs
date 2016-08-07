@@ -34,10 +34,15 @@ namespace BloodClotID
             myCanvas.IsHitTestVisible = false;
             scrollViewer.PreviewMouseLeftButtonDown += scrollViewer_PreviewMouseLeftButtonDown;
             scrollViewer.MouseLeftButtonUp += scrollViewer_MouseLeftButtonUp;
+            scrollViewer.PreviewMouseMove += ScrollViewer_PreviewMouseMove;
             this.KeyDown += MainWindow_KeyDown;
         }
 
-       
+        private void ScrollViewer_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            Point pt = e.GetPosition(myCanvas);
+            myCanvas.MoveMouse(pt);
+        }
 
         void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
@@ -56,11 +61,8 @@ namespace BloodClotID
 
         void scrollViewer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if ((bool)rdbModify.IsChecked)
-                return;
-
             Point pt = e.GetPosition(myCanvas);
-            myCanvas.LeftMouseUp(pt);
+            myCanvas.LeftMouseUp(pt, (bool)rdbAdd.IsChecked);
         }
 
         private void rdbAdd_Click(object sender, RoutedEventArgs e)

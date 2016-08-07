@@ -44,10 +44,7 @@
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1">
             <Label Content="提示：" FontSize="16" Grid.Row="1"/>
-            <StackPanel Orientation="Horizontal">
-                <RadioButton Name="rdbRealPlate" VerticalAlignment="Center" Click="rdbVieweChanged" Content="实物" IsChecked="True" FontSize="16"></RadioButton>
-                <RadioButton VerticalAlignment="Center" Click="rdbVieweChanged" Content="示意" FontSize="16"></RadioButton>
-            </StackPanel>
+        
         </StackPanel>
         
         <Grid  Grid.Row="2">

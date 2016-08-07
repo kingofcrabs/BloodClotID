@@ -42,8 +42,8 @@
                 <RadioButton Content="修改" Name="rdbModify" Height="50" Click="rdbModify_Click" FontSize="20" IsChecked="True"/>
                 <RadioButton Content="新增" Name="rdbAdd" Height="50" FontSize="20" Click="rdbAdd_Click" />
             </StackPanel>
-            <Button Content="加载" Name="btnLoad" FontSize="40" Grid.Row="4" Click="btnLoad_Click"/>
-            <Button Content="保存" Name="btnSave"  FontSize="40" Grid.Row="5" Click="btnSave_Click"/>
+            <Button Margin="5,5,5,5" Content="加载" Name="btnLoad" FontSize="40" Grid.Row="4" Click="btnLoad_Click"/>
+            <Button Margin="5,5,5,5" Content="保存" Name="btnSave"  FontSize="40" Grid.Row="5" Click="btnSave_Click"/>
             <TextBox HorizontalAlignment="Left" Grid.Row="2"  TextWrapping="Wrap" Text="在修改模式下，选中后，请按小键盘的↑↓←→调整位置；按小键盘的+ -调整大小,Delete键删除某个感兴趣区域。" IsEnabled="False" VerticalAlignment="Stretch" />
          
         </Grid>

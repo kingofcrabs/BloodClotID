@@ -34,6 +34,7 @@ namespace BloodClotID.Camera
         Loader loaderWindow;
         IImageAcquirer imgAcquirer;
         SettingWindow settingWindow;
+        
         ObservableCollection<PieSegment> pieCollection = new ObservableCollection<PieSegment>();
         public MainWindow()
         {
@@ -49,18 +50,21 @@ namespace BloodClotID.Camera
             try
             {
                 
-                imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer(ConfigValues.Vendor);
+                imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer(GlobalVars.Vendor);
                 pictureContainers.PreviewMouseLeftButtonDown += PictureContainers_PreviewMouseLeftButtonDown;
-                pictureContainers.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
+                   pictureContainers.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
                 this.Closed += MainWindow_Closed;
-            
-
             }
             catch (Exception ex)
             {
                 SetInfo(ex.Message);
             }
         }
+
+     
+
+     
+
         #region mouse event handler
         private void PictureContainers_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -132,7 +136,6 @@ namespace BloodClotID.Camera
 
         private void Analysis()
         {
-            Analyzer analyzer = new Analyzer();
             Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
             dict.Add(1, pic1);
             dict.Add(2, pic2);
@@ -140,10 +143,10 @@ namespace BloodClotID.Camera
             dict.Add(4, pic4);
             foreach(var pair in dict)
             {
-                var result = analyzer.AnalysisPlate(pair.Key);
+                var result = Analyzer.Instance.AnalysisPlate(pair.Key);
                 pair.Value.SetResult(result);
             }
-        
+            
         }
 
         private void ShowResult(List<int> results)
@@ -170,7 +173,7 @@ namespace BloodClotID.Camera
                 ResultCanvas canvas = (ResultCanvas)uiElement;
                 if (File.Exists(file))
                 {
-                    canvas.UpdateBackGroundImage(file);
+                    canvas.UpdateBackGroundImage(file,id);
                     canvas.LoadCalib(id);
                 }
                     
@@ -292,12 +295,7 @@ namespace BloodClotID.Camera
             return bVisible ? Visibility.Visible : Visibility.Hidden;
         }
 
-        private void rdbVieweChanged(object sender, RoutedEventArgs e)
-        {
-            bool realPlate = (bool)rdbRealPlate.IsChecked;
-            pictureContainers.Visibility = Bool2Visibility(realPlate);
-            sketchMapGrid.Visibility = Bool2Visibility(!realPlate);
-        }
+     
     }
     public static class ExtensionMethods
     {

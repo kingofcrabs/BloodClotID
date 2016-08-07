@@ -24,13 +24,19 @@ namespace BloodClotID
         protected List<AnalysisResult> analysisResults = new List<AnalysisResult>();
         protected CalibrationInfo calibInfo = new CalibrationInfo();
         protected Size bkImgSize;
-        public void UpdateBackGroundImage(string file)
+        public void UpdateBackGroundImage(string file, int cameraID = 0)
         {
             using (var bmpTemp = new System.Drawing.Bitmap(file))
             {
                 bkImgSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
             }
-            Background = RenderHelper.CreateBrushFromFile(file);
+            CalibrationInfo calibInfo = null;
+            if (cameraID != 0)
+            {
+                string sFile = FolderHelper.GetCalibFile(cameraID);
+                calibInfo = SerializeHelper.LoadCalib(sFile);
+            }
+            Background = RenderHelper.CreateBrushFromFile(file, calibInfo);
         }
 
 
@@ -68,17 +74,17 @@ namespace BloodClotID
     {
         
         Point ptStart;
-        public delegate void circleCnt(int cnt);
-        public event circleCnt onCircleCntChanged;
-        public void AddCircle(Circle newCircle)
+        Circle selected = null;
+        bool canMove = false;
+
+        private void AddCircle(Circle newCircle)
         {
             calibInfo.circles.Add(newCircle);
-            if (onCircleCntChanged != null)
-                onCircleCntChanged(calibInfo.circles.Count);
-            this.InvalidateVisual();
         }
-
-      
+        private void SetRect(Rect rect)
+        {
+            calibInfo.rect = rect;
+        }
 
         public void RemoveCorrespondingCircle(Point pt)
         {
@@ -95,21 +101,49 @@ namespace BloodClotID
             double yRatio = this.ActualHeight / calibInfo.size.Height;
             return new Point(pt.X / xRatio, pt.Y / yRatio);
         }
-        private Point ConvertCoordImage2Real(Point offset,Size imgSize)
-        {
-            double xRatio = this.ActualWidth / imgSize.Width;
-            double yRatio = this.ActualHeight / imgSize.Height;
-            return new Point(offset.X * xRatio, offset.Y * yRatio);
-        }
 
+        private Point ConvertCoordImage2RealRelative(Point pt,Size imgSize) //use point as size, 此处是相对位置，所以不需要减去offset
+        {
+            if (GlobalVars.IsCalibration)
+            {
+                double xRatio = this.ActualWidth / imgSize.Width;
+                double yRatio = this.ActualHeight / imgSize.Height;
+                return new Point(pt.X * xRatio, pt.Y * yRatio);
+            }
+            else
+            {
+                double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
+                double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
+                double xRatio = virtualActualWidth / imgSize.Width;
+                double yRatio = virtualActualHeight / imgSize.Height;
+                return new Point(pt.X * xRatio, pt.Y * yRatio);
+            }
+        }
 
         private Point ConvertCoordCalib2Real(Point pt)
         {
             if (calibInfo.size.Width == 0)
                 return pt;
-            double xRatio = this.ActualWidth / calibInfo.size.Width;
-            double yRatio = this.ActualHeight / calibInfo.size.Height;
-            return new Point(pt.X * xRatio, pt.Y * yRatio);
+            double xOffset = 0;
+            double yOffset = 0;
+
+            double xRatio, yRatio;
+            if(GlobalVars.IsCalibration)
+            {
+                xRatio = this.ActualWidth / calibInfo.size.Width;
+                yRatio = this.ActualHeight / calibInfo.size.Height;
+            }
+            else
+            {
+                double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
+                double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
+                xOffset = (virtualActualWidth - this.ActualWidth) * calibInfo.rect.TopLeft.X/(calibInfo.size.Width - calibInfo.rect.Width) ;
+                yOffset = (virtualActualHeight - this.ActualHeight) * calibInfo.rect.TopLeft.Y /(calibInfo.size.Height - calibInfo.rect.Height) ;
+                xRatio = virtualActualWidth / calibInfo.size.Width;
+                yRatio = virtualActualHeight / calibInfo.size.Height;
+            }
+            
+            return new Point(pt.X * xRatio - xOffset, pt.Y * yRatio - yOffset);
         }
 
         private void ConvertCoordCalib2Real(Circle circle, ref Point ptCenter, ref Size sz)
@@ -122,9 +156,22 @@ namespace BloodClotID
         {
             if (calibInfo.size.Width == 0)
                 return sz;
-            double xRatio = this.ActualWidth / calibInfo.size.Width;
-            double yRatio = this.ActualHeight / calibInfo.size.Height;
-            return new Size(sz.Width * xRatio, sz.Height * yRatio);
+         
+            double xRatio, yRatio;
+            if (GlobalVars.IsCalibration)
+            {
+                xRatio = this.ActualWidth / calibInfo.size.Width;
+                yRatio = this.ActualHeight / calibInfo.size.Height;
+            }
+            else
+            {
+                double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
+                double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
+                    xRatio = virtualActualWidth / calibInfo.size.Width;
+                yRatio = virtualActualHeight / calibInfo.size.Height;
+            }
+
+            return new Size(sz.Width * xRatio,sz.Height * yRatio);
         }
         #endregion
 
@@ -134,7 +181,11 @@ namespace BloodClotID
             ClearSelectFlag();
             Circle firstMatch = calibInfo.circles.Find(x => x.IsPointInside(ptTranslate));
             if (firstMatch != null)
-                firstMatch.Selected = true;
+            {
+                selected = firstMatch;
+                canMove = true;
+            }
+                
             InvalidateVisual();
 
         }
@@ -147,11 +198,8 @@ namespace BloodClotID
 
         public void ClearSelectFlag()
         {
-            if (calibInfo.circles == null)
-                return;
-                
-            for (int i = 0; i < calibInfo.circles.Count; i++)
-                calibInfo.circles[i].Selected = false;
+            selected = null;
+            canMove = false;
         }
 
         protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
@@ -164,17 +212,27 @@ namespace BloodClotID
             {
                 Color green = Color.FromArgb(128, 0, 128, 50);
                 Color blue = Color.FromArgb(128, 0, 50, 128);
-                Color color = circle.Selected ? blue : green;
+                Color color = circle == selected ? blue : green;
                 Brush brush = new SolidColorBrush(color);
                 Point ptCenter = circle.ptCenter;
                 Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
                 ConvertCoordCalib2Real(circle, ref ptCenter, ref sz);
-
+                if (!GlobalVars.IsCalibration)
+                    brush = null;
                 drawingContext.DrawEllipse(brush, new Pen(Brushes.Black, 1), ptCenter,sz.Width, sz.Height);
                 FormattedText formattedText = new FormattedText(circleID.ToString(), CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Red);
                 drawingContext.DrawText(formattedText, ptCenter);
                 circleID++;
+            }
+
+            if(GlobalVars.IsCalibration && calibInfo.rect.Width != 0 && calibInfo.rect.Height != 0)
+            {
+                Brush brush = new SolidColorBrush(Colors.Blue);
+                Point ptStart = ConvertCoordCalib2Real(calibInfo.rect.Location);
+                Size sz = ConvertCoordCalib2Real(calibInfo.rect.Size);
+                Rect rectTranslated = new Rect(ptStart, sz);
+                drawingContext.DrawRectangle(null, new Pen(brush, 1), rectTranslated);
             }
 
             if(this.Background != null && analysisResults != null)
@@ -188,8 +246,8 @@ namespace BloodClotID
                         MSize endPtMOffSet = result.rect.points[(j + 1) % 4];
                         Point startPtOffset = new Point(startPtMOffset.x, startPtMOffset.y);
                         Point endPtOffset = new Point(endPtMOffSet.x, endPtMOffSet.y);
-                        var translateStartOffset = ConvertCoordImage2Real(startPtOffset, bkImgSize);
-                        var translateEndOffset = ConvertCoordImage2Real(endPtOffset, bkImgSize);
+                        var translateStartOffset = ConvertCoordImage2RealRelative(startPtOffset, bkImgSize);
+                        var translateEndOffset = ConvertCoordImage2RealRelative(endPtOffset, bkImgSize);
                         var ptCenter = calibInfo.circles[i].ptCenter;
                         ptCenter = ConvertCoordCalib2Real(ptCenter);
                         drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(ptCenter.X + translateStartOffset.X, ptCenter.Y + translateStartOffset.Y),
@@ -202,11 +260,24 @@ namespace BloodClotID
         }
 
         
+        bool LeftCtrlDown()
+        {
+            return Keyboard.IsKeyDown(Key.LeftCtrl);
+        }
 
         internal void LeftMoseDown(Point pt, bool bAdd)
         {
-            if (bAdd)
+            if(LeftCtrlDown())
+            {
                 ptStart = pt;
+                canMove = true;
+                return;
+            }
+
+            if (bAdd)
+            {
+                ptStart = pt;
+            }
             else
                 SelectCircleAtPosition(pt);
         }
@@ -218,40 +289,50 @@ namespace BloodClotID
             return Math.Sqrt(xx * xx + yy * yy);
         }
 
-        internal void LeftMouseUp(Point pt)
+        internal void LeftMouseUp(Point pt,bool bAdd)
         {
-            if (GetDistance(pt, ptStart) < 30)
+            canMove = false;
+            if (LeftCtrlDown())
+            {
+                SetRect(new Rect(ptStart, pt));
                 return;
-            AddCircle(new Circle(ptStart, pt));
+            }
+            if (bAdd && GetDistance(pt, ptStart) < 30)
+            {
+                AddCircle(new Circle(ptStart, pt));
+            }
+            
+            InvalidateVisual();
         }
 
+       
         internal void OnKey(System.Windows.Input.Key key)
         {
-            Circle circleSelected = calibInfo.circles.Find(x => x.Selected);
-            if (circleSelected == null)
+
+            if (selected == null)
                 return;
             switch (key)
             {
                 case Key.NumPad8: //up
-                    circleSelected.ptCenter.Y--;
+                    selected.ptCenter.Y--;
                     break;
                 case Key.NumPad2:
-                    circleSelected.ptCenter.Y++;
+                    selected.ptCenter.Y++;
                     break;
                 case Key.NumPad4:
-                    circleSelected.ptCenter.X--;
+                    selected.ptCenter.X--;
                     break;
                 case Key.NumPad6:
-                    circleSelected.ptCenter.X++;
+                    selected.ptCenter.X++;
                     break;
                 case Key.Add:
-                    circleSelected.radius++;
+                    selected.radius++;
                     break;
                 case Key.Subtract:
-                    circleSelected.radius--;
+                    selected.radius--;
                     break;
                 case Key.Delete:
-                    calibInfo.circles.Remove(circleSelected);
+                    calibInfo.circles.Remove(selected);
                     break;
                 default:
                     break;
@@ -259,8 +340,18 @@ namespace BloodClotID
             InvalidateVisual();
         }
 
+        internal void MoveMouse(Point pt)
+        {
+            if (!canMove)
+                return;
 
-
-      
+            if (LeftCtrlDown())
+            {
+                SetRect(new Rect(ptStart, pt));
+            }
+            else if (selected != null)
+                selected.ptCenter = pt;
+            InvalidateVisual();
+        }
     }
 }

@@ -12,20 +12,10 @@ namespace Utility
     {
         public Point ptCenter;
         public double radius;
-        private bool isSelected;
+ 
         public int id;
 
-        public bool Selected
-        {
-            get
-            {
-                return isSelected;
-            }
-            set
-            {
-                isSelected = value;
-            }
-        }
+      
         public Circle(Point ptStart, Point ptEnd)
         {
             // TODO: Complete member initialization
@@ -33,7 +23,6 @@ namespace Utility
             double y = (ptStart.Y + ptEnd.Y) / 2.0;
             ptCenter = new Point(x, y);
             radius = GetDistance(ptStart, ptEnd) / 2;
-            isSelected = false;
         }
         public Circle()
         {
@@ -43,7 +32,6 @@ namespace Utility
         {
             ptCenter = ptEnd;
             radius = r;
-            isSelected = false;
             this.id = id;
         }
 
@@ -54,6 +42,31 @@ namespace Utility
             double dis = Math.Sqrt(xx * xx + yy * yy);
             return dis;
         }
+        public static bool operator ==(Circle c1, Circle c2)
+        {
+            return Object.Equals(c1, c2);
+        }
+        public static bool operator !=(Circle c1, Circle c2)
+        {
+            return !Object.Equals(c1, c2);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+       
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (GetType() != obj.GetType())
+                return false;
+            Circle that = (Circle)obj;
+            return this.ptCenter == that.ptCenter && this.radius == that.radius && this.id == that.id;
+
+        }
+
 
         public bool IsPointInside(Point ptTest)
         {

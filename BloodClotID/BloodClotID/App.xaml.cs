@@ -9,7 +9,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-
+using Utility;
 
 namespace BloodClotID
 {
@@ -64,11 +64,13 @@ namespace BloodClotID
                         {
                             if(e.Args.Length == 0)
                             {
+                                GlobalVars.IsCalibration = false;
                                 MainWindow mainWindow = new MainWindow();
                                 mainWindow.ShowDialog();
                             }
                             else
                             {
+                                GlobalVars.IsCalibration = true;
                                 CalibWindow calibWindow = new CalibWindow();
                                 calibWindow.ShowDialog();
                             }

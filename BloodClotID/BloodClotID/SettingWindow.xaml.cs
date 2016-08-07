@@ -27,7 +27,7 @@ namespace BloodClotID
         public SettingWindow()
         {
             InitializeComponent();
-            List<AssayGroup> assayGroups = ConfigValues.ReadGroups();
+            List<AssayGroup> assayGroups = GlobalVars.ReadGroups();
             InitTreeview(assayGroups);
             panelVM.UpdateState(new ObservableCollection<string>() { "H5R-6" });
         }
