@@ -43,7 +43,7 @@ namespace EngineDll
 			}
 			
 			RotatedRect^ rc = gcnew RotatedRect(points);
-			vals[i] = gcnew AnalysisResult(rc, results[i]);
+			vals[i] = gcnew AnalysisResult(rc, results[i], circles[i].radius);
 		}
 		return vals;
 	}

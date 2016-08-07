@@ -136,17 +136,41 @@ namespace BloodClotID.Camera
 
         private void Analysis()
         {
-            Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
-            dict.Add(1, pic1);
-            dict.Add(2, pic2);
-            dict.Add(3, pic3);
-            dict.Add(4, pic4);
-            foreach(var pair in dict)
-            {
-                var result = Analyzer.Instance.AnalysisPlate(pair.Key);
-                pair.Value.SetResult(result);
-            }
-            
+            //Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
+            //dict.Add(1, pic1);
+            //dict.Add(2, pic2);
+            //dict.Add(3, pic3);
+            //dict.Add(4, pic4);
+            List<Task> tasks = new List<Task>();
+            tasks.Add(Task.Factory.StartNew(AnalysisFirstPlate));
+            tasks.Add(Task.Factory.StartNew(AnalysisSecondPlate));
+            tasks.Add(Task.Factory.StartNew(AnalysisThirdPlate));
+            tasks.Add(Task.Factory.StartNew(AnalysisForthPlate));
+            tasks.ForEach(x => x.Wait());
+        }
+
+        private void AnalysisForthPlate()
+        {
+            var result = Analyzer.Instance.AnalysisPlate(4);
+            pic4.SetResult(result);
+        }
+
+        private void AnalysisThirdPlate()
+        {
+            var result = Analyzer.Instance.AnalysisPlate(3);
+            pic3.SetResult(result);
+        }
+
+        private void AnalysisSecondPlate()
+        {
+            var result = Analyzer.Instance.AnalysisPlate(2);
+            pic2.SetResult(result);
+        }
+
+        private void AnalysisFirstPlate()
+        {
+            var result = Analyzer.Instance.AnalysisPlate(1);
+            pic1.SetResult(result);
         }
 
         private void ShowResult(List<int> results)

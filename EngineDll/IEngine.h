@@ -52,10 +52,12 @@ namespace EngineDll
 	public: 
 		RotatedRect^ rect;
 		int val;
-		AnalysisResult(RotatedRect^ rc, int v)
+		double radius;
+		AnalysisResult(RotatedRect^ rc, int v,double r)
 		{
 			rect = rc;
 			val = v;
+			radius = r;
 		}
 	};
 

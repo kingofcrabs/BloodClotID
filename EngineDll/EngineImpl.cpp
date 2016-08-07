@@ -248,23 +248,30 @@ int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 	wstring ws = ss.str();
 	string sHue = WStringToString(ws);
 	ss.str(L"");
-	ss << "D:\\temp\\val" << id++ << ".jpg";
+	ss << "D:\\temp\\gray" << id++ << ".jpg";
 	ws = ss.str();
-	string sVal = WStringToString(ws);
+	string sGray = WStringToString(ws);
 	ss.str(L"");
 
 	//ThresholdByRed(sub);
+	Mat gray;
+	cvtColor(sub, gray, COLOR_BGR2GRAY);
+	//adaptiveThreshold(gray, gray, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 5);
+	//imwrite(sGray, gray);
 	cvtColor(sub, sub, COLOR_BGR2HLS);
 	vector<Mat> channels;
 	split(sub, channels);
 	Mat& hue = channels[0];
 	Mat& light = channels[1];
+	Mat& saturation = channels[2];
 	Mat binary;
 	//cvtColor(sub, gray, COLOR_BGR2GRAY);
 	
 	threshold(hue,hue, 15, 255, THRESH_BINARY_INV);
-	threshold(light, light, 100, 255, THRESH_BINARY_INV);
-	bitwise_and(hue, light, binary);
+	threshold(light, light, 130, 255, THRESH_BINARY_INV);
+	threshold(saturation, saturation, 80, 255, THRESH_BINARY);
+	bitwise_and(hue, light, hue);
+	bitwise_and(hue, saturation, binary);
 	//imwrite(sHue, hue);
 	//imwrite(sVal, light);
 	vector<cv::Point> contour = FindMaxContour(binary);
