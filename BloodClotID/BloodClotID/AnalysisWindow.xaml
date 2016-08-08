@@ -1,0 +1,99 @@
+﻿<local:BaseUserControl x:Class="BloodClotID.AnalysisWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BloodClotID"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:pie="clr-namespace:PieControls;assembly=PieControls"
+             mc:Ignorable="d" 
+             xmlns:myCanvas="clr-namespace:BloodClotID"
+             d:DesignHeight="500" d:DesignWidth="500">
+    <Grid>
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="230"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Label Content="提示：" FontSize="16" Grid.Row="1"/>
+
+        </StackPanel>
+
+        <Grid Name="pictureContainers" Grid.Row="1" Background="LightBlue" Margin="5,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <myCanvas:ResultCanvas x:Name="pic1" >
+            </myCanvas:ResultCanvas>
+            <myCanvas:ResultCanvas Grid.Column="1" x:Name="pic2" >
+            </myCanvas:ResultCanvas>
+
+            <myCanvas:ResultCanvas Grid.Row="1" x:Name="pic3" >
+            </myCanvas:ResultCanvas>
+
+            <myCanvas:ResultCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
+            </myCanvas:ResultCanvas>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.Row="1" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="160"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <pie:PieChart x:Name="chart1" Width="220" Height="150" PieWidth="130" PieHeight="130" Margin="5,5,5,15" HorizontalAlignment="Left"/>
+
+            </StackPanel>
+            <ListView Grid.Row="1" Name="lvResult" FontSize="14" FontFamily="SimSun"   Margin="5,0,0,0">
+                <ListView.View>
+                    <GridView x:Name="gridView1">
+                        <GridViewColumn Header="样品编号" Width="100" DisplayMemberBinding="{Binding Path= Seq}"></GridViewColumn>
+                        <GridViewColumn Header="分析结果" Width="100" DisplayMemberBinding="{Binding Path=Result}"></GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+
+        <Grid Grid.Row="3" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="230"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="信息：" FontSize="16"/>
+            <TextBox Grid.Row="1" Margin="5,0,0,5" Name="txtInfo"></TextBox>
+            <StackPanel  Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                <Button Margin="5,5,2,5" Name="btnAcquire" Click="btnTakePhote_Click" HorizontalAlignment="Left" Height="50" Width="50">
+                    <StackPanel>
+                        <TextBlock Text="拍照"/>
+                        <Image Source="/Images/camera.png" Height="30" Width="40"/>
+                    </StackPanel>
+                </Button>
+                <Button Margin="0,5,5,5"  Grid.Column="1" Name="btnNext" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnNext_Click">
+                    <StackPanel>
+                        <TextBlock Text="下一块"/>
+                        <Image Source="/Images/Next.jpg" Height="30" Width="40"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            
+           
+            
+        </Grid>
+    </Grid>
+      
+</local:BaseUserControl>
