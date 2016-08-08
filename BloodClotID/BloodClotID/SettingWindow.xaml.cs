@@ -20,10 +20,10 @@ namespace BloodClotID
     /// <summary>
     /// Setting.xaml 的交互逻辑
     /// </summary>
-    public partial class SettingWindow : Window
+    public partial class SettingWindow : BaseUserControl
     {
         PanelViewModel panelVM;
-        public event EventHandler setOk;
+
         public SettingWindow()
         {
             InitializeComponent();
@@ -58,7 +58,8 @@ namespace BloodClotID
                 SetInfo(ex.Message);
                 return;
             }
-            this.Close();
+            base.OnSwitch(Stage.Analysis);
+            
         }
 
         private void SetInfo(string message, bool error = true)
@@ -84,8 +85,8 @@ namespace BloodClotID
                 throw new Exception("样品数必须大于0！");
             AcquireInfo.Instance.SetSampleCount(val);
             AcquireInfo.Instance.SetLayout((bool)rdbHorizontalLayout.IsChecked);
-            if (setOk != null)
-                setOk(this, null);
+            //if (setOk != null)
+            //    setOk(this, null);
             
         }
     }

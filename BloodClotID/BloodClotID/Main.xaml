@@ -4,22 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BloodClotID.Camera"
-        xmlns:myCanvas="clr-namespace:BloodClotID"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
-        xmlns:pie="clr-namespace:PieControls;assembly=PieControls"
         mc:Ignorable="d"
         Title="BloodClot" Height="600" Width="850">
     <Grid Name="rootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="4*"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+   
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="220"/>
-        </Grid.ColumnDefinitions>
         <StackPanel  Orientation="Horizontal">
             <Button Name="btnPrepare" Click="btnPrepare_Click" ToolTip="设置.">
                 <StackPanel Orientation="Vertical">
@@ -28,10 +21,10 @@
                 </StackPanel>
             </Button>
             
-            <Button Name="btnTakePhote" Click="btnTakePhote_Click" IsEnabled="False" ToolTip="采集图片.">
+            <Button Name="btnAnalysis" Click="btnAnalysis_Click" IsEnabled="False" ToolTip="分析样品.">
                 <StackPanel Orientation="Vertical">
-                    <Image Source="/Images/camera.png" Height="55" Width="80"/>
-                    <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">拍照</TextBlock>
+                    <Image Source="/Images/analysis.jpg" Height="55" Width="80"/>
+                    <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">分析</TextBlock>
                 </StackPanel>
             </Button>
 
@@ -42,66 +35,11 @@
                 </StackPanel>
             </Button>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <Label Content="提示：" FontSize="16" Grid.Row="1"/>
-        
-        </StackPanel>
-        
-        <Grid  Grid.Row="2">
-            <Grid Name="sketchMapGrid" Visibility="Hidden"></Grid>
-            <Grid Name="pictureContainers">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <myCanvas:ResultCanvas x:Name="pic1" >
-                </myCanvas:ResultCanvas>
-                <myCanvas:ResultCanvas Grid.Column="1" x:Name="pic2" >
-                </myCanvas:ResultCanvas>
-
-                <myCanvas:ResultCanvas Grid.Row="1" x:Name="pic3" >
-                </myCanvas:ResultCanvas>
-
-                <myCanvas:ResultCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
-                </myCanvas:ResultCanvas>
-            </Grid>
-        </Grid>
-        <Grid Grid.Column="1" Grid.Row="1" Grid.RowSpan="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="160"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal">
-                <pie:PieChart x:Name="chart1" Width="220" Height="150" PieWidth="130" PieHeight="130" Margin="5,5,5,15" HorizontalAlignment="Left"/>
-              
-            </StackPanel>
-            <ListView Grid.Row="1" Name="lvResult" FontSize="14" FontFamily="SimSun"   Margin="5,0,0,0">
-                <ListView.View>
-                    <GridView x:Name="gridView1">
-                        <GridViewColumn Header="样品编号" Width="100" DisplayMemberBinding="{Binding Path= Seq}"></GridViewColumn>
-                        <GridViewColumn Header="分析结果" Width="100" DisplayMemberBinding="{Binding Path=Result}"></GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+     
+        <Grid Name="userControlContainer"  Grid.Row="2">
+            
         </Grid>
         
-        <Grid Grid.Row="3" Grid.ColumnSpan="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="220"/>
-            </Grid.ColumnDefinitions>
-            <Label Content="信息：" FontSize="16"/>
-            <TextBox Name="txtInfo" Grid.Row="1"></TextBox>
-            <Button Margin="5,5,5,5" Grid.Column="1" Name="btnNext" IsEnabled="False" Content="换板" Grid.Row="1" Width="100" Height="32" HorizontalAlignment="Left" VerticalAlignment="Top" Click="btnNext_Click"/>
-        </Grid>
         
     </Grid>
     <Window.CommandBindings>

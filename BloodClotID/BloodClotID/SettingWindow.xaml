@@ -1,59 +1,69 @@
-﻿<Window x:Class="BloodClotID.SettingWindow"
+﻿<local:BaseUserControl x:Class="BloodClotID.SettingWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BloodClotID"
         mc:Ignorable="d"
-        Title="设置" Height="450" Width="600">
+        Height="440" Width="600" HorizontalAlignment="Left">
     <Grid>
-        <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="5,5,5,5">
-                <Label Content="样品数："/>
-                <TextBox Name="txtSampleCnt" Text="8" Width="130"></TextBox>
-            </StackPanel>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="360"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <GroupBox Header="摆放方向" Margin="5,5,5,5" Width="350" HorizontalAlignment="Left">
-                    <StackPanel Orientation="Horizontal" >
-                        <RadioButton Name="rdbHorizontalLayout" IsChecked="True" Margin="5,5,5,5">
-                            <StackPanel>
-                                <Image Source="/Images/horizontal.png" Height="120" Width="160"/>
-                                <TextBlock Text="水平" TextAlignment="Center"/>
-                            </StackPanel>
-
-                        </RadioButton>
-                        <RadioButton Margin="5,5,5,5">
-                            <StackPanel>
-                                <Image Source="/Images/vertical.png" Height="160" Width="120"/>
-                                <TextBlock Text="垂直" TextAlignment="Center"/>
-                            </StackPanel>
-                        </RadioButton>
-                    </StackPanel>
-
-                </GroupBox>
-                <GroupBox Header="实验选择"  Margin="5,5,5,5" Width="200" Grid.Column="1">
-                    <TreeView 
-                        x:Name="treeview" BorderThickness="0"
-                        ItemContainerStyle="{StaticResource TreeViewItemStyle}"
-                        ItemsSource="{Binding Mode=OneTime}"
-                        ItemTemplate="{StaticResource CheckBoxItemTemplate}"
-                   
-                    HorizontalAlignment="Left" VerticalAlignment="Top"  Height="auto"/>
-                </GroupBox>
-                
-            </Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="180"/>
             
-            <StackPanel Margin="5,5,5,5">
-                <Label Content="信息:"/>
-                <TextBox IsReadOnly="True" Name="txtInfo" Height="50"></TextBox>
-            </StackPanel>
-            <Button Margin="5,5,5,5" Width="80" Content="确定" Name="btnConfirm" Click="btnConfirm_Click" HorizontalAlignment="Right" Height="32"></Button>
+        </Grid.RowDefinitions>
+     
+        <StackPanel Orientation="Horizontal" Margin="5,5,5,5">
+            <Label Content="样品数："/>
+            <TextBox Name="txtSampleCnt" Text="8" Width="130"></TextBox>
         </StackPanel>
-        
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
+                <ColumnDefinition Width="6*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <GroupBox Header="摆放方向" Margin="5,5,5,5"  HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" >
+                    <RadioButton Name="rdbHorizontalLayout" IsChecked="True" Margin="5,5,5,5">
+                        <StackPanel>
+                            <Rectangle Height="80" Width="120" Stroke="Black"></Rectangle>
+                            <TextBlock Margin="0,5,0,5" Text="水平" TextAlignment="Center"/>
+                        </StackPanel>
+
+                    </RadioButton>
+                    <RadioButton Margin="5,5,5,5">
+                        <StackPanel>
+                            <Rectangle Height="120" Width="80" Stroke="Black"></Rectangle>
+                            <TextBlock Margin="0,5,0,5" Text="垂直" TextAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+
+            </GroupBox>
+            <GroupBox Header="实验选择" HorizontalAlignment="Left" Margin="5,5,5,5" Width="200" Grid.Column="1">
+                <TreeView 
+                    x:Name="treeview" BorderThickness="0"
+                    ItemContainerStyle="{StaticResource TreeViewItemStyle}"
+                    ItemsSource="{Binding Mode=OneTime}"
+                    ItemTemplate="{StaticResource CheckBoxItemTemplate}"
+                   
+                HorizontalAlignment="Left" VerticalAlignment="Top"  Height="auto"/>
+            </GroupBox>
+
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="5,5,5,5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            <Label Content="信息:"/>
+            <TextBox Grid.Row="1" Margin="0,0,10,1" IsReadOnly="True" Name="txtInfo" Height="80"></TextBox>
+            <Button Grid.Row="2" Grid.Column="1" Margin="5,2,5,5" VerticalAlignment="Bottom" Width="80" Content="确定" Name="btnConfirm" Click="btnConfirm_Click" HorizontalAlignment="Right" Height="32"></Button>
+        </Grid>
+       
     </Grid>
-</Window>
+</local:BaseUserControl>
 

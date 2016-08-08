@@ -243,19 +243,19 @@ Rect EngineImpl::GetRect(Circle circle,Size imgSize)
 int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 {
 	static int id = 1;
-	wstringstream ss;
-	ss << "D:\\temp\\hue" << id<< ".jpg";
-	wstring ws = ss.str();
-	string sHue = WStringToString(ws);
-	ss.str(L"");
-	ss << "D:\\temp\\gray" << id++ << ".jpg";
-	ws = ss.str();
-	string sGray = WStringToString(ws);
-	ss.str(L"");
+	//wstringstream ss;
+	//ss << "D:\\temp\\hue" << id<< ".jpg";
+	//wstring ws = ss.str();
+	//string sHue = WStringToString(ws);
+	//ss.str(L"");
+	//ss << "D:\\temp\\gray" << id++ << ".jpg";
+	//ws = ss.str();
+	//string sGray = WStringToString(ws);
+	//ss.str(L"");
 
 	//ThresholdByRed(sub);
-	Mat gray;
-	cvtColor(sub, gray, COLOR_BGR2GRAY);
+	//Mat gray;
+	//cvtColor(sub, gray, COLOR_BGR2GRAY);
 	//adaptiveThreshold(gray, gray, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 5);
 	//imwrite(sGray, gray);
 	cvtColor(sub, sub, COLOR_BGR2HLS);
@@ -320,12 +320,12 @@ vector<int> EngineImpl::Analysis(string sFile, vector<Circle> rois,vector<vector
 		int val = AnalysisSub(img(rc), rotatedRect);
 		results.push_back(val);
 		rotatedRects.push_back(rotatedRect);
-		wstringstream ss;
-		ss << "D:\\temp\\rois" << i + 1 << ".jpg";
-		wstring ws = ss.str();
-		string s = WStringToString(ws);
+		//wstringstream ss;
+		//ss << "D:\\temp\\rois" << i + 1 << ".jpg";
+		//wstring ws = ss.str();
+		//string s = WStringToString(ws);
 		//imwrite(s, img);
-		ss.clear();
+		//ss.clear();
 	}
 	return results;
 }

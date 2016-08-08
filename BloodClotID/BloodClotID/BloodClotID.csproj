@@ -64,7 +64,11 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="AnalysisWindow.xaml.cs">
+      <DependentUpon>AnalysisWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Analyzer.cs" />
+    <Compile Include="BaseUserControl.cs" />
     <Compile Include="loaderControl\Block.xaml.cs" />
     <Compile Include="loaderControl\LoadingAnimation.xaml.cs" />
     <Compile Include="Loader.xaml.cs">
@@ -78,6 +82,10 @@
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="treeview\VirtualToggleButton.cs" />
+    <Page Include="AnalysisWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Calibration.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -163,6 +171,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="images\analysis.jpg" />
     <Resource Include="images\camera.png" />
     <Resource Include="images\exit.png" />
     <Resource Include="images\vertical.png" />
@@ -172,6 +181,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\horizontal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\Next.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
