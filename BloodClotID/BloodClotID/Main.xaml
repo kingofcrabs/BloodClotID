@@ -16,7 +16,7 @@
         <StackPanel  Orientation="Horizontal">
             <Button Name="btnPrepare" Click="btnPrepare_Click" ToolTip="设置.">
                 <StackPanel Orientation="Vertical">
-                    <Image Source="/Images/setting.jpg" Height="55" Width="80"/>
+                    <Image Source="/Images/setting.jpg"  Height="55" Width="80"/>
                     <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">设置</TextBlock>
                 </StackPanel>
             </Button>
@@ -28,6 +28,13 @@
                 </StackPanel>
             </Button>
 
+            <Button Name="btnReport" Click="btnReport_Click" IsEnabled="False"  ToolTip="打开定义文件.">
+                <StackPanel Orientation="Vertical" >
+                    <Image Source="/Images/report.jpg"  Height="55" Width="80"/>
+                    <TextBlock FontSize="16" TextAlignment="Center" Margin="3,0,0,0">报告</TextBlock>
+                </StackPanel>
+            </Button>
+            
             <Button Name="btnExit" Click="btnExit_Click"  ToolTip="打开定义文件.">
                 <StackPanel Orientation="Vertical" >
                     <Image Source="/Images/exit.png"  Height="55" Width="80"/>

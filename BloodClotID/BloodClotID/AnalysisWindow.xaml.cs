@@ -35,7 +35,7 @@ namespace BloodClotID
         Loader loaderWindow;
         IImageAcquirer imgAcquirer;
         ObservableCollection<PieSegment> pieCollection = new ObservableCollection<PieSegment>();
-
+        public event EventHandler onReportReady;
         public AnalysisWindow(Window parent)
         {
             InitializeComponent();
@@ -53,18 +53,17 @@ namespace BloodClotID
             parent.Closed += Parent_Closed;
             
         }
-        protected override void InitializeImpl()
+        public override void Initialize()
         {
             if (bInitialized)
                 return;
-            base.InitializeImpl();
-            
             pieCollection.Clear();
             pieCollection.Add(new PieSegment { Color = Colors.Green, Value = 0, Name = "已完成" });
             pieCollection.Add(new PieSegment { Color = Colors.Yellow, Value = AcquireInfo.Instance.GetTotalPlateCnt(), Name = "未完成" });
             chart1.Data = pieCollection;
+            base.Initialize();
         }
-        
+       
         private void Parent_Closed(object sender, EventArgs e)
         {
             imgAcquirer.Stop();
@@ -112,12 +111,6 @@ namespace BloodClotID
         }
         #endregion
 
-        private void MainWindow_Closed(object sender, EventArgs e)
-        {
-            imgAcquirer.Stop();
-
-        }
-
         private void SetInfo(string message, bool error = true)
         {
             txtInfo.Text = message;
@@ -128,57 +121,54 @@ namespace BloodClotID
         {
             UpdateProgress();
             AcquireInfo.Instance.NextPlate();
+            btnNext.IsEnabled = false;
         }
+
         private void UpdateProgress()
         {
-            pieCollection[0].Value = AcquireInfo.Instance.curPlate;
-            pieCollection[1].Value = AcquireInfo.Instance.GetTotalPlateCnt() - AcquireInfo.Instance.curPlate;
+            string assayName = AcquireInfo.Instance.CurrentAssay;
+            lblProgress.Content = string.Format("{0}:{1}-{2}", assayName, AcquireInfo.Instance.BatchStartID, AcquireInfo.Instance.BatchEndID);
+            pieCollection[0].Value = AcquireInfo.Instance.curPlateID;
+            int notFinishedCnt = AcquireInfo.Instance.GetTotalPlateCnt() - AcquireInfo.Instance.curPlateID;
+            pieCollection[1].Value = notFinishedCnt;
+            this.Refresh();
+            if(notFinishedCnt == 0)
+            {
+                if (onReportReady != null)
+                    onReportReady(this, null);
+            }
         }
 
         #region take photo
 
         private void Analysis()
         {
-            List<Task> tasks = new List<Task>();
-            tasks.Add(Task.Factory.StartNew(AnalysisFirstPlate));
-            tasks.Add(Task.Factory.StartNew(AnalysisSecondPlate));
-            tasks.Add(Task.Factory.StartNew(AnalysisThirdPlate));
-            tasks.Add(Task.Factory.StartNew(AnalysisForthPlate));
-            tasks.ForEach(x => x.Wait());
+            Analyzer.Instance.Reset();
+            List<int> plateIDs = new List<int>() { 1, 2, 3, 4 };
+            Parallel.ForEach(plateIDs, x => AnalysisPlate(x));
+            ShowResult();
+            Report.Instance.AddResult(AcquireInfo.Instance.CurrentAssay, Analyzer.Instance.Results);
         }
 
-        private void AnalysisForthPlate()
+        private void AnalysisPlate(int plateID)
         {
-            var result = Analyzer.Instance.AnalysisPlate(4);
-            pic4.SetResult(result);
+            Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
+            dict.Add(1, pic1);
+            dict.Add(2, pic2);
+            dict.Add(3, pic3);
+            dict.Add(4, pic4);
+            var result = Analyzer.Instance.AnalysisPlate(plateID);
+            dict[plateID].SetResult(result);
         }
 
-        private void AnalysisThirdPlate()
-        {
-            var result = Analyzer.Instance.AnalysisPlate(3);
-            pic3.SetResult(result);
-        }
-
-        private void AnalysisSecondPlate()
-        {
-            var result = Analyzer.Instance.AnalysisPlate(2);
-            pic2.SetResult(result);
-        }
-
-        private void AnalysisFirstPlate()
-        {
-            var result = Analyzer.Instance.AnalysisPlate(1);
-            pic1.SetResult(result);
-        }
-
-        private void ShowResult(List<int> results)
+        private void ShowResult()
         {
             var tbl3 = new DataTable("template");
             tbl3.Columns.Add("Seq", typeof(string));
             tbl3.Columns.Add("Result", typeof(string));
-            for (int i = 0; i < results.Count; i++)
+            for (int i = 0; i < Analyzer.Instance.Results.Count; i++)
             {
-                object[] objs = new object[2] { i + 1, results[i] };
+                object[] objs = new object[2] { i + AcquireInfo.Instance.BatchStartID, Analyzer.Instance.Results[i] };
                 tbl3.Rows.Add(objs);
             }
             lvResult.ItemsSource = tbl3.DefaultView;
@@ -189,9 +179,7 @@ namespace BloodClotID
             int id = 1;
             foreach (var uiElement in pictureContainers.Children)
             {
-
                 string file = FolderHelper.GetImagePath(id);
-
                 ResultCanvas canvas = (ResultCanvas)uiElement;
                 if (File.Exists(file))
                 {
@@ -208,8 +196,13 @@ namespace BloodClotID
 
         private void btnTakePhote_Click(object sender, RoutedEventArgs e)
         {
+            Stopwatch watcher = new Stopwatch();
+            watcher.Start();
+            SetInfo("正在拍照，请稍候。",false);
+            this.IsEnabled = false;
+            this.Refresh();
             UpdateProgress();
-            ShowLoader();
+            Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
             try
             {
                 imgAcquirer.TakePhoto();
@@ -218,11 +211,14 @@ namespace BloodClotID
             {
                 SetInfo(ex.Message);
             }
-
-            btnNext.IsEnabled = AcquireInfo.Instance.curPlate != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
+            Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
+            btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
             RefreshImage();
+            Debug.WriteLine("refresh:" + watcher.Elapsed.Milliseconds);
             Analysis();
-            HideLoader();
+            Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
+            this.IsEnabled = true;
+            SetInfo(string.Format("分析完成。用时{0:f1}秒。",watcher.Elapsed.TotalMilliseconds/1000.0), false);
         }
 
 

@@ -8,7 +8,7 @@
         Height="440" Width="600" HorizontalAlignment="Left">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="180"/>
             

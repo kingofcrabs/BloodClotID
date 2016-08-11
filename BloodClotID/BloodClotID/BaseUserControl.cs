@@ -37,20 +37,19 @@ namespace BloodClotID
                 handler(this, new SwitchEventArgs(stage));
             }
         }
-        public void Initialize()
-        {
-            InitializeImpl();
-        }
-
-        protected virtual void InitializeImpl()
+        public virtual void Initialize()
         {
             bInitialized = true;
+            //InitializeImpl();
         }
+
+        
     }
 
     public enum Stage
     {
         Preapare,
-        Analysis
+        Analysis,
+        Report
     }
 }

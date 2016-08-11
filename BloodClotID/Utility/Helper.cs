@@ -179,9 +179,9 @@ namespace Utility
 
         public static void CreateAcquiredImageFolder()
         {
-            bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
-            string subFolder = bUseTestImage ? "" : DateTime.Now.ToString("yyMMddhhmm") + "\\";
-            CurrentAcquiredImageFolder = GetAcquiredImageRootFolder() + subFolder;
+            //bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
+            string subFolder = GlobalVars.UseTestImage ? "" : DateTime.Now.ToString("yyMMddhhmm") + "\\";
+            CurrentAcquiredImageFolder = GetAcquiredImageRootFolder() + subFolder ;
             CreateIfNotExist(CurrentAcquiredImageFolder);
         }
     }
@@ -198,12 +198,13 @@ namespace Utility
     public class AcquireInfo
     {
         public int totalSample;
-        public int curBatch;
-        public int curPlate;
+        public int curBatchID;  //for sample's id between 1-8, if there are three tests, so the 1-3 plate are in the same batch.
+     
+        public int curPlateID;
         public int samplesPerCamera;
-        public int samplesThisBatch;
+        //public int samplesThisBatch;
         public List<string> assays;
-        private int maxSamplesPerBatch = 8;
+        public static int samplesPerPlate;
         private static AcquireInfo instance;
        
         
@@ -217,43 +218,68 @@ namespace Utility
             }
         }
 
+        public int BatchStartID
+        {
+            get
+            {
+                int sampleRangeStart = (curBatchID - 1) * samplesPerPlate + 1;
+                return sampleRangeStart;
+            }
+        }
+
+        public int BatchEndID
+        {
+            get
+            {
+
+                return BatchStartID + CalculateSamplesThisBatch() - 1;
+            }
+        }
+        public string CurrentAssay
+        {
+            get
+            {
+                return assays[(curPlateID-1) % assays.Count];
+            }
+        }
         public void NextPlate()
         {
-            if (curPlate % assays.Count == 0)
+            curPlateID++;
+            if ((curPlateID-1) % assays.Count == 0)
                 NextBatch();
-            curPlate++;
+            //samplesThisBatch = CalculateSamplesThisBatch();
         }
 
         private void NextBatch()
         {
-            curBatch++;
+            curBatchID++;
         }
 
-        private int CalculateSamplesThisBatch()
+        public int CalculateSamplesThisBatch()
         {
-            int cnt = maxSamplesPerBatch;
-            if (totalSample < maxSamplesPerBatch * curBatch)
-                cnt = totalSample % maxSamplesPerBatch;
+            int cnt = samplesPerPlate;
+            if (totalSample < samplesPerPlate * curBatchID)
+                cnt = totalSample % samplesPerPlate;
             return cnt;
         }
 
         public void SetSampleCount(int val)
         {
             totalSample = val;
-            curBatch = 1;
-            curPlate = 1;
-
+            curBatchID = 1;
+            curPlateID = 1;
+            //samplesThisBatch = CalculateSamplesThisBatch();
         }
 
         public  void SetLayout(bool isHorizontal)
         {
-            maxSamplesPerBatch = isHorizontal ? 8 : 12;
+            samplesPerPlate = isHorizontal ? 8 : 12;
         }
 
 
         public  int GetTotalPlateCnt()
         {
-            return  (totalSample + maxSamplesPerBatch - 1) / maxSamplesPerBatch * assays.Count;
+            return  (totalSample + samplesPerPlate - 1) / samplesPerPlate * assays.Count;
         }
     }
 
@@ -365,6 +391,7 @@ where T : DependencyObject
     {
         static bool useTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
         static bool isCalib;
+        static List<CalibrationInfo> calibInfos = null;
         static public bool IsCalibration
         {
             get
@@ -390,6 +417,26 @@ where T : DependencyObject
                 return useTestImage;
             }
         }
+
+        //static public List<CalibrationInfo> CalibInfos
+        //{
+        //    get
+        //    {
+        //        if(calibInfos == null)
+        //        {
+        //            calibInfos = new List<CalibrationInfo>();
+        //            for (int i = 0; i< 4; i++)
+        //            {
+        //                int cameraID = i + 1;
+        //                string sFile = FolderHelper.GetCalibFile(cameraID);
+        //                calibInfos.Add(SerializeHelper.LoadCalib(sFile));
+        //            }
+        //        }
+        //        return calibInfos;
+        //    }
+        //}
+
+
         public static List<AssayGroup> ReadGroups()
         {
             string s = FolderHelper.GetExeParentFolder();

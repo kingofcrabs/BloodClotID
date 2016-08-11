@@ -22,7 +22,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0">
             <Label Content="提示：" FontSize="16" Grid.Row="1"/>
-
+            <Label FontSize="16"  HorizontalAlignment="Center" Name="lblProgress"/>
         </StackPanel>
 
         <Grid Name="pictureContainers" Grid.Row="1" Background="LightBlue" Margin="5,0,0,0">

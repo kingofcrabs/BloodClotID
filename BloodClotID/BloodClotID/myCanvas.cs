@@ -40,12 +40,12 @@ namespace BloodClotID
         }
 
 
-        public void HilightCircle(List<int> ids, int cameraID)
-        {
-            LoadCalib(cameraID);
-            hilightCircles = calibInfo.circles.Where(x => ids.Contains(x.id)).ToList();
-            InvalidateVisual();
-        }
+        //public void HilightCircle(List<int> ids, int cameraID)
+        //{
+        //    LoadCalib(cameraID);
+        //    hilightCircles = calibInfo.circles.Where(x => ids.Contains(x.id)).ToList();
+        //    InvalidateVisual();
+        //}
 
     
         internal void SaveCalib(int cameraID)
@@ -95,13 +95,28 @@ namespace BloodClotID
         #region coordinate translation
         private Point ConvertCoord2Calib(Point pt)
         {
-            if (calibInfo.size.Width == 0)
-                return pt;
-            double xRatio = this.ActualWidth / calibInfo.size.Width;
-            double yRatio = this.ActualHeight / calibInfo.size.Height;
-            return new Point(pt.X / xRatio, pt.Y / yRatio);
+            if (GlobalVars.IsCalibration)
+            {
+                if (calibInfo.size.Width == 0)
+                    return pt;
+                double xRatio = this.ActualWidth / calibInfo.size.Width;
+                double yRatio = this.ActualHeight / calibInfo.size.Height;
+                return new Point(pt.X / xRatio, pt.Y / yRatio);
+            }
+            else
+            {
+                double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
+                double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
+                double xRatio = virtualActualWidth / calibInfo.size.Width;
+                double yRatio = virtualActualHeight / calibInfo.size.Height;
+                double xOffset = (virtualActualWidth - this.ActualWidth) * calibInfo.rect.TopLeft.X / (calibInfo.size.Width - calibInfo.rect.Width);
+                double yOffset = (virtualActualHeight - this.ActualHeight) * calibInfo.rect.TopLeft.Y / (calibInfo.size.Height - calibInfo.rect.Height);
+                return new Point((pt.X+xOffset) / xRatio, (pt.Y+yOffset) / yRatio);
+            }
+            
         }
 
+     
         private Point ConvertCoordImage2RealRelative(Point pt,Size imgSize) //use point as size, 此处是相对位置，所以不需要减去offset
         {
             if (GlobalVars.IsCalibration)
@@ -120,7 +135,7 @@ namespace BloodClotID
             }
         }
 
-        private Point ConvertCoordCalib2Real(Point pt)
+        public Point ConvertCoordCalib2Real(Point pt)
         {
             if (calibInfo.size.Width == 0)
                 return pt;
@@ -212,13 +227,11 @@ namespace BloodClotID
             {
                 Color green = Color.FromArgb(128, 0, 128, 50);
                 Color blue = Color.FromArgb(128, 0, 50, 128);
-                Color color = circle == selected ? blue : green;
-                Brush brush = new SolidColorBrush(color);
+                Brush brush = circle == selected ? new SolidColorBrush(blue) : null;
                 Point ptCenter = circle.ptCenter;
                 Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
                 ConvertCoordCalib2Real(circle, ref ptCenter, ref sz);
-                if (!GlobalVars.IsCalibration)
-                    brush = null;
+               
                 drawingContext.DrawEllipse(brush, new Pen(Brushes.Black, 1), ptCenter,sz.Width, sz.Height);
                 FormattedText formattedText = new FormattedText(circleID.ToString(), CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Red);
@@ -250,6 +263,11 @@ namespace BloodClotID
                         var translateEndOffset = ConvertCoordImage2RealRelative(endPtOffset, bkImgSize);
                         var ptCenter = calibInfo.circles[i].ptCenter;
                         ptCenter = ConvertCoordCalib2Real(ptCenter);
+                        int val = result.val;
+                        FormattedText formattedText = new FormattedText(val.ToString(), CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Green);
+                        if (j == 3)
+                            drawingContext.DrawText(formattedText, new Point(ptCenter.X, ptCenter.Y + translateEndOffset.Y));
                         drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(ptCenter.X + translateStartOffset.X, ptCenter.Y + translateStartOffset.Y),
                             new Point(ptCenter.X + translateEndOffset.X, ptCenter.Y + translateEndOffset.Y));
                     }

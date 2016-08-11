@@ -13,7 +13,7 @@ namespace Utility
         public Point ptCenter;
         public double radius;
  
-        public int id;
+        //public int id;
 
       
         public Circle(Point ptStart, Point ptEnd)
@@ -28,11 +28,10 @@ namespace Utility
         {
 
         }
-        public Circle(Point ptEnd, double r, int id)
+        public Circle(Point ptEnd, double r)
         {
             ptCenter = ptEnd;
             radius = r;
-            this.id = id;
         }
 
         private double GetDistance(Point pt1, Point pt2)
@@ -63,7 +62,13 @@ namespace Utility
             if (GetType() != obj.GetType())
                 return false;
             Circle that = (Circle)obj;
-            return this.ptCenter == that.ptCenter && this.radius == that.radius && this.id == that.id;
+            int ptX = (int)this.ptCenter.X * 100;
+            int ptY = (int)this.ptCenter.Y * 100;
+            int thatPtX = (int)that.ptCenter.X * 100;
+            int thatPtY = (int)that.ptCenter.Y * 100;
+            int thatRadius = (int)that.radius * 100;
+            int radius = (int)this.radius * 100;
+            return ptX == thatPtX && ptY == thatPtY && radius == thatRadius;
 
         }
 
