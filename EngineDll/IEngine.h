@@ -19,6 +19,30 @@ namespace EngineDll
 			radius = rr;
 		}
 	};
+	public ref class MPoint
+	{
+	public:
+		int x;
+		int y;
+		MPoint(int xx, int yy)
+		{
+			x = xx;
+			y = yy;
+		}
+
+	};
+
+	public ref class MRect
+	{
+	public:
+		MPoint^ ptStart;
+		MPoint^ ptEnd;
+		MRect(MPoint^ ptS, MPoint^ ptE)
+		{
+			ptStart = gcnew MPoint(ptS->x,ptS->y);
+			ptEnd = gcnew MPoint(ptE->x,ptE->y);
+		}
+	};
 
 	public ref class MSize
 	{
@@ -69,7 +93,8 @@ namespace EngineDll
 	public:
 		IEngine();
 		~IEngine();
-		array<AnalysisResult^>^ Analysis(System::String^ sFile,array<ROI^>^ rois);
+		cv::Rect2f Convert2Rect2f(MRect^ rc);
+		array<AnalysisResult^>^ Analysis(System::String^ sFile, array<ROI^>^ rois,MRect^ rc);
 	private :
 		EngineImpl* m_EngineImpl;
 	};

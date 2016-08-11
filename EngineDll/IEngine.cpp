@@ -18,7 +18,14 @@ namespace EngineDll
 		delete m_EngineImpl;
 	}
 
-	array<AnalysisResult^>^ IEngine::Analysis(System::String^ sFile, array<ROI^>^ rois)
+	cv::Rect2f IEngine::Convert2Rect2f(MRect^ rc)
+	{
+		cv::Point2f ptStart(rc->ptStart->x, rc->ptStart->y);
+		cv::Point2f ptEnd(rc->ptEnd->x, rc->ptEnd->y);
+		return cv::Rect2f(ptStart, ptEnd);
+	}
+
+	array<AnalysisResult^>^ IEngine::Analysis(System::String^ sFile, array<ROI^>^ rois,MRect^ rc)
 	{
 		
 		std::string nativeFileName = msclr::interop::marshal_as< std::string >(sFile);
@@ -29,7 +36,8 @@ namespace EngineDll
 			circles.push_back(circle);
 		}
 		std::vector<std::vector<cv::Point2f>> rotatedRects;
-		std::vector<int> results = m_EngineImpl->Analysis(nativeFileName, circles, rotatedRects);
+		cv::Rect2f rect = Convert2Rect2f(rc);
+		std::vector<int> results = m_EngineImpl->Analysis(nativeFileName,rect, circles, rotatedRects);
 		
 		array<AnalysisResult^>^ vals = gcnew array<AnalysisResult^>(results.size());
 		for (int i = 0; i < results.size(); i++)

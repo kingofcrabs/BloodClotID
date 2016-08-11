@@ -21,7 +21,7 @@ class EngineImpl
 {
 public:
 	EngineImpl();
-	std::vector<int> Analysis(std::string sFile, std::vector<Circle> rois, std::vector<std::vector<cv::Point2f>>&);
+	std::vector<int> Analysis(std::string sFile,cv::Rect2f rc, std::vector<Circle> rois, std::vector<std::vector<cv::Point2f>>&);
 private:
 	cv::Rect GetRect(Circle circle, cv::Size imgSize);
 	int AnalysisSub(cv::Mat& sub, std::vector<cv::Point2f>& rotatedRect);
@@ -46,7 +46,6 @@ private:
 	void CountLightRed(int x, int y, cv::Point ptCenter, Circle& c);
 	void CountDarkRed(int x, int y, cv::Point ptCenter, Circle& c);*/
 	std::string workingFolder;
-	cv::Mat img;
 	//std::vector<cv::Point> edgeContour;
 	int lightRedCnt;
 	int darkRedCnt;

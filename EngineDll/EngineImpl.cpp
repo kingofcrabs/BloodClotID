@@ -38,18 +38,13 @@ std::string WStringToString(const std::wstring &wstr)
 	return str;
 }
 
-double inline __declspec (naked) __fastcall sqrt14(double n)
-{
-	_asm fld qword ptr[esp + 4]
-		_asm fsqrt
-	_asm ret 8
-}
+
 
 double  EngineImpl::GetDistance(double x1, double y1, double x2, double y2)
 {
 	double xx = (x1 - x2)*(x1 - x2);
 	double yy = (y1 - y2)*(y1 - y2);
-	return sqrt14(xx + yy);
+	return sqrt(xx + yy);
 }
 
 void EngineImpl::RemovePtsNotInCircle(Mat& src)
@@ -242,7 +237,7 @@ Rect EngineImpl::GetRect(Circle circle,Size imgSize)
 
 int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 {
-	static int id = 1;
+	//static int id = 1;
 	//wstringstream ss;
 	//ss << "D:\\temp\\hue" << id<< ".jpg";
 	//wstring ws = ss.str();
@@ -309,9 +304,9 @@ int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 
 
 
-vector<int> EngineImpl::Analysis(string sFile, vector<Circle> rois,vector<vector<cv::Point2f>>& rotatedRects)
+vector<int> EngineImpl::Analysis(string sFile,cv::Rect2f boundRect, vector<Circle> rois,vector<vector<cv::Point2f>>& rotatedRects)
 {
-	img = imread(sFile);
+	Mat img = imread(sFile);
 	vector<int> results;
 	for (int i = 0; i < rois.size(); i++)
 	{
@@ -327,6 +322,7 @@ vector<int> EngineImpl::Analysis(string sFile, vector<Circle> rois,vector<vector
 		//imwrite(s, img);
 		//ss.clear();
 	}
+	
 	return results;
 }
 
