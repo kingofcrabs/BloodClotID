@@ -86,7 +86,7 @@
                 <Button Margin="0,5,5,5"  Grid.Column="1" Name="btnNext" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnNext_Click">
                     <StackPanel>
                         <TextBlock Text="下一块"/>
-                        <Image Source="/Images/Next.jpg" Height="30" Width="40"/>
+                        <Image Source="/Images/Next.jpg" Stretch="Uniform" Height="30" Width="40"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
