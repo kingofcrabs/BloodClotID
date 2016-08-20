@@ -86,6 +86,7 @@
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Transformer.cs" />
     <Compile Include="treeview\VirtualToggleButton.cs" />
     <Page Include="AnalysisWindow.xaml">
       <SubType>Designer</SubType>
@@ -183,6 +184,7 @@
     <Resource Include="images\analysis.jpg" />
     <Resource Include="images\camera.png" />
     <Resource Include="images\exit.png" />
+    <Resource Include="images\next.jpg" />
     <Resource Include="images\vertical.png" />
   </ItemGroup>
   <ItemGroup>
@@ -190,9 +192,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\horizontal.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\Next.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\report.jpg" />

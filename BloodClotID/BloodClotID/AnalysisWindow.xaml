@@ -17,15 +17,15 @@
             <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="230"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0">
             <Label Content="提示：" FontSize="16" Grid.Row="1"/>
             <Label FontSize="16"  HorizontalAlignment="Center" Name="lblProgress"/>
         </StackPanel>
 
-        <Grid Name="pictureContainers" Grid.Row="1" Background="LightBlue" Margin="5,0,0,0">
+        <Grid Name="picturesContainer" Grid.Row="1" Background="LightBlue" Margin="5,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>

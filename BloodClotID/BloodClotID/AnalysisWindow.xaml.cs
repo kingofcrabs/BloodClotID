@@ -22,7 +22,6 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Utility;
 using EngineDll;
-using BloodClotID.Camera;
 
 namespace BloodClotID
 {
@@ -36,23 +35,33 @@ namespace BloodClotID
         IImageAcquirer imgAcquirer;
         ObservableCollection<PieSegment> pieCollection = new ObservableCollection<PieSegment>();
         public event EventHandler onReportReady;
+        Transformer transformer;
+        Window container;
         public AnalysisWindow(Window parent)
         {
             InitializeComponent();
             try
             {
-
+                this.container = parent;
                 imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer(GlobalVars.Vendor);
+                transformer = new Transformer(picturesContainer);
             }
             catch (Exception ex)
             {
                 SetInfo(ex.Message);
             }
-            pictureContainers.PreviewMouseLeftButtonDown += PictureContainers_PreviewMouseLeftButtonDown;
-            pictureContainers.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
+            picturesContainer.SizeChanged += PictureContainers_SizeChanged;
+            picturesContainer.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
             parent.Closed += Parent_Closed;
             
         }
+
+        private void PictureContainers_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            transformer.DoTransform();
+        }
+
+
         public override void Initialize()
         {
             if (bInitialized)
@@ -61,6 +70,11 @@ namespace BloodClotID
             pieCollection.Add(new PieSegment { Color = Colors.Green, Value = 0, Name = "已完成" });
             pieCollection.Add(new PieSegment { Color = Colors.Yellow, Value = AcquireInfo.Instance.GetTotalPlateCnt(), Name = "未完成" });
             chart1.Data = pieCollection;
+            if (!AcquireInfo.Instance.IsHorizontal)
+            {
+                Application.Current.MainWindow.Width = 1040;
+                Application.Current.MainWindow.Height = 1000;
+            }
             base.Initialize();
         }
        
@@ -74,12 +88,7 @@ namespace BloodClotID
         #region mouse event handler
         private void PictureContainers_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-
-        }
-
-        private void PictureContainers_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Point pt = e.GetPosition(pictureContainers);
+            Point pt = e.GetPosition(picturesContainer);
             ResultCanvas resultCanvas;
             Point adjustPt = new Point(pt.X, pt.Y);
             if (pt.X > pic1.ActualWidth)
@@ -107,8 +116,10 @@ namespace BloodClotID
                     resultCanvas = pic3;
                 }
             }
-            resultCanvas.LeftMoseDown(adjustPt, false);
+            resultCanvas.LeftMoseUp(adjustPt, false);
         }
+
+      
         #endregion
 
         private void SetInfo(string message, bool error = true)
@@ -147,6 +158,7 @@ namespace BloodClotID
             List<int> plateIDs = new List<int>() { 1, 2, 3, 4 };
             Parallel.ForEach(plateIDs, x => AnalysisPlate(x));
             ShowResult();
+            transformer.DoTransform();
             Report.Instance.AddResult(AcquireInfo.Instance.CurrentAssay, Analyzer.Instance.Results);
         }
 
@@ -158,7 +170,15 @@ namespace BloodClotID
             dict.Add(3, pic3);
             dict.Add(4, pic4);
             var result = Analyzer.Instance.AnalysisPlate(plateID);
+            
             dict[plateID].SetResult(result);
+        }
+
+        private void Rotate90Degree()
+        {
+            var transform = Matrix.Identity;
+            transform.RotateAt(90, picturesContainer.ActualWidth/2, picturesContainer.ActualHeight/2);
+            picturesContainer.RenderTransform = new MatrixTransform(transform);
         }
 
         private void ShowResult()
@@ -177,7 +197,7 @@ namespace BloodClotID
         private void RefreshImage()
         {
             int id = 1;
-            foreach (var uiElement in pictureContainers.Children)
+            foreach (var uiElement in picturesContainer.Children)
             {
                 string file = FolderHelper.GetImagePath(id);
                 ResultCanvas canvas = (ResultCanvas)uiElement;
@@ -201,7 +221,7 @@ namespace BloodClotID
             SetInfo("正在拍照，请稍候。",false);
             this.IsEnabled = false;
             this.Refresh();
-            UpdateProgress();
+       
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
             try
             {
@@ -218,6 +238,7 @@ namespace BloodClotID
             Analysis();
             Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
             this.IsEnabled = true;
+            UpdateProgress();
             SetInfo(string.Format("分析完成。用时{0:f1}秒。",watcher.Elapsed.TotalMilliseconds/1000.0), false);
         }
 

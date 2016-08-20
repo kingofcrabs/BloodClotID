@@ -61,7 +61,7 @@
             </Grid.RowDefinitions>
             <Label Content="信息:"/>
             <TextBox Grid.Row="1" Margin="0,0,10,1" IsReadOnly="True" Name="txtInfo" Height="80"></TextBox>
-            <Button Grid.Row="2" Grid.Column="1" Margin="5,2,5,5" VerticalAlignment="Bottom" Width="80" Content="确定" Name="btnConfirm" Click="btnConfirm_Click" HorizontalAlignment="Right" Height="32"></Button>
+            <Button Grid.Row="2" Grid.Column="1" Margin="5,2,10,5" VerticalAlignment="Bottom" Width="80" Content="确定" Name="btnConfirm" Click="btnConfirm_Click" HorizontalAlignment="Right" Height="32"></Button>
         </Grid>
        
     </Grid>

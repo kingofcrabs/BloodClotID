@@ -23,7 +23,7 @@ using System.Windows.Threading;
 using Utility;
 using EngineDll;
 
-namespace BloodClotID.Camera
+namespace BloodClotID
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
@@ -48,6 +48,8 @@ namespace BloodClotID.Camera
         private void SettingWindow_stageSwitched(object sender, SwitchEventArgs e)
         {
             btnAnalysis.IsEnabled = true;
+          
+                
             SwitchTo(Stage.Analysis);
         }
 
@@ -116,17 +118,6 @@ namespace BloodClotID.Camera
             dstUserControl.IsEnabled = curStage == reachedStage;
         }
        
-        //private void SettingWindow_setOk(object sender, EventArgs e)
-        //{
-        //    FolderHelper.CreateAcquiredImageFolder();
-        //    btnTakePhote.IsEnabled = true;
-        //
-        //}
-
-
-    
-
-
         Visibility Bool2Visibility(bool bVisible)
         {
             return bVisible ? Visibility.Visible : Visibility.Hidden;
@@ -144,8 +135,6 @@ namespace BloodClotID.Camera
         {
             uiElement.Dispatcher.Invoke(DispatcherPriority.ContextIdle, EmptyDelegate);
         }
-
-    
     }
 
 }

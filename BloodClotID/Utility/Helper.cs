@@ -206,7 +206,7 @@ namespace Utility
         public List<string> assays;
         public static int samplesPerPlate;
         private static AcquireInfo instance;
-       
+        private const int  horizontalSampleCnt = 8;
         
         static public AcquireInfo Instance
         {
@@ -216,6 +216,14 @@ namespace Utility
                     instance = new AcquireInfo();
                 return instance;
             }
+        }
+        public bool IsHorizontal
+        {
+            get
+            {
+                return horizontalSampleCnt == samplesPerPlate;
+            }
+            
         }
 
         public int BatchStartID
@@ -381,7 +389,9 @@ where T : DependencyObject
                 double heightRatio = calibInfo.rect.Height / calibInfo.size.Height;
                 imgBrush.Viewbox = new Rect(xStartRatio, yStartRatio, widthRatio, heightRatio);
             }
-            
+            //var transform = Matrix.Identity;
+            //transform.RotateAt(90, 0.5, 0.5);
+            //imgBrush.RelativeTransform = new MatrixTransform(transform);
             imgBrush.ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
             return imgBrush;
         }

@@ -15,12 +15,12 @@ namespace BloodClotID
     {
       
         private static Analyzer instance;
-        object locker = new object();
+        IEngine iEngine;
         //List<AnalysisResult> results = new List<AnalysisResult>();
         private Dictionary<int, List<AnalysisResult>> plate_Result = new Dictionary<int, List<AnalysisResult>>();
         private Analyzer()
         {
-
+            iEngine = new IEngine(); 
         }
         public List<int> Results
         {
@@ -194,12 +194,9 @@ namespace BloodClotID
             //    tmpResults.Add(new EngineDll.AnalysisResult(rc,30,2));
             //}
             //plate_Result.Add(cameraID,tmpResults);
-            IEngine iEngine = new IEngine();
+            
             var tmpResults = iEngine.Analysis(file, rois, boundingRect).ToList();
-            lock (locker)
-            {
-                plate_Result.Add(cameraID, tmpResults);
-            }
+            plate_Result.Add(cameraID, tmpResults);
             return tmpResults;
         }
 

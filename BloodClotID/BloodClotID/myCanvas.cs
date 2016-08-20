@@ -283,7 +283,7 @@ namespace BloodClotID
             return Keyboard.IsKeyDown(Key.LeftCtrl);
         }
 
-        internal void LeftMoseDown(Point pt, bool bAdd)
+        internal void LeftMoseUp(Point pt, bool bAdd)
         {
             if(LeftCtrlDown())
             {

@@ -22,6 +22,7 @@ namespace BloodClotID
     /// </summary>
     public partial class ReportWindow : BaseUserControl
     {
+        ExcelWorker excelWorker = new ExcelWorker();
         public ReportWindow()
         {
             InitializeComponent();
@@ -34,7 +35,20 @@ namespace BloodClotID
 
         private void btnGenerateExcel_Click(object sender, RoutedEventArgs e)
         {
+            this.IsEnabled = false;
+            SetInfo(string.Format("正在创建Excel文件，请稍候"), false);
+            this.Refresh();
+            string path = FolderHelper.GetOutputFolder() + DateTime.Now.ToString("YYMMDDhhmmss") + ".xlsx";
+            excelWorker.CreateExcelFile(path, Report.Instance.AssayResults);
+            SetInfo(string.Format("Excel文件已经创建于：{0}",path),false);
+            this.IsEnabled = true;
+        }
 
+        private void SetInfo(string message, bool error = true)
+        {
+            txtInfo.Text = message;
+            var brush = error ? Brushes.Red : Brushes.Black;
+            txtInfo.Foreground = brush;
         }
 
         public override void Initialize()
