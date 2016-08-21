@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BloodClotID"
         mc:Ignorable="d"
-        Height="440" Width="600" HorizontalAlignment="Left">
+        Height="440" Width="600"  HorizontalAlignment="Left" VerticalAlignment="Top">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>

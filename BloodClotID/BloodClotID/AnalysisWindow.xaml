@@ -24,8 +24,8 @@
             <Label Content="提示：" FontSize="16" Grid.Row="1"/>
             <Label FontSize="16"  HorizontalAlignment="Center" Name="lblProgress"/>
         </StackPanel>
-
-        <Grid Name="picturesContainer" Grid.Row="1" Background="LightBlue" Margin="5,0,0,0">
+        <Label Background="Red" Name="lblOriginal" Width="0.5" Height="0.5" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,0,0,0"></Label>
+        <Grid Name="picturesContainer" Grid.Row="1" Background="LightBlue"  Margin="5,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>

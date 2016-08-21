@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Utility;
@@ -18,6 +19,20 @@ namespace BloodClotID
             grid = grid2Transform;
         }
 
+
+        public Point TransformBack(Point pt)
+        {
+            int totalCnt = tg.Children.Count;
+            if (totalCnt == 0)
+                return pt;
+            Point adjustPt = new Point(pt.X,pt.Y);
+            for (int i = 0; i < totalCnt; i++)
+            {
+                var transform = tg.Children[totalCnt - 1 - i];
+                adjustPt = transform.Inverse.Transform(adjustPt);
+            }
+            return adjustPt;
+        }
         public void DoTransform()
         {
             if (AcquireInfo.Instance.IsHorizontal)

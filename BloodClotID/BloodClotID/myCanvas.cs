@@ -75,6 +75,7 @@ namespace BloodClotID
         
         Point ptStart;
         Circle selected = null;
+        List<Circle> results = new List<Circle>();
         bool canMove = false;
 
         private void AddCircle(Circle newCircle)
@@ -205,6 +206,11 @@ namespace BloodClotID
 
         }
 
+        internal void Highlight(int indexInPlate)
+        {
+            results.Add(calibInfo.circles[indexInPlate]);
+        }
+
         public void SetResult(List<AnalysisResult> result)
         {
             analysisResults = result;
@@ -223,6 +229,8 @@ namespace BloodClotID
             int circleID = 1;
             if (calibInfo.circles == null)
                 return;
+            Pen redPen = new Pen(Brushes.Red,2);
+            Pen blackPen = new Pen(Brushes.Black,1);
             foreach (Circle circle in calibInfo.circles)
             {
                 Color green = Color.FromArgb(128, 0, 128, 50);
@@ -231,11 +239,11 @@ namespace BloodClotID
                 Point ptCenter = circle.ptCenter;
                 Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
                 ConvertCoordCalib2Real(circle, ref ptCenter, ref sz);
-               
-                drawingContext.DrawEllipse(brush, new Pen(Brushes.Black, 1), ptCenter,sz.Width, sz.Height);
-                FormattedText formattedText = new FormattedText(circleID.ToString(), CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Red);
-                drawingContext.DrawText(formattedText, ptCenter);
+                Pen pen = results.Contains(circle) ? redPen : blackPen;
+                drawingContext.DrawEllipse(brush, pen, ptCenter, sz.Width, sz.Height);
+                //FormattedText formattedText = new FormattedText(circleID.ToString(), CultureInfo.CurrentCulture,
+                //FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Red);
+                //drawingContext.DrawText(formattedText, ptCenter);
                 circleID++;
             }
 
@@ -267,7 +275,12 @@ namespace BloodClotID
                         FormattedText formattedText = new FormattedText(val.ToString(), CultureInfo.CurrentCulture,
                         FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Green);
                         if (j == 3)
+                        {
+                            var ptText = new Point(ptCenter.X, ptCenter.Y + translateEndOffset.Y);
+                            drawingContext.PushTransform(new RotateTransform(-90, ptText.X, ptText.Y));
                             drawingContext.DrawText(formattedText, new Point(ptCenter.X, ptCenter.Y + translateEndOffset.Y));
+                            drawingContext.Pop();
+                        }
                         drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(ptCenter.X + translateStartOffset.X, ptCenter.Y + translateStartOffset.Y),
                             new Point(ptCenter.X + translateEndOffset.X, ptCenter.Y + translateEndOffset.Y));
                     }
@@ -371,5 +384,9 @@ namespace BloodClotID
                 selected.ptCenter = pt;
             InvalidateVisual();
         }
+
+    
     }
+
+    
 }

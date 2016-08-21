@@ -52,8 +52,15 @@ namespace BloodClotID
             }
             picturesContainer.SizeChanged += PictureContainers_SizeChanged;
             picturesContainer.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
+            picturesContainer.PreviewMouseMove += picturesContainer_PreviewMouseMove;
             parent.Closed += Parent_Closed;
             
+        }
+
+        void picturesContainer_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            //Point pt = e.GetPosition(lblOriginal);
+            //SetInfo(string.Format("x:{0}y:{1}",pt.X,pt.Y), false);
         }
 
         private void PictureContainers_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -88,7 +95,11 @@ namespace BloodClotID
         #region mouse event handler
         private void PictureContainers_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            Point pt = e.GetPosition(picturesContainer);
+            Point pt = e.GetPosition(lblOriginal);
+            if(!AcquireInfo.Instance.IsHorizontal)
+            {
+                pt = transformer.TransformBack(pt);
+            }
             ResultCanvas resultCanvas;
             Point adjustPt = new Point(pt.X, pt.Y);
             if (pt.X > pic1.ActualWidth)
@@ -122,12 +133,7 @@ namespace BloodClotID
       
         #endregion
 
-        private void SetInfo(string message, bool error = true)
-        {
-            txtInfo.Text = message;
-            var brush = error ? Brushes.Red : Brushes.Black;
-            txtInfo.Foreground = brush;
-        }
+        
         private void btnNext_Click(object sender, RoutedEventArgs e)
         {
             UpdateProgress();
@@ -135,20 +141,7 @@ namespace BloodClotID
             btnNext.IsEnabled = false;
         }
 
-        private void UpdateProgress()
-        {
-            string assayName = AcquireInfo.Instance.CurrentAssay;
-            lblProgress.Content = string.Format("{0}:{1}-{2}", assayName, AcquireInfo.Instance.BatchStartID, AcquireInfo.Instance.BatchEndID);
-            pieCollection[0].Value = AcquireInfo.Instance.curPlateID;
-            int notFinishedCnt = AcquireInfo.Instance.GetTotalPlateCnt() - AcquireInfo.Instance.curPlateID;
-            pieCollection[1].Value = notFinishedCnt;
-            this.Refresh();
-            if(notFinishedCnt == 0)
-            {
-                if (onReportReady != null)
-                    onReportReady(this, null);
-            }
-        }
+    
 
         #region take photo
 
@@ -159,7 +152,25 @@ namespace BloodClotID
             Parallel.ForEach(plateIDs, x => AnalysisPlate(x));
             ShowResult();
             transformer.DoTransform();
+            HighlightWell(Analyzer.Instance.Results);
             Report.Instance.AddResult(AcquireInfo.Instance.CurrentAssay, Analyzer.Instance.Results);
+        }
+
+        private void HighlightWell(List<int> eachRowPositions)
+        {
+            Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
+            dict.Add(1, pic1);
+            dict.Add(2, pic2);
+            dict.Add(3, pic3);
+            dict.Add(4, pic4);
+            for(int rowIndex = 0; rowIndex < eachRowPositions.Count; rowIndex++)
+            {
+                var colIndex = eachRowPositions[rowIndex] - 1;
+                int plateID = 1;
+                int indexInPlate = 0;
+                Analyzer.Instance.CalculatePlateAndPosition(rowIndex, colIndex,ref plateID, ref indexInPlate);
+                dict[plateID].Highlight(indexInPlate);
+            }
         }
 
         private void AnalysisPlate(int plateID)
@@ -174,12 +185,7 @@ namespace BloodClotID
             dict[plateID].SetResult(result);
         }
 
-        private void Rotate90Degree()
-        {
-            var transform = Matrix.Identity;
-            transform.RotateAt(90, picturesContainer.ActualWidth/2, picturesContainer.ActualHeight/2);
-            picturesContainer.RenderTransform = new MatrixTransform(transform);
-        }
+      
 
         private void ShowResult()
         {
@@ -278,6 +284,26 @@ namespace BloodClotID
 
         #endregion
         #region helper functions
+        private void UpdateProgress()
+        {
+            string assayName = AcquireInfo.Instance.CurrentAssay;
+            lblProgress.Content = string.Format("{0}:{1}-{2}", assayName, AcquireInfo.Instance.BatchStartID, AcquireInfo.Instance.BatchEndID);
+            pieCollection[0].Value = AcquireInfo.Instance.curPlateID;
+            int notFinishedCnt = AcquireInfo.Instance.GetTotalPlateCnt() - AcquireInfo.Instance.curPlateID;
+            pieCollection[1].Value = notFinishedCnt;
+            this.Refresh();
+            if (notFinishedCnt == 0)
+            {
+                if (onReportReady != null)
+                    onReportReady(this, null);
+            }
+        }
+        private void SetInfo(string message, bool error = true)
+        {
+            txtInfo.Text = message;
+            var brush = error ? Brushes.Red : Brushes.Black;
+            txtInfo.Foreground = brush;
+        }
         Visibility Bool2Visibility(bool bVisible)
         {
             return bVisible ? Visibility.Visible : Visibility.Hidden;

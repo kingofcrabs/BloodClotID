@@ -26,10 +26,12 @@ namespace BloodClotID
         {
             get
             {
+                int cnt = AcquireInfo.Instance.CalculateSamplesThisBatch();
                 List<List<int>> eachRowWellIDs = new List<List<int>>();
                 if(AcquireInfo.samplesPerPlate == 8) //horizontal
                 {
-                    for(int rowIndex = 0; rowIndex < 8; rowIndex++ )
+                    cnt = Math.Min(cnt, 8);
+                    for(int rowIndex = 0; rowIndex < cnt; rowIndex++ )
                     {
                         var wellIDs = GetRowWellIDs(rowIndex, 12, 8);
                         eachRowWellIDs.Add(wellIDs);
@@ -37,14 +39,16 @@ namespace BloodClotID
                 }
                 else//vertical
                 {
-                    for(int rowIndex = 12; rowIndex > 0; rowIndex--)
+                    cnt = Math.Min(cnt, 12);
+                    for (int rowIndex = 0; rowIndex < cnt; rowIndex++)
                     {
-                        int startID = (rowIndex - 1) * 8 + 1;
+                        int startID = rowIndex * 8 + 1;
                         List<int> wellIDs = new List<int>();
                         for(int colIndex = 0; colIndex < 8; colIndex++)
                         {
                             wellIDs.Add(startID + colIndex);
                         }
+                        wellIDs.Reverse();
                         eachRowWellIDs.Add(wellIDs);
                     }
                 }
@@ -89,19 +93,47 @@ namespace BloodClotID
             for (int colIndex = 0; colIndex< samplesPerRow;colIndex++)
             {
                 int wellID = colIndex * samplesPerColumn + rowIndex + 1;
+             
                 ids.Add(wellID);
                 //lengths.Add(GetCorrespondingResult(wellID).val);
             }
             return ids;
         }
+        public void CalculatePlateAndPosition(int rowIndex, int colIndex,ref int plateID, ref int indexInPlate)
+        {
+            int wellID = CalculateWellID(rowIndex, colIndex);
+            CalculatePlateAndPosition(wellID, ref plateID, ref indexInPlate);
+        }
+        private int CalculateWellID(int rowIndex, int colIndex)
+        {
+            bool isHorizontal = AcquireInfo.Instance.IsHorizontal;
 
-    
-
-        private AnalysisResult GetCorrespondingResult(int wellID)
+            if(!isHorizontal)
+            {
+                Swap<int>(ref rowIndex,ref colIndex);
+            }
+            var wellID = colIndex * 8 + rowIndex + 1;
+            var idInRow = (wellID-1) % 8 + 1;
+            var withoutLastRow = wellID - idInRow;
+            if(!isHorizontal)
+            {
+                idInRow = 9 - idInRow; //1->8 2->7 3->6
+                wellID = withoutLastRow + idInRow;
+            }
+                
+            return wellID;
+        }
+        void Swap<T>(ref T a, ref T b)
+        {
+            T temp = a;
+            a = b;
+            b = temp;
+        }
+        private void CalculatePlateAndPosition(int wellID,ref int plateID, ref int indexInPlate)
         {
             int colIndex, rowIndex;
             Convert(wellID, out colIndex, out rowIndex);
-            int plateID = 1;
+            plateID = 1;
             if (rowIndex > 3)
             {
                 rowIndex -= 4;
@@ -117,7 +149,7 @@ namespace BloodClotID
             }
             else
             {
-                if (colIndex > 7) //plate2
+                if (colIndex > 5) //plate2
                 {
                     plateID = 2;
                 }
@@ -128,7 +160,14 @@ namespace BloodClotID
             }
             if (colIndex > 5)
                 colIndex -= 6;
-            int indexInPlate = CalculateIndexInPlate(rowIndex, colIndex);
+            indexInPlate = CalculateIndexInPlate(rowIndex, colIndex);
+        }
+
+        private AnalysisResult GetCorrespondingResult(int wellID)
+        {
+            int plateID = 1;
+            int indexInPlate = 0;
+            CalculatePlateAndPosition(wellID, ref plateID, ref indexInPlate);
             return plate_Result[plateID][indexInPlate];
 
         }
