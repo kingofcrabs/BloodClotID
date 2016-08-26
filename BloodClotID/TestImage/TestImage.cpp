@@ -104,37 +104,41 @@ std::vector<cv::Point> FindMaxContour(Mat& src)
 	return maxContour;
 		 
 }
+#include <fstream>
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Mat src = imread("D:\\temp\\test.png");
-	RemovePtsNotInCircle(src);
-	imwrite("D:\\temp\src.png",src);
+	ofstream ofs("d:\\test.txt");
+	int val = 333;
+	ofs << L"1234" << val << endl;
+	//Mat src = imread("D:\\temp\\test.png");
+	//RemovePtsNotInCircle(src);
+	//imwrite("D:\\temp\src.png",src);
 
-	vector<Mat> rgb(3);
-	FilterRed(src);
-	Mat gray,binary;
-	cvtColor(src, gray, COLOR_BGR2GRAY);
-	threshold(gray, binary, 100, 255, THRESH_BINARY);
-	imwrite("D:\\temp\\threshold.png", binary);
-	vector<cv::Point> contour = FindMaxContour(binary);
-	auto rotatedRect = minAreaRect(contour);
-	
-	Point2f vertices[4];
-	rotatedRect.points(vertices);
-	double maxDistance = 0;
-	for (int i = 0; i < 4; i++)
-	{
-		auto pt1 = vertices[i];
-		auto pt2 = vertices[(i + 1) % 4];
-		auto distance =GetDistance(pt1.x, pt1.y, pt2.x, pt2.y);
-		if (distance > maxDistance)
-			maxDistance = distance;
-		line(src,pt1 ,pt2 , Scalar(0, 0, 255));
+	//vector<Mat> rgb(3);
+	//FilterRed(src);
+	//Mat gray,binary;
+	//cvtColor(src, gray, COLOR_BGR2GRAY);
+	//threshold(gray, binary, 100, 255, THRESH_BINARY);
+	//imwrite("D:\\temp\\threshold.png", binary);
+	//vector<cv::Point> contour = FindMaxContour(binary);
+	//auto rotatedRect = minAreaRect(contour);
+	//
+	//Point2f vertices[4];
+	//rotatedRect.points(vertices);
+	//double maxDistance = 0;
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	auto pt1 = vertices[i];
+	//	auto pt2 = vertices[(i + 1) % 4];
+	//	auto distance =GetDistance(pt1.x, pt1.y, pt2.x, pt2.y);
+	//	if (distance > maxDistance)
+	//		maxDistance = distance;
+	//	line(src,pt1 ,pt2 , Scalar(0, 0, 255));
 
-	}
-		
-	imwrite("D:\\temp\\filter.png", src);
+	//}
+	//	
+	//imwrite("D:\\temp\\filter.png", src);
 	return 0;
 }
 

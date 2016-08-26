@@ -148,6 +148,12 @@ namespace Utility
         }
 
 
+        static public string GetCalibFileCPlusPlus(int cameraID)
+        {
+            return GetCalibFolder() + string.Format("ROIs_{0}.txt", cameraID);
+        }
+
+
         private static void CreateIfNotExist(string sFolder)
         {
             if (!Directory.Exists(sFolder))

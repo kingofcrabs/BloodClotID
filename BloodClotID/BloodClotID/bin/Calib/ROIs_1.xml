@@ -11,7 +11,6 @@
         <Y>76</Y>
       </ptCenter>
       <radius>43.760280470233177</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -19,7 +18,6 @@
         <Y>235</Y>
       </ptCenter>
       <radius>40.03124061561477</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -27,7 +25,6 @@
         <Y>397</Y>
       </ptCenter>
       <radius>40.311288741492746</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -35,7 +32,6 @@
         <Y>567</Y>
       </ptCenter>
       <radius>40.814496188294839</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -43,7 +39,6 @@
         <Y>70</Y>
       </ptCenter>
       <radius>43.034302189801714</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -51,7 +46,6 @@
         <Y>237</Y>
       </ptCenter>
       <radius>45.03124061561477</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -59,7 +53,6 @@
         <Y>398</Y>
       </ptCenter>
       <radius>42.469062297510973</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -67,7 +60,6 @@
         <Y>562</Y>
       </ptCenter>
       <radius>38.967379738244816</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -75,7 +67,6 @@
         <Y>73</Y>
       </ptCenter>
       <radius>40.528030040344284</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -83,7 +74,6 @@
         <Y>229</Y>
       </ptCenter>
       <radius>40.776351096866584</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -91,7 +81,6 @@
         <Y>400</Y>
       </ptCenter>
       <radius>40.978842710531552</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -99,7 +88,6 @@
         <Y>566</Y>
       </ptCenter>
       <radius>40.373214245220062</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -107,7 +95,6 @@
         <Y>71</Y>
       </ptCenter>
       <radius>39.925389765903226</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -115,7 +102,6 @@
         <Y>234</Y>
       </ptCenter>
       <radius>40.904909578116659</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -123,7 +109,6 @@
         <Y>404</Y>
       </ptCenter>
       <radius>42.203320931470607</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -131,7 +116,6 @@
         <Y>573</Y>
       </ptCenter>
       <radius>40.158861482086451</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -139,7 +123,6 @@
         <Y>66</Y>
       </ptCenter>
       <radius>35.96758286230726</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -147,7 +130,6 @@
         <Y>234</Y>
       </ptCenter>
       <radius>40.4003546088143</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -155,7 +137,6 @@
         <Y>402</Y>
       </ptCenter>
       <radius>43.088460154178364</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -163,7 +144,6 @@
         <Y>571</Y>
       </ptCenter>
       <radius>42.349217900629135</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -171,7 +151,6 @@
         <Y>79</Y>
       </ptCenter>
       <radius>39.739733281106119</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -179,7 +158,6 @@
         <Y>234</Y>
       </ptCenter>
       <radius>39.801515129776341</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -187,7 +165,6 @@
         <Y>395</Y>
       </ptCenter>
       <radius>41</radius>
-      <id>0</id>
     </Circle>
     <Circle>
       <ptCenter>
@@ -195,7 +172,6 @@
         <Y>559</Y>
       </ptCenter>
       <radius>39.528030040344284</radius>
-      <id>0</id>
     </Circle>
   </circles>
   <rect>

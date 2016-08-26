@@ -53,7 +53,35 @@ namespace BloodClotID
             string sFile = FolderHelper.GetCalibFile(cameraID);
             calibInfo.size = new Size(this.ActualWidth, this.ActualHeight);
             SerializeHelper.SaveCalib(calibInfo, sFile);
+            SaveCPlusPlusCalib(cameraID);
             MessageBox.Show(string.Format("已经保存到{0}！", sFile));
+        }
+
+        void SaveCPlusPlusCalib(int cameraID)
+        {
+            double xRatio = bkImgSize.Width / calibInfo.size.Width;
+            double yRatio = bkImgSize.Height / calibInfo.size.Height;
+            double rRatio = Math.Max(xRatio, yRatio);
+            ROI[] rois = new ROI[calibInfo.circles.Count];
+            for (int i = 0; i < rois.Length; i++)
+            {
+                Circle cirlce = calibInfo.circles[i];
+                var pt = ConvertCoord2Real(xRatio, yRatio, cirlce.ptCenter);
+                var r = (int)(rRatio * cirlce.radius);
+                rois[i] = new ROI((int)pt.X, (int)pt.Y, r);
+            }
+            string sFile = FolderHelper.GetCalibFileCPlusPlus(cameraID);
+            List<string> strs = new List<string>();
+            foreach(ROI roi in rois)
+            {
+                strs.Add(string.Format("{0} {1} {2}", roi.x, roi.y, roi.radius));
+            }
+            File.WriteAllLines(sFile, strs);
+        }
+
+        private Point ConvertCoord2Real(double xRatio, double yRatio, Point pt)
+        {
+            return new Point((int)(pt.X * xRatio), (int)(pt.Y * yRatio));
         }
 
         public void LoadCalib(int cameraID)
