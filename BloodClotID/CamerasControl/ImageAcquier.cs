@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
@@ -13,6 +12,7 @@ using System.Drawing;
 using Utility;
 using System.Threading.Tasks;
 using System.Net;
+using System.Linq;
 
 namespace CameraControl
 {
@@ -160,7 +160,7 @@ namespace CameraControl
                                                        secondCamera };    
             Stop();
             m_sCameraRealNameList = GetCameraList().ToArray();
-            CheckCameraNames(m_sCameraRealNameList.ToList());
+            CheckCameraNames(m_sCameraRealNameList);
             for( int i = 0; i< 2; i++)
             {
                 string sName = m_sCameraRealNameList[i];
@@ -178,17 +178,16 @@ namespace CameraControl
             Thread.Sleep(1000);
         }
 
-        private void CheckCameraNames(List<string> sCameraNames)
+        private void CheckCameraNames(string[] namesArray)
         {
-            
             CheckAllowed();
-            bool expectedCamerasFound = sCameraNames.Exists(x => x.Contains(firstCamera))
-                && sCameraNames.Exists(x => x.Contains(secondCamera));
-            if(!expectedCamerasFound)
+            var cameraNames = namesArray.ToList();
+            bool expectedCamerasFound = cameraNames.Exists(x => x.Contains(firstCamera))
+                && cameraNames.Exists(x => x.Contains(secondCamera));
+            if (!expectedCamerasFound)
             {
-              throw new Exception("未能找到指定的摄像头！");
+                throw new Exception("未能找到指定的摄像头！");
             }
-                
         }
 
         private void CheckAllowed()

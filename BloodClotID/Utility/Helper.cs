@@ -406,7 +406,7 @@ where T : DependencyObject
     public class GlobalVars
     {
         static bool useTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
-        static bool isCalib;
+        static bool isCalib = false;
         static List<CalibrationInfo> calibInfos = null;
         static public bool IsCalibration
         {

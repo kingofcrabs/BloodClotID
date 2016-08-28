@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EngineDll;
+
 using Utility;
 using System.Windows;
-using EngineDll;
 using System.Diagnostics;
+using System.IO;
 
 namespace BloodClotID
 {
@@ -15,12 +15,12 @@ namespace BloodClotID
     {
       
         private static Analyzer instance;
-        IEngine iEngine;
+        
         //List<AnalysisResult> results = new List<AnalysisResult>();
-        private Dictionary<int, List<AnalysisResult>> plate_Result = new Dictionary<int, List<AnalysisResult>>();
+        private Dictionary<int, List<AnalysisResult>> plate_Result;
         private Analyzer()
         {
-            iEngine = new IEngine(); 
+            plate_Result = new Dictionary<int, List<AnalysisResult>>();
         }
         public List<int> Results
         {
@@ -203,28 +203,38 @@ namespace BloodClotID
         public List<AnalysisResult> AnalysisPlate(int cameraID)
         {
             var file = FolderHelper.GetImagePath(cameraID);
-            var calibFile = FolderHelper.GetCalibFile(cameraID);
-            CalibrationInfo calibInfo = SerializeHelper.LoadCalib(calibFile);
+            string args = string.Format("{0} {1}",cameraID,file);
+            Process process = new Process();
+            string analyzerPath = FolderHelper.GetExeFolder() + "LengthAnalyzer.exe";
+            process.StartInfo = new ProcessStartInfo(analyzerPath,args);
+            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            process.Start();
+            
+            process.WaitForExit();
+            string resultFile = FolderHelper.CurrentAcquiredImageFolder + string.Format("{0}.txt", cameraID);
 
-            using (var bmpTemp = new System.Drawing.Bitmap(file))
-            {
-                ImageSize = new Size(bmpTemp.Size.Width,bmpTemp.Size.Height);
-            }
-            double xRatio = ImageSize.Width / calibInfo.size.Width;
-            double yRatio = ImageSize.Height / calibInfo.size.Height;
-            double rRatio = Math.Max(xRatio, yRatio);
-            ROI[] rois = new ROI[calibInfo.circles.Count];
-            for (int i = 0; i < rois.Length; i++)
-            {
-                Circle cirlce = calibInfo.circles[i];
-                var pt = ConvertCoord2Real(xRatio, yRatio, cirlce.ptCenter);
-                var r = (int)(rRatio * cirlce.radius);
-                rois[i] = new ROI((int)pt.X, (int)pt.Y, r);
-            }
-            Point ptStart = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.TopLeft);
-            Point ptEnd = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.BottomRight);
-            MRect boundingRect = new MRect(new MPoint((int)ptStart.X, (int)ptStart.Y),
-                                           new MPoint((int)ptEnd.X, (int)ptEnd.Y));
+            //var calibFile = FolderHelper.GetCalibFile(cameraID);
+            //CalibrationInfo calibInfo = SerializeHelper.LoadCalib(calibFile);
+
+            //using (var bmpTemp = new System.Drawing.Bitmap(file))
+            //{
+            //    ImageSize = new Size(bmpTemp.Size.Width,bmpTemp.Size.Height);
+            //}
+            //double xRatio = ImageSize.Width / calibInfo.size.Width;
+            //double yRatio = ImageSize.Height / calibInfo.size.Height;
+            //double rRatio = Math.Max(xRatio, yRatio);
+            //ROI[] rois = new ROI[calibInfo.circles.Count];
+            //for (int i = 0; i < rois.Length; i++)
+            //{
+            //    Circle cirlce = calibInfo.circles[i];
+            //    var pt = ConvertCoord2Real(xRatio, yRatio, cirlce.ptCenter);
+            //    var r = (int)(rRatio * cirlce.radius);
+            //    rois[i] = new ROI((int)pt.X, (int)pt.Y, r);
+            //}
+            //Point ptStart = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.TopLeft);
+            //Point ptEnd = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.BottomRight);
+            //MRect boundingRect = new MRect(new MPoint((int)ptStart.X, (int)ptStart.Y),
+            //                               new MPoint((int)ptEnd.X, (int)ptEnd.Y));
             //var tmpResults = new List<EngineDll.AnalysisResult>();
             //for(int i = 0; i< 24;i++)
             //{
@@ -234,9 +244,32 @@ namespace BloodClotID
             //}
             //plate_Result.Add(cameraID,tmpResults);
             
-            var tmpResults = iEngine.Analysis(file, rois, boundingRect).ToList();
-            plate_Result.Add(cameraID, tmpResults);
-            return tmpResults;
+            //var tmpResults = iEngine.Analysis(file, rois, boundingRect).ToList();
+
+            List<AnalysisResult> results = ReadResult(resultFile);
+            plate_Result.Add(cameraID, results);
+            return results;
+        }
+
+        private List<AnalysisResult> ReadResult(string resultFile)
+        {
+            List<string> strs = File.ReadAllLines(resultFile).ToList();
+            List<AnalysisResult> results = new List<AnalysisResult>();
+            foreach(string s in strs)
+            {
+                List<string> subStrs = s.Split(' ').ToList();
+                int len = int.Parse(subStrs[0]);
+                List<Point> rotatedRect = new List<Point>();
+                for(int ptIndex = 0; ptIndex< 4;ptIndex++)
+                {
+                    int x = int.Parse(subStrs[ptIndex * 2 + 1]);
+                    int y = int.Parse(subStrs[ptIndex * 2 + 2]);
+                    rotatedRect.Add(new Point(x, y));
+                }
+                AnalysisResult result = new AnalysisResult(len,rotatedRect);
+                results.Add(result);
+            }
+            return results;
         }
 
         

@@ -12,7 +12,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using EngineDll;
 using Utility;
 
 namespace BloodClotID
@@ -61,6 +60,7 @@ namespace BloodClotID
         {
             double xRatio = bkImgSize.Width / calibInfo.size.Width;
             double yRatio = bkImgSize.Height / calibInfo.size.Height;
+            
             double rRatio = Math.Max(xRatio, yRatio);
             ROI[] rois = new ROI[calibInfo.circles.Count];
             for (int i = 0; i < rois.Length; i++)
@@ -72,11 +72,20 @@ namespace BloodClotID
             }
             string sFile = FolderHelper.GetCalibFileCPlusPlus(cameraID);
             List<string> strs = new List<string>();
+            string sRect = Rect2String(calibInfo.rect);
+            strs.Add(sRect);
             foreach(ROI roi in rois)
             {
                 strs.Add(string.Format("{0} {1} {2}", roi.x, roi.y, roi.radius));
             }
             File.WriteAllLines(sFile, strs);
+        }
+
+        private string Rect2String(Rect rect)
+        {
+            Point ptTopLeft = rect.TopLeft;
+            Point ptBottomRight = rect.BottomRight;
+            return string.Format("{0} {1} {2} {3}", ptTopLeft.X, ptTopLeft.Y, ptBottomRight.X, ptBottomRight.Y);
         }
 
         private Point ConvertCoord2Real(double xRatio, double yRatio, Point pt)
@@ -251,9 +260,22 @@ namespace BloodClotID
             canMove = false;
         }
 
+
+        public static bool IsInDesignMode()
+        {
+            if (System.Reflection.Assembly.GetExecutingAssembly().Location.Contains("VisualStudio"))
+            {
+                return true;
+            }
+            return false;
+        }
+
         protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
         {
+            
             base.OnRender(drawingContext);
+            if (IsInDesignMode())
+                return;
             int circleID = 1;
             if (calibInfo.circles == null)
                 return;
@@ -291,10 +313,9 @@ namespace BloodClotID
                     for (int j = 0; j < 4; j++)
                     {
                         var result = analysisResults[i];
-                        MSize startPtMOffset = result.rect.points[j];
-                        MSize endPtMOffSet = result.rect.points[(j + 1) % 4];
-                        Point startPtOffset = new Point(startPtMOffset.x, startPtMOffset.y);
-                        Point endPtOffset = new Point(endPtMOffSet.x, endPtMOffSet.y);
+                        Point startPtOffset = result.RotateRectPoints[j];
+                        Point endPtOffset= result.RotateRectPoints[(j + 1) % 4];
+                     
                         var translateStartOffset = ConvertCoordImage2RealRelative(startPtOffset, bkImgSize);
                         var translateEndOffset = ConvertCoordImage2RealRelative(endPtOffset, bkImgSize);
                         var ptCenter = calibInfo.circles[i].ptCenter;
