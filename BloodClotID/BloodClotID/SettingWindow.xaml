@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BloodClotID"
         mc:Ignorable="d"
-        Height="440" Width="600"  HorizontalAlignment="Left" VerticalAlignment="Top">
+        Height="480" Width="600"  HorizontalAlignment="Left" VerticalAlignment="Top">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -19,9 +19,13 @@
             <TextBox Name="txtSampleCnt" Text="8" Width="130"></TextBox>
         </StackPanel>
         <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*"></ColumnDefinition>
                 <ColumnDefinition Width="6*"></ColumnDefinition>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <GroupBox Header="摆放方向" Margin="5,5,5,5"  HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" >
@@ -50,7 +54,15 @@
                    
                 HorizontalAlignment="Left" VerticalAlignment="Top"  Height="auto"/>
             </GroupBox>
-
+            <StackPanel Orientation="Horizontal" Grid.Row="1" >
+                <GroupBox  Header="实验类型" Margin="5,5,5,5"  HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal" >
+                        <RadioButton Name="rdbHI" IsChecked="True" Margin="5,5,0,5">抑制</RadioButton>
+                        <RadioButton Name="rdbHA" Margin="15,5,10,5">血凝</RadioButton>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+            
         </Grid>
 
         <Grid Grid.Row="2" Margin="5,5,5,5">

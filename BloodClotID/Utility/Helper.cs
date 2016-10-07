@@ -197,7 +197,7 @@ namespace Utility
         public static List<string> allowedCameraNames = new List<string>()
         {
 
-              "CC5010000642","CD501000241","CD501000064","CD501000068","CD500002346","CD500002342"
+              "CC5010000642","CD501000241","CD501000064","CD501000068","CD500002346","CD500002342","CD500002347"
         };
     }
 
@@ -208,7 +208,8 @@ namespace Utility
      
         public int curPlateID;
         public int samplesPerCamera;
-        //public int samplesThisBatch;
+        public bool isHITest;
+        
         public List<string> assays;
         public static int samplesPerPlate;
         private static AcquireInfo instance;
@@ -230,6 +231,18 @@ namespace Utility
                 return horizontalSampleCnt == samplesPerPlate;
             }
             
+        }
+
+        public bool IsHI
+        {
+            get
+            {
+                return isHITest;
+            }
+            set
+            {
+                isHITest = value;
+            }
         }
 
         public int BatchStartID

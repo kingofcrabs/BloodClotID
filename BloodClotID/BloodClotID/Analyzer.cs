@@ -18,6 +18,7 @@ namespace BloodClotID
         
         //List<AnalysisResult> results = new List<AnalysisResult>();
         private Dictionary<int, List<AnalysisResult>> plate_Result;
+        private object locker = new object();
         private Analyzer()
         {
             plate_Result = new Dictionary<int, List<AnalysisResult>>();
@@ -71,20 +72,57 @@ namespace BloodClotID
         {
             List<double> vals = new List<double>();
             wellIDs.ForEach(x => vals.Add(GetCorrespondingResult(x).val));
-         
-            double maxDiff = 0;
-            int position = 0;
-            for(int i =0; i< vals.Count-1; i++)
+            //int  
+            //double maxDiff = 0;
+            //int position = 0;
+            //for(int i =0; i< vals.Count-1; i++)
+            //{
+            //    double diff = Math.Abs(vals[i]-vals[i + 1]);
+            //    if (diff > maxDiff)
+            //    {
+            //        maxDiff = diff;
+            //        position = i;
+            //    }
+            //}
+            if (AcquireInfo.Instance.IsHI)
             {
-                double diff = Math.Abs(vals[i]-vals[i + 1]);
-                if (diff > maxDiff)
+                return ParseHIPosition(vals);
+            }
+            return  2;//start from 1
+            
+        }
+
+        private int ParseHIPosition(List<double> vals)
+        {
+            List<string> sVals = new List<string>();
+            vals.ForEach(x => sVals.Add(x.ToString()));
+            File.WriteAllLines("d:\\test.txt", sVals);
+            double max = vals.Max();
+            int maxIndex = vals.IndexOf(max);
+            List<double> bigVals = new List<double>();
+            bigVals.Add(max);
+            if(maxIndex > 0)
+            {
+                double val = vals[maxIndex - 1]; 
+                if( val / max > 0.85)
+                    bigVals.Add(val);
+            }
+            if(maxIndex < vals.Count -1)
+            {
+                double val = vals[maxIndex + 1];
+                if (val / max > 0.85)
+                    bigVals.Add(val);
+            }
+            //from right search first > 0.8
+            for(int i = vals.Count-1; i >=0; i--)
+            {
+                double v = vals[i];
+                if(v / max > 0.8)
                 {
-                    maxDiff = diff;
-                    position = i;
+                    return i + 1;
                 }
             }
-            return position + 2;//start from 1
-            
+            throw new Exception("无法分析阳性位置！");
         }
 
         private List<int> GetRowWellIDs(int rowIndex,int samplesPerRow, int samplesPerColumn)
@@ -247,7 +285,11 @@ namespace BloodClotID
             //var tmpResults = iEngine.Analysis(file, rois, boundingRect).ToList();
 
             List<AnalysisResult> results = ReadResult(resultFile);
-            plate_Result.Add(cameraID, results);
+            lock(locker)
+            {
+                plate_Result.Add(cameraID, results);
+            }
+            
             return results;
         }
 

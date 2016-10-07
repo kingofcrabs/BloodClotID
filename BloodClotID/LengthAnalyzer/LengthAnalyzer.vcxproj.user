@@ -8,4 +8,8 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>3 D:\Projects\BloodClotID.git\trunk\BloodClotID\BloodClotID\bin\TestImages\3.jpg</LocalDebuggerCommandArguments>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>3 D:\\Projects\\BloodClotID.git\\trunk\\BloodClotID\\BloodClotID\\bin\\TestImages\\3.jpg</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

@@ -84,6 +84,7 @@ namespace BloodClotID
             if (val <= 0)
                 throw new Exception("样品数必须大于0！");
             AcquireInfo.Instance.SetSampleCount(val);
+            AcquireInfo.Instance.IsHI = (bool)rdbHI.IsChecked;
             AcquireInfo.Instance.SetLayout((bool)rdbHorizontalLayout.IsChecked);
             //if (setOk != null)
             //    setOk(this, null);

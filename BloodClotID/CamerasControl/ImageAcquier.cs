@@ -151,8 +151,6 @@ namespace CameraControl
 
         private void Init()
         {
-           
-
             if (bInitialized)
                 return;
             m_iCameraIDs = new int[2];
@@ -257,14 +255,15 @@ namespace CameraControl
         
         public void  TakePhoto()
         {
+            Init();
             string errMsg = "";
             try
             {
                 List<Task> tasks = new List<Task>();
                 tasks.Add(Task.Factory.StartNew(TakePhoto1));
                 tasks.Add(Task.Factory.StartNew(TakePhoto2));
-                tasks.Add(Task.Factory.StartNew(TakePhoto3));
-                tasks.Add(Task.Factory.StartNew(TakePhoto4));
+                //tasks.Add(Task.Factory.StartNew(TakePhoto3));
+                //tasks.Add(Task.Factory.StartNew(TakePhoto4));
                 tasks.ForEach(x => x.Wait());
             }
             catch(Exception ex)
@@ -299,12 +298,8 @@ namespace CameraControl
                 Thread.Sleep(1000);
                 return;
             }
-                
-            Init();
-            if (!IsRightOrder(m_sCameraRealNameList[cameraID - 1], m_sCameraExpectedNameList[cameraID - 1]))
-            {
-                cameraID = 3 - cameraID;
-            }
+
+            cameraID = ConvertID(cameraID);
             if (File.Exists(sFile))
                 File.Delete(sFile);
             string sOrgFile = sFile;
@@ -319,6 +314,23 @@ namespace CameraControl
                 if (File.Exists(sOrgFile))
                     break;
             }
+        }
+
+        private int ConvertID(int id)
+        {
+            string expectedName = m_sCameraExpectedNameList[id - 1];
+            int convertedID = 0;
+            for (int cameraID = 1; cameraID <= 4; cameraID++)
+            {
+                if(IsRightOrder(m_sCameraRealNameList[cameraID - 1],expectedName))
+                {
+                    convertedID = cameraID;
+                    break;
+                }
+            }
+            if (convertedID == -1)
+                throw new Exception(string.Format("找不到相机:{0}", expectedName));
+            return convertedID;
         }
 
         private bool IsRightOrder(string realName, string expectedName)

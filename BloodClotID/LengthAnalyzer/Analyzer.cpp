@@ -284,18 +284,23 @@ int Analyzer::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 	threshold(saturation, saturation, 0, 255, CV_THRESH_OTSU);
 
 	//equalizeHist(saturation, saturation);
+#ifdef _DEBUG
 	imwrite(sSat, saturation);
+#endif
 	threshold(saturation, saturation, 80, 255, THRESH_BINARY);
 
 	bitwise_and(hue, light, hue);
 	bitwise_and(hue, saturation, binary);
+#ifdef _DEBUG
 	imwrite(sHue, hue);
-
+#endif
 	vector<cv::Point> contour = FindMaxContour(binary);
 	//vector<cv::Contours
 	std::vector< std::vector<cv::Point> > contours;
 	contours.push_back(contour);
+#ifdef _DEBUG
 	drawContours(org, contours, 0,Scalar(255,0,0),1);
+#endif
 	//imwrite(sOrg, org);
 	if (contour.size() == 0)
 	{

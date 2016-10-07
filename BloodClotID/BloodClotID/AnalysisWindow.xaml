@@ -71,8 +71,8 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="230"/>
             </Grid.ColumnDefinitions>
             <Label Content="信息：" FontSize="16"/>
             <TextBox Grid.Row="1" Margin="5,0,0,5" Name="txtInfo"></TextBox>
