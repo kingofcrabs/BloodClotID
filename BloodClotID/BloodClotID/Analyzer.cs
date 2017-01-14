@@ -61,10 +61,18 @@ namespace BloodClotID
         private List<int> FindAllSamplePositions(List<List<int>> eachRowWellIDs)
         {
             List<int> positions = new List<int>();
-            foreach(var wellIDs in eachRowWellIDs)
+            try
             {
-                positions.Add(FindThisSamplePosition(wellIDs));
+                foreach (var wellIDs in eachRowWellIDs)
+                {
+                    positions.Add(FindThisSamplePosition(wellIDs));
+                }
             }
+            catch(Exception ex)
+            {
+                throw new Exception("invalid position!");
+            }
+            
             return positions.Take(AcquireInfo.Instance.CalculateSamplesThisBatch()).ToList();
         }
 

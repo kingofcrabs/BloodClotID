@@ -59,7 +59,10 @@ namespace BloodClotID
                     //Perform your work here.
                     if (hasHandle)
                     {
+#if DEBUG
+#else
                         try
+#endif
                         {
                             if(e.Args.Length == 0)
                             {
@@ -76,10 +79,13 @@ namespace BloodClotID
 
 
                         }
+#if DEBUG
+#else
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message + ex.StackTrace, "Error happened");
                         }
+#endif
                     }
                 }
                 finally
