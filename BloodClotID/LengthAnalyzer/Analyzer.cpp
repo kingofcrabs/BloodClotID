@@ -347,9 +347,7 @@ vector<int> Analyzer::Analysis(string sFile, cv::Rect2f boundRect, vector<Circle
 		int val = AnalysisSub(img(rc), rotatedRect);
 		results.push_back(val);
 		rotatedRects.push_back(rotatedRect);
-
 	}
-
 	return results;
 }
 

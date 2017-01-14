@@ -197,7 +197,7 @@ namespace Utility
         public static List<string> allowedCameraNames = new List<string>()
         {
 
-              "CC5010000642","CD501000241","CD501000064","CD501000068","CD500002346","CD500002342","CD500002347"
+              "UE500000033","UE500000031","UE500000022","UE500000034"
         };
     }
 
@@ -307,6 +307,30 @@ namespace Utility
         public  int GetTotalPlateCnt()
         {
             return  (totalSample + samplesPerPlate - 1) / samplesPerPlate * assays.Count;
+        }
+    }
+
+    [Serializable]
+    public class CameraSettings
+    {
+        public bool IsAE { get; set; }
+        public ulong ExposeTime { get; set; }
+
+        public ulong Gain { get; set; }
+
+        public CameraSettings(ulong gain, ulong exposeTime, bool isAE)
+        {
+            IsAE = isAE;
+            ExposeTime = exposeTime;
+            Gain = gain;
+        }
+
+        public CameraSettings()
+        {
+            // TODO: Complete member initialization
+            IsAE = true;
+            ExposeTime = 500;
+            Gain = 1;
         }
     }
 
@@ -432,13 +456,13 @@ where T : DependencyObject
                 isCalib = value;
             }
         }
-        static public string Vendor
-        {
-            get
-            {
-                return "OV";
-            }
-        }
+        //static public string Vendor
+        //{
+        //    get
+        //    {
+        //        return "OV";
+        //    }
+        //}
         static public bool UseTestImage
         {
             get
@@ -484,12 +508,18 @@ where T : DependencyObject
             return assayGroups;
         }
 
-        //public static string PlateType
-        //{
-        //    get
-        //    {
-        //        return plateType;
-        //    }
-        //}
+        
+        static CameraSettings cameraSettings = new CameraSettings();
+        public static CameraSettings CameraSettings
+        {
+            get
+            {
+                return cameraSettings;
+            }
+            set
+            {
+                cameraSettings = value;
+            }
+        }
     }
 }

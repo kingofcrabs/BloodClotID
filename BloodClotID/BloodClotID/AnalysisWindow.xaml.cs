@@ -43,7 +43,7 @@ namespace BloodClotID
             try
             {
                 this.container = parent;
-                imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer(GlobalVars.Vendor);
+                imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer();
                 transformer = new Transformer(picturesContainer);
             }
             catch (Exception ex)
@@ -231,7 +231,16 @@ namespace BloodClotID
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
             try
             {
-                imgAcquirer.TakePhoto();
+                //imgAcquirer.TakePhoto();
+                imgAcquirer.Init();
+                SetInfo("初始化完成！", false);
+                List<Task> tasks = new List<Task>();
+                
+                tasks.Add(Task.Factory.StartNew(TakePhoto1));
+                tasks.Add(Task.Factory.StartNew(TakePhoto2));
+                tasks.Add(Task.Factory.StartNew(TakePhoto3));
+                tasks.Add(Task.Factory.StartNew(TakePhoto4));
+                tasks.ForEach(x => x.Wait());
             }
             catch (Exception ex)
             {
@@ -241,11 +250,31 @@ namespace BloodClotID
             btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
             RefreshImage();
             Debug.WriteLine("refresh:" + watcher.Elapsed.Milliseconds);
-            Analysis();
+            //Analysis();
             Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
             this.IsEnabled = true;
             UpdateProgress();
             SetInfo(string.Format("分析完成。用时{0:f1}秒。",watcher.Elapsed.TotalMilliseconds/1000.0), false);
+        }
+
+        private void TakePhoto4()
+        {
+            imgAcquirer.Start(4);
+        }
+
+        private void TakePhoto3()
+        {
+            imgAcquirer.Start(3);
+        }
+
+        private void TakePhoto2()
+        {
+            imgAcquirer.Start(2);
+        }
+
+        private void TakePhoto1()
+        {
+            imgAcquirer.Start(1);
         }
 
 
