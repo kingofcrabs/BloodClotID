@@ -30,12 +30,29 @@ namespace BloodClotID
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            myCanvas.UpdateBackGroundImage(GetImage(1));
+            try
+            {
+                myCanvas.UpdateBackGroundImage(GetImage(1));
+            }
+            catch(Exception ex)
+            {
+                txtInfo.Text = ex.Message;
+                txtInfo.Foreground = Brushes.Red;
+            }
+            
             myCanvas.IsHitTestVisible = false;
             scrollViewer.PreviewMouseLeftButtonDown += scrollViewer_PreviewMouseLeftButtonDown;
             scrollViewer.MouseLeftButtonUp += scrollViewer_MouseLeftButtonUp;
             scrollViewer.PreviewMouseMove += ScrollViewer_PreviewMouseMove;
+            scrollViewer.PreviewMouseDoubleClick += scrollViewer_PreviewMouseDoubleClick;
             this.KeyDown += MainWindow_KeyDown;
+        }
+
+        void scrollViewer_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Point pt = e.GetPosition(myCanvas);
+            
+            myCanvas.DoubleClick(pt);
         }
 
         private void ScrollViewer_PreviewMouseMove(object sender, MouseEventArgs e)

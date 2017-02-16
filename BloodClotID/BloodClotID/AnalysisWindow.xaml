@@ -34,16 +34,16 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <myCanvas:ResultCanvas x:Name="pic1" >
-            </myCanvas:ResultCanvas>
-            <myCanvas:ResultCanvas Grid.Column="1" x:Name="pic2" >
-            </myCanvas:ResultCanvas>
+            <myCanvas:RenderCanvas x:Name="pic1" >
+            </myCanvas:RenderCanvas>
+            <myCanvas:RenderCanvas Grid.Column="1" x:Name="pic2" >
+            </myCanvas:RenderCanvas>
 
-            <myCanvas:ResultCanvas Grid.Row="1" x:Name="pic3" >
-            </myCanvas:ResultCanvas>
+            <myCanvas:RenderCanvas Grid.Row="1" x:Name="pic3" >
+            </myCanvas:RenderCanvas>
 
-            <myCanvas:ResultCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
-            </myCanvas:ResultCanvas>
+            <myCanvas:RenderCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
+            </myCanvas:RenderCanvas>
         </Grid>
 
         <Grid Grid.Column="1" Grid.Row="1" >

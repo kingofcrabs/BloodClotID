@@ -3,6 +3,7 @@ using PieControls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -100,7 +101,7 @@ namespace BloodClotID
             {
                 pt = transformer.TransformBack(pt);
             }
-            ResultCanvas resultCanvas;
+            RenderCanvas resultCanvas;
             Point adjustPt = new Point(pt.X, pt.Y);
             if (pt.X > pic1.ActualWidth)
             {
@@ -158,11 +159,15 @@ namespace BloodClotID
 
         private void HighlightWell(List<int> eachRowPositions)
         {
-            Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
+            Dictionary<int, RenderCanvas> dict = new Dictionary<int, RenderCanvas>() { };
             dict.Add(1, pic1);
             dict.Add(2, pic2);
             dict.Add(3, pic3);
             dict.Add(4, pic4);
+            foreach(var pair in dict)
+            {
+                pair.Value.ClearHight();
+            }
             for(int rowIndex = 0; rowIndex < eachRowPositions.Count; rowIndex++)
             {
                 var colIndex = eachRowPositions[rowIndex] - 1;
@@ -175,7 +180,7 @@ namespace BloodClotID
 
         private void AnalysisPlate(int plateID)
         {
-            Dictionary<int, ResultCanvas> dict = new Dictionary<int, ResultCanvas>() { };
+            Dictionary<int, RenderCanvas> dict = new Dictionary<int, RenderCanvas>() { };
             dict.Add(1, pic1);
             dict.Add(2, pic2);
             dict.Add(3, pic3);
@@ -184,8 +189,6 @@ namespace BloodClotID
             
             dict[plateID].SetResult(result);
         }
-
-      
 
         private void ShowResult()
         {
@@ -206,7 +209,7 @@ namespace BloodClotID
             foreach (var uiElement in picturesContainer.Children)
             {
                 string file = FolderHelper.GetImagePath(id);
-                ResultCanvas canvas = (ResultCanvas)uiElement;
+                RenderCanvas canvas = (RenderCanvas)uiElement;
                 if (File.Exists(file))
                 {
                     canvas.UpdateBackGroundImage(file, id);
@@ -229,32 +232,36 @@ namespace BloodClotID
             this.Refresh();
        
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
-            try
+            //try
             {
-                //imgAcquirer.TakePhoto();
-                imgAcquirer.Init();
-                SetInfo("初始化完成！", false);
-                List<Task> tasks = new List<Task>();
-                
-                tasks.Add(Task.Factory.StartNew(TakePhoto1));
-                tasks.Add(Task.Factory.StartNew(TakePhoto2));
-                tasks.Add(Task.Factory.StartNew(TakePhoto3));
-                tasks.Add(Task.Factory.StartNew(TakePhoto4));
-                tasks.ForEach(x => x.Wait());
+                bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
+                if(!bUseTestImage)
+                {
+                    imgAcquirer.Init();
+                    SetInfo("初始化完成！", false);
+                    List<Task> tasks = new List<Task>();
+
+                    tasks.Add(Task.Factory.StartNew(TakePhoto1));
+                    tasks.Add(Task.Factory.StartNew(TakePhoto2));
+                    tasks.Add(Task.Factory.StartNew(TakePhoto3));
+                    tasks.Add(Task.Factory.StartNew(TakePhoto4));
+                    tasks.ForEach(x => x.Wait());
+                }
+                Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
+                btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
+                RefreshImage();
+                Debug.WriteLine("refresh:" + watcher.Elapsed.Milliseconds);
+                Analysis();
+                Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
+               
+                UpdateProgress();
+                SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.TotalMilliseconds / 1000.0), false);
             }
-            catch (Exception ex)
-            {
-                SetInfo(ex.Message);
-            }
-            Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
-            btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
-            RefreshImage();
-            Debug.WriteLine("refresh:" + watcher.Elapsed.Milliseconds);
-            //Analysis();
-            Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
+            //catch (Exception ex)
+            //{
+            //    SetInfo(ex.Message);
+            //}
             this.IsEnabled = true;
-            UpdateProgress();
-            SetInfo(string.Format("分析完成。用时{0:f1}秒。",watcher.Elapsed.TotalMilliseconds/1000.0), false);
         }
 
         private void TakePhoto4()

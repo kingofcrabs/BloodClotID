@@ -6,7 +6,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>3 D:\Projects\BloodClotID.git\trunk\BloodClotID\BloodClotID\bin\TestImages\3.jpg</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>2 D:\Projects\BloodClotID.git\trunk\BloodClotID\BloodClotID\bin\TestImages\2.jpg</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommandArguments>3 D:\\Projects\\BloodClotID.git\\trunk\\BloodClotID\\BloodClotID\\bin\\TestImages\\3.jpg</LocalDebuggerCommandArguments>

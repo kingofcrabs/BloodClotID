@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include <time.h> 
 using namespace std;
 
 
@@ -66,6 +67,7 @@ int main(int argc, char* argv[])
 {
 	if (argc < 3)
 		return -1;
+
 
 	int cameraID = argv[1][0] - '0';
 	string sExePath(argv[0]);

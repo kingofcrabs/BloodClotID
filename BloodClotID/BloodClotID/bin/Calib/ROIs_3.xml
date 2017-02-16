@@ -1,191 +1,187 @@
 <?xml version="1.0"?>
 <CalibrationInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <size>
-    <Width>1067</Width>
-    <Height>745</Height>
-  </size>
   <circles>
     <Circle>
       <ptCenter>
-        <X>62</X>
-        <Y>172</Y>
+        <X>96.885813148788912</X>
+        <Y>175.03875968992247</Y>
       </ptCenter>
-      <radius>43.760280470233177</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>55</X>
-        <Y>349</Y>
+        <X>469.89619377162626</X>
+        <Y>164.18604651162789</Y>
       </ptCenter>
-      <radius>40.03124061561477</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>54</X>
-        <Y>512</Y>
+        <X>855.01730103806221</X>
+        <Y>166.3565891472868</Y>
       </ptCenter>
-      <radius>40.311288741492746</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>61</X>
-        <Y>680</Y>
+        <X>1240.1384083044982</X>
+        <Y>168.52713178294573</Y>
       </ptCenter>
-      <radius>40.814496188294839</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>225</X>
-        <Y>176</Y>
+        <X>1630.1038062283735</X>
+        <Y>166.3565891472868</Y>
       </ptCenter>
-      <radius>43.034302189801714</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>222</X>
-        <Y>351</Y>
+        <X>2015.2249134948095</X>
+        <Y>170.69767441860464</Y>
       </ptCenter>
-      <radius>45.03124061561477</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>226</X>
-        <Y>525</Y>
+        <X>94.46366782006919</X>
+        <Y>554.88372093023247</Y>
       </ptCenter>
-      <radius>42.469062297510973</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>229</X>
-        <Y>683</Y>
+        <X>465.05190311418681</X>
+        <Y>544.031007751938</Y>
       </ptCenter>
-      <radius>38.967379738244816</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>402</X>
-        <Y>172</Y>
+        <X>855.01730103806221</X>
+        <Y>544.031007751938</Y>
       </ptCenter>
-      <radius>36.528030040344284</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>402</X>
-        <Y>344</Y>
+        <X>1240.1384083044982</X>
+        <Y>552.71317829457359</Y>
       </ptCenter>
-      <radius>39.776351096866584</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>402</X>
-        <Y>522</Y>
+        <X>1630.1038062283735</X>
+        <Y>559.22480620155045</Y>
       </ptCenter>
-      <radius>40.978842710531552</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>407</X>
-        <Y>685</Y>
+        <X>2010.38062283737</X>
+        <Y>563.5658914728682</Y>
       </ptCenter>
-      <radius>40.373214245220062</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>588</X>
-        <Y>176</Y>
+        <X>89.619377162629746</X>
+        <Y>923.87596899224809</Y>
       </ptCenter>
-      <radius>37.925389765903226</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>589</X>
-        <Y>340</Y>
+        <X>469.89619377162626</X>
+        <Y>919.53488372093022</Y>
       </ptCenter>
-      <radius>40.904909578116659</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>591</X>
-        <Y>519</Y>
+        <X>859.86159169550172</X>
+        <Y>921.7054263565891</Y>
       </ptCenter>
-      <radius>42.203320931470607</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>591</X>
-        <Y>682</Y>
+        <X>1235.2941176470588</X>
+        <Y>934.72868217054258</Y>
       </ptCenter>
-      <radius>40.158861482086451</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>763</X>
-        <Y>173</Y>
+        <X>1615.5709342560551</X>
+        <Y>930.38759689922483</Y>
       </ptCenter>
-      <radius>33.96758286230726</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>770</X>
-        <Y>341</Y>
+        <X>1993.4256055363321</X>
+        <Y>943.41085271317831</Y>
       </ptCenter>
-      <radius>40.4003546088143</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>770</X>
-        <Y>519</Y>
+        <X>92.041522491349468</X>
+        <Y>1308.0620155038757</Y>
       </ptCenter>
-      <radius>43.088460154178364</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>774</X>
-        <Y>686</Y>
+        <X>469.89619377162626</X>
+        <Y>1305.8914728682169</Y>
       </ptCenter>
-      <radius>42.349217900629135</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>938</X>
-        <Y>177</Y>
+        <X>845.32871972318333</X>
+        <Y>1314.5736434108526</Y>
       </ptCenter>
-      <radius>39.739733281106119</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>943</X>
-        <Y>341</Y>
+        <X>1218.3391003460206</X>
+        <Y>1308.8372093023254</Y>
       </ptCenter>
-      <radius>39.801515129776341</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>947</X>
-        <Y>516</Y>
+        <X>1598.6159169550172</X>
+        <Y>1308.8372093023254</Y>
       </ptCenter>
-      <radius>41</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
     <Circle>
       <ptCenter>
-        <X>938</X>
-        <Y>670</Y>
+        <X>1993.4256055363321</X>
+        <Y>1310.2325581395348</Y>
       </ptCenter>
-      <radius>39.528030040344284</radius>
+      <radius>66.955017301038055</radius>
     </Circle>
   </circles>
   <rect>
     <Location>
-      <X>16</X>
-      <Y>107</Y>
+      <X>0</X>
+      <Y>0</Y>
     </Location>
     <Size>
-      <Width>974</Width>
-      <Height>615</Height>
+      <Width>0</Width>
+      <Height>0</Height>
     </Size>
-    <X>16</X>
-    <Y>107</Y>
-    <Width>974</Width>
-    <Height>615</Height>
+    <X>0</X>
+    <Y>0</Y>
+    <Width>0</Width>
+    <Height>0</Height>
   </rect>
 </CalibrationInfo>

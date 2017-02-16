@@ -76,8 +76,6 @@ namespace BloodClotID
                                 CalibWindow calibWindow = new CalibWindow();
                                 calibWindow.ShowDialog();
                             }
-
-
                         }
 #if DEBUG
 #else

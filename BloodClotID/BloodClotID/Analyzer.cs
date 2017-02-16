@@ -8,6 +8,7 @@ using Utility;
 using System.Windows;
 using System.Diagnostics;
 using System.IO;
+using EngineDll;
 
 namespace BloodClotID
 {
@@ -15,10 +16,11 @@ namespace BloodClotID
     {
       
         private static Analyzer instance;
-        
+        IEngine iEngine = new IEngine();
+
         //List<AnalysisResult> results = new List<AnalysisResult>();
         private Dictionary<int, List<AnalysisResult>> plate_Result;
-        private object locker = new object();
+        static private object locker = new object();
         private Analyzer()
         {
             plate_Result = new Dictionary<int, List<AnalysisResult>>();
@@ -61,17 +63,17 @@ namespace BloodClotID
         private List<int> FindAllSamplePositions(List<List<int>> eachRowWellIDs)
         {
             List<int> positions = new List<int>();
-            try
+            //try
+            //{
+            foreach (var wellIDs in eachRowWellIDs)
             {
-                foreach (var wellIDs in eachRowWellIDs)
-                {
-                    positions.Add(FindThisSamplePosition(wellIDs));
-                }
+                positions.Add(FindThisSamplePosition(wellIDs));
             }
-            catch(Exception ex)
-            {
-                throw new Exception("invalid position!");
-            }
+            //}
+            //catch(Exception ex)
+            //{
+            //    throw new Exception("invalid position!");
+            //}
             
             return positions.Take(AcquireInfo.Instance.CalculateSamplesThisBatch()).ToList();
         }
@@ -100,38 +102,53 @@ namespace BloodClotID
             
         }
 
-        private int ParseHIPosition(List<double> vals)
+        private int ParseHIPosition(List<double> vals) //血凝
         {
-            List<string> sVals = new List<string>();
-            vals.ForEach(x => sVals.Add(x.ToString()));
-            File.WriteAllLines("d:\\test.txt", sVals);
-            double max = vals.Max();
-            int maxIndex = vals.IndexOf(max);
-            List<double> bigVals = new List<double>();
-            bigVals.Add(max);
-            if(maxIndex > 0)
+            //find last, search the first well < 0.25 * L_last;
+            double max = vals.Last();
+            double threshold = max * 0.50;
+            for(int i = vals.Count - 2; i >= 1 ; i--)
             {
-                double val = vals[maxIndex - 1]; 
-                if( val / max > 0.85)
-                    bigVals.Add(val);
+                double tmpVal = vals[i];
+                if (tmpVal < threshold)
+                    return i+1;
             }
-            if(maxIndex < vals.Count -1)
-            {
-                double val = vals[maxIndex + 1];
-                if (val / max > 0.85)
-                    bigVals.Add(val);
-            }
-            //from right search first > 0.8
-            for(int i = vals.Count-1; i >=0; i--)
-            {
-                double v = vals[i];
-                if(v / max > 0.8)
-                {
-                    return i + 1;
-                }
-            }
-            throw new Exception("无法分析阳性位置！");
+            return 1;
         }
+
+
+        //private int ParseHIPosition(List<double> vals) //血凝抑制
+        //{
+        //    if (vals.TrueForAll(x => x == 0))
+        //        return 1;
+
+        //    List<string> sVals = new List<string>();
+        //    vals.ForEach(x => sVals.Add(x.ToString()));
+        //    File.WriteAllLines("d:\\test.txt", sVals);
+        //    double max = vals.Max();
+        //    int maxIndex = vals.IndexOf(max);
+        //    List<double> bigVals = new List<double>();
+        //    int lastMaxIndex = 0;
+        //    for(int i = 0; i< vals.Count; i++)
+        //    {
+        //        double val = vals[i]; 
+        //        if( val / max > 0.85){
+        //            bigVals.Add(val);
+        //            if( i != vals.Count -1)
+        //                lastMaxIndex = i;
+        //        }
+        //    }
+          
+        //    double bigAvg = bigVals.Average();
+        //    for (int i = lastMaxIndex; i < vals.Count-1; i++ )
+        //    {
+        //        double v = vals[i];
+        //        if(v/max <= 0.75)
+        //            return i;
+        //    }
+             
+        //    throw new Exception("无法分析阳性位置！");
+        //}
 
         private List<int> GetRowWellIDs(int rowIndex,int samplesPerRow, int samplesPerColumn)
         {
@@ -249,56 +266,56 @@ namespace BloodClotID
         public List<AnalysisResult> AnalysisPlate(int cameraID)
         {
             var file = FolderHelper.GetImagePath(cameraID);
-            string args = string.Format("{0} {1}",cameraID,file);
-            Process process = new Process();
-            string analyzerPath = FolderHelper.GetExeFolder() + "LengthAnalyzer.exe";
-            process.StartInfo = new ProcessStartInfo(analyzerPath,args);
-            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            process.Start();
+            var calibFile = FolderHelper.GetCalibFile(cameraID);
+            CalibrationInfo calibInfo = SerializeHelper.LoadCalib(calibFile);
+
+            using (var bmpTemp = new System.Drawing.Bitmap(file))
+            {
+                ImageSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
+            }
+        
             
-            process.WaitForExit();
-            string resultFile = FolderHelper.CurrentAcquiredImageFolder + string.Format("{0}.txt", cameraID);
+            MROI[] rois = new MROI[calibInfo.circles.Count];
+            for (int i = 0; i < rois.Length; i++)
+            {
+                Circle cirlce = calibInfo.circles[i];
 
-            //var calibFile = FolderHelper.GetCalibFile(cameraID);
-            //CalibrationInfo calibInfo = SerializeHelper.LoadCalib(calibFile);
-
-            //using (var bmpTemp = new System.Drawing.Bitmap(file))
-            //{
-            //    ImageSize = new Size(bmpTemp.Size.Width,bmpTemp.Size.Height);
-            //}
-            //double xRatio = ImageSize.Width / calibInfo.size.Width;
-            //double yRatio = ImageSize.Height / calibInfo.size.Height;
-            //double rRatio = Math.Max(xRatio, yRatio);
-            //ROI[] rois = new ROI[calibInfo.circles.Count];
-            //for (int i = 0; i < rois.Length; i++)
-            //{
-            //    Circle cirlce = calibInfo.circles[i];
-            //    var pt = ConvertCoord2Real(xRatio, yRatio, cirlce.ptCenter);
-            //    var r = (int)(rRatio * cirlce.radius);
-            //    rois[i] = new ROI((int)pt.X, (int)pt.Y, r);
-            //}
+                rois[i] = new MROI((int)cirlce.ptCenter.X, (int)cirlce.ptCenter.Y, (int)cirlce.radius);
+            }
             //Point ptStart = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.TopLeft);
             //Point ptEnd = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.BottomRight);
             //MRect boundingRect = new MRect(new MPoint((int)ptStart.X, (int)ptStart.Y),
             //                               new MPoint((int)ptEnd.X, (int)ptEnd.Y));
-            //var tmpResults = new List<EngineDll.AnalysisResult>();
-            //for(int i = 0; i< 24;i++)
-            //{
-            //    var sz = new MSize(2,2);
-            //    RotatedRect rc = new EngineDll.RotatedRect(new MSize[4]{sz,sz,sz,sz});
-            //    tmpResults.Add(new EngineDll.AnalysisResult(rc,30,2));
-            //}
-            //plate_Result.Add(cameraID,tmpResults);
-            
-            //var tmpResults = iEngine.Analysis(file, rois, boundingRect).ToList();
-
-            List<AnalysisResult> results = ReadResult(resultFile);
-            lock(locker)
+            var tmpResults = new List<EngineDll.MAnalysisResult>();
+            for (int i = 0; i < 24; i++)
             {
-                plate_Result.Add(cameraID, results);
+                var pt = new MPoint(2, 2);
+                RotatedRect rc = new EngineDll.RotatedRect(new MPoint[4] { pt, pt, pt, pt });
+                tmpResults.Add(new EngineDll.MAnalysisResult(rc, 30, 2));
+            }
+            tmpResults = iEngine.Analysis(file, rois).ToList();
+            List<AnalysisResult> internalResults = new List<AnalysisResult>();
+            tmpResults.ForEach(x => internalResults.Add(Convert2InternalResult(x)));
+            if (plate_Result == null)
+            {
+                Debug.WriteLine("interesting!");
+            }
+            lock (locker)
+            {
+                plate_Result.Add(cameraID, internalResults);
             }
             
-            return results;
+            return internalResults;
+            
+        }
+
+        private AnalysisResult Convert2InternalResult(MAnalysisResult x)
+        {
+            List<Point> pts = new List<Point>();
+            for(int i = 0; i< x.rect.points.Length; i++)
+                pts.Add(new Point(x.rect.points[i].x,x.rect.points[i].y));
+            AnalysisResult result = new AnalysisResult(x.val, pts);
+            return result;
         }
 
         private List<AnalysisResult> ReadResult(string resultFile)

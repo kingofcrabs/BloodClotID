@@ -11,10 +11,26 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Utility
 {
+
+    public sealed class StringWriterWithEncoding : StringWriter
+    {
+        private readonly Encoding encoding;
+
+        public StringWriterWithEncoding(Encoding encoding)
+        {
+            this.encoding = encoding;
+        }
+
+        public override Encoding Encoding
+        {
+            get { return encoding; }
+        }
+    }
     public class SerializeHelper
     {
 
@@ -33,6 +49,50 @@ namespace Utility
             Stream stream = new FileStream(sFile, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite);
             xs.Serialize(stream, calibInfo);
             stream.Close();
+        }
+
+        public static string Serialize<T>(T value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            XmlSerializer serializer = new XmlSerializer(typeof(T));
+
+            XmlWriterSettings settings = new XmlWriterSettings();
+
+            //StringWriter textWriter = new StringWriter()
+
+            using (StringWriterWithEncoding textWriter = new StringWriterWithEncoding(Encoding.Default))
+            {
+                using (XmlWriter xmlWriter = XmlWriter.Create(textWriter, settings))
+                {
+                    serializer.Serialize(xmlWriter, value);
+                }
+                return textWriter.ToString();
+            }
+        }
+
+        public static T Deserialize<T>(string xml) where T : class
+        {
+            if (string.IsNullOrEmpty(xml))
+            {
+                return default(T);
+            }
+            Object obj = new object();
+            Stream stream = new FileStream(xml, FileMode.Open, FileAccess.Read, FileShare.Read);
+            try
+            {
+                XmlSerializer xs = new XmlSerializer(typeof(T));
+                obj = xs.Deserialize(stream) as T;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Falied to load the setting: " + ex.Message);
+            }
+            stream.Close();
+            return (T)obj;
         }
 
         static public CalibrationInfo LoadCalib(string sFile)
@@ -61,17 +121,15 @@ namespace Utility
     [Serializable]
     public class CalibrationInfo
     {
-        public System.Windows.Size size;
+    
         public List<Circle> circles;
         public Rect rect;
         public CalibrationInfo()
         {
-            size = new System.Windows.Size(0, 0);
             circles = new List<Circle>();
         }
-        public CalibrationInfo(System.Windows.Size sz, List<Circle> cs,Rect rc)
+        public CalibrationInfo(List<Circle> cs,Rect rc)
         {
-            size = sz;
             circles = cs;
             rect = rc;
         }
@@ -112,7 +170,7 @@ namespace Utility
         {
             string sExeParent = GetExeParentFolder();
             bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
-            string subFolder = bUseTestImage ? "TestImages\\" : "AcquiredImages";
+            string subFolder = bUseTestImage ? "TestImages\\" : "AcquiredImages\\";
             string sImageFolder = sExeParent + subFolder;
             CreateIfNotExist(sImageFolder);
             return sImageFolder;
@@ -316,7 +374,7 @@ namespace Utility
         public bool IsAE { get; set; }
         public ulong ExposeTime { get; set; }
 
-        public ulong Gain { get; set; }
+        public double Gain { get; set; }
 
         public CameraSettings(ulong gain, ulong exposeTime, bool isAE)
         {
@@ -424,14 +482,13 @@ where T : DependencyObject
 
             ImageBrush imgBrush = new ImageBrush();
             imgBrush.ImageSource = bitmapImage;
-            if(!GlobalVars.IsCalibration && calibInfo != null)
-            {
-                double xStartRatio = calibInfo.rect.TopLeft.X / calibInfo.size.Width;
-                double yStartRatio = calibInfo.rect.TopLeft.Y / calibInfo.size.Height;
-                double widthRatio = calibInfo.rect.Width / calibInfo.size.Width;
-                double heightRatio = calibInfo.rect.Height / calibInfo.size.Height;
-                imgBrush.Viewbox = new Rect(xStartRatio, yStartRatio, widthRatio, heightRatio);
-            }
+            //if(!GlobalVars.IsCalibration && calibInfo != null)
+            //{
+            
+            //    double widthRatio = calibInfo.rect.Width / calibInfo.rect.Width;
+            //    double heightRatio = calibInfo.rect.Height / calibInfo.rect.Height;
+            //    imgBrush.Viewbox = new Rect(0, 1, widthRatio, heightRatio);
+            //}
             //var transform = Matrix.Identity;
             //transform.RotateAt(90, 0.5, 0.5);
             //imgBrush.RelativeTransform = new MatrixTransform(transform);
@@ -508,8 +565,25 @@ where T : DependencyObject
             return assayGroups;
         }
 
-        
-        static CameraSettings cameraSettings = new CameraSettings();
+
+        static CameraSettings cameraSettings = LoadCameraSettings();
+
+        private static Utility.CameraSettings LoadCameraSettings()
+        {
+            string sCameraSetting = Utility.FolderHelper.GetExeFolder() + "cameraSetting.xml";
+            if(File.Exists(sCameraSetting))
+            {
+                return SerializeHelper.Deserialize<CameraSettings>(sCameraSetting);
+            }
+            else
+            {
+                var cameraSettings = new CameraSettings();
+                string content = SerializeHelper.Serialize(cameraSettings);
+                File.WriteAllText(sCameraSetting, content);
+                return cameraSettings;
+            }
+            
+        }
         public static CameraSettings CameraSettings
         {
             get

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{803CC709-E6ED-486C-A179-421A47F6D5FF}</ProjectGuid>
+    <ProjectGuid>{2C4954E3-2B0E-4283-9ECF-0835489A6D68}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BloodClotID</RootNamespace>
@@ -163,6 +163,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\EngineDll\EngineDll.vcxproj">
+      <Project>{9f46951f-d766-4801-9aed-44dc5f017eb9}</Project>
+      <Name>EngineDll</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\PieControls\PieControls.csproj">
       <Project>{cec6e596-d667-4068-bf48-188825f52c82}</Project>
       <Name>PieControls</Name>

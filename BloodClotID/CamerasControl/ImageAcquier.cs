@@ -54,12 +54,12 @@ namespace CameraControl
         public string m_sCameraName;
         public emDSRunMode m_Runmode;
         public int[] m_iCameraIDs;
-        private string[] m_sCameraExpectedNameList;
-        private string[] m_sCameraRealNameList;
+        private List<string> m_sCameraExpectedNameList;
+        private List<string> m_sCameraRealNameList;
         string firstCamera = ConfigurationManager.AppSettings["FirstCameraID"];
         string secondCamera = ConfigurationManager.AppSettings["SecondCameraID"];
-        string thirdCamera = ConfigurationManager.AppSettings["thirdCamera"];
-        string fourthCamera = ConfigurationManager.AppSettings["fourthCamera"];
+        string thirdCamera = ConfigurationManager.AppSettings["thirdCameraID"];
+        string fourthCamera = ConfigurationManager.AppSettings["fourthCameraID"];
         bool bInitialized = false;
         dvpCamera.DelegateProc psub = new dvpCamera.DelegateProc(SnapThreadCallback);
         static int frames = 0;
@@ -82,14 +82,15 @@ namespace CameraControl
             if (bInitialized)
                 return;
             m_iCameraIDs = new int[4];
-            m_sCameraExpectedNameList = new string[] { firstCamera,
+            m_sCameraExpectedNameList = new List<string> { firstCamera,
                                                        secondCamera,
                                                         thirdCamera,
                                                         fourthCamera};    
             Stop();
-            m_sCameraRealNameList = GetCameraList().ToArray();
+            m_sCameraRealNameList = GetCameraList().ToList();
             int cameraCnt = GetCameraCnt();
             CheckCameraNames(m_sCameraRealNameList.ToList());
+            AdjustPostion(ref m_sCameraRealNameList, m_sCameraExpectedNameList);
             for (int i = 0; i < cameraCnt; i++)
             {
                 string sName = m_sCameraRealNameList[i];
@@ -103,6 +104,16 @@ namespace CameraControl
             }
             bInitialized = true;
             Thread.Sleep(1000);
+        }
+
+        private void AdjustPostion(ref List<string> m_sCameraRealNameList, List<string> m_sCameraExpectedNameList)
+        {
+            List<string> strs = new List<string>();
+            foreach (var str in m_sCameraExpectedNameList)
+            {
+                strs.Add(m_sCameraRealNameList.Where(x => x.Contains(str)).First());
+            }
+            m_sCameraRealNameList = strs;
         }
 
         private CameraHandle GetCameraCnt()
@@ -171,6 +182,7 @@ namespace CameraControl
             string errMsg = "";
             try
             {
+                
                 StartImpl(sFile, cameraID, cameraSetting);
             }
             catch(Exception ex)
@@ -210,6 +222,13 @@ namespace CameraControl
                 if (exposeTime < minExposeTime)
                     throw new Exception(string.Format("曝光时间:{0} < 最小曝光时间:{1}", exposeTime, minExposeTime));
                 dvpCamera.CameraSetAeState(cameraHandle, false);
+                if(cameraID > 2)
+                {
+                    dvpCamera.CameraSetMirror(cameraHandle, emDSMirrorDirection.MIRROR_DIRECTION_HORIZONTAL, true);
+                    dvpCamera.CameraSetMirror(cameraHandle, emDSMirrorDirection.MIRROR_DIRECTION_VERTICAL, true);
+                    
+                }
+                    
                 dvpCamera.CameraSetAnalogGain(cameraHandle, (float)cameraSetting.Gain);
                 dvpCamera.CameraSetExposureTime(cameraHandle, exposeTime);
             }
