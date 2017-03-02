@@ -2,13 +2,13 @@
 #include "stdafx.h"
 
 
-class Circle
+class MCircle
 {
 public:
 	int x;
 	int y;
 	int radius;
-	Circle(int xx, int yy, int rr)
+	MCircle(int xx, int yy, int rr)
 	{
 		x = xx;
 		y = yy;
@@ -21,10 +21,10 @@ class EngineImpl
 {
 public:
 	EngineImpl();
-	std::vector<int> Analysis(std::string sFile,cv::Rect2f rc, std::vector<Circle> rois, std::vector<std::vector<cv::Point2f>>&);
+	std::vector<int> Analysis(std::string sFile, std::vector<MCircle> rois, std::vector<std::vector<cv::Point2f>>&);
 private:
-	cv::Rect GetRect(Circle circle, cv::Size imgSize);
-	int AnalysisSub(cv::Mat& sub, std::vector<cv::Point2f>& rotatedRect);
+	cv::Rect GetRect(MCircle circle, cv::Size imgSize);
+	int AnalysisSub(cv::Mat& sub,int id, std::vector<cv::Point2f>& rotatedRect);
 	
 	
 	void RemovePtsNotInCircle(cv::Mat& src);

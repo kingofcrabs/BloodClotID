@@ -217,7 +217,7 @@ std::vector<cv::Point> EngineImpl::FindMaxContour(Mat& src)
 //	}
 //}
 
-Rect EngineImpl::GetRect(Circle circle,Size imgSize)
+Rect EngineImpl::GetRect(MCircle circle, Size imgSize)
 {
 	
 	double xStart, yStart, width, height;
@@ -235,27 +235,30 @@ Rect EngineImpl::GetRect(Circle circle,Size imgSize)
 }
 
 
-int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
+int EngineImpl::AnalysisSub(Mat& org,int id, vector<cv::Point2f>& pts)
 {
-	//static int id = 1;
-	//wstringstream ss;
-	//ss << "D:\\temp\\hue" << id<< ".jpg";
-	//wstring ws = ss.str();
-	//string sHue = WStringToString(ws);
-	//ss.str(L"");
-	//ss << "D:\\temp\\gray" << id++ << ".jpg";
-	//ws = ss.str();
-	//string sGray = WStringToString(ws);
-	//ss.str(L"");
-
-	//ThresholdByRed(sub);
-	//Mat gray;
-	//cvtColor(sub, gray, COLOR_BGR2GRAY);
-	//adaptiveThreshold(gray, gray, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 5);
-	//imwrite(sGray, gray);
-	cvtColor(sub, sub, COLOR_BGR2HLS);
+	Mat clone = org.clone();
+#if _DEBUG
+	wstringstream ss;
+	ss << "D:\\temp\\hue" << id<< ".jpg";
+	wstring ws = ss.str();
+	string sHue = WStringToString(ws);
+	ss.str(L"");
+	ss << "D:\\temp\\org" << id << ".jpg";
+	ws = ss.str();
+	string sOrg = WStringToString(ws);
+	ss.str(L"");
+	ss << "D:\\temp\\final" << id++ << ".jpg";
+	ws = ss.str();
+	string sFinal = WStringToString(ws);
+	ss.str(L"");
+	imwrite(sOrg, clone);
+#endif
+	
+	Mat hls;
+	cvtColor(clone, hls, COLOR_BGR2HLS);
 	vector<Mat> channels;
-	split(sub, channels);
+	split(hls, channels);
 	Mat& hue = channels[0];
 	Mat& light = channels[1];
 	Mat& saturation = channels[2];
@@ -264,13 +267,13 @@ int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 	
 	threshold(hue,hue, 15, 255, THRESH_BINARY_INV);
 	threshold(light, light, 130, 255, THRESH_BINARY_INV);
+	//threshold(saturation, saturation, 0, 255, CV_THRESH_OTSU);
 	threshold(saturation, saturation, 80, 255, THRESH_BINARY);
 	bitwise_and(hue, light, hue);
 	bitwise_and(hue, saturation, binary);
-	//imwrite(sHue, hue);
-	//imwrite(sVal, light);
+	
 	vector<cv::Point> contour = FindMaxContour(binary);
-	if (contour.size() == 0)
+	if (contour.size() < 20)
 	{
 		
 		pts.push_back(Point(-3,-3));
@@ -285,8 +288,8 @@ int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 	rotatedRect.points(vertices);
 	double maxDistance = 0;
 
-	int height = sub.rows;
-	int width = sub.cols;
+	int height = clone.rows;
+	int width = clone.cols;
 	int xCenter = width / 2;
 	int yCenter = height / 2;
 
@@ -304,23 +307,26 @@ int EngineImpl::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 
 
 
-vector<int> EngineImpl::Analysis(string sFile,cv::Rect2f boundRect, vector<Circle> rois,vector<vector<cv::Point2f>>& rotatedRects)
+vector<int> EngineImpl::Analysis(string sFile,vector<MCircle> rois, vector<vector<cv::Point2f>>& rotatedRects)
 {
+	
 	Mat img = imread(sFile);
 	vector<int> results;
+
+	int startID = 1;
+	if (sFile.find("2.jpg") != -1)
+		startID = 25;
+	if (sFile.find("3.jpg") != -1)
+		startID = 49;
+	if (sFile.find("4.jpg") != -1)
+		startID = 73;
 	for (int i = 0; i < rois.size(); i++)
 	{
 		Rect rc = GetRect(rois[i],img.size());
 		vector<cv::Point2f> rotatedRect;
-		int val = AnalysisSub(img(rc), rotatedRect);
+		int val = AnalysisSub(img(rc), startID+i, rotatedRect);
 		results.push_back(val);
 		rotatedRects.push_back(rotatedRect);
-		//wstringstream ss;
-		//ss << "D:\\temp\\rois" << i + 1 << ".jpg";
-		//wstring ws = ss.str();
-		//string s = WStringToString(ws);
-		//imwrite(s, img);
-		//ss.clear();
 	}
 	
 	return results;
