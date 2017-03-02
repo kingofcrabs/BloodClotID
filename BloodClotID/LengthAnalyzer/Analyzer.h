@@ -25,7 +25,7 @@ public:
 	std::vector<int> Analysis(std::string sFile, cv::Rect2f rc, std::vector<Circle> rois, std::vector<std::vector<cv::Point2f>>&);
 private:
 	cv::Rect GetRect(Circle circle, cv::Size imgSize);
-	int AnalysisSub(cv::Mat& sub, std::vector<cv::Point2f>& rotatedRect);
+	int AnalysisSub(cv::Mat& sub, int id, std::vector<cv::Point2f>& rotatedRect);
 
 
 	void RemovePtsNotInCircle(cv::Mat& src);

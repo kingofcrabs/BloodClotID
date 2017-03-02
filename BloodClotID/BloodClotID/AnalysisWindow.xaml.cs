@@ -251,6 +251,7 @@ namespace BloodClotID
                 btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
                 RefreshImage();
                 Debug.WriteLine("refresh:" + watcher.Elapsed.Milliseconds);
+                watcher.Start();
                 Analysis();
                 Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
                

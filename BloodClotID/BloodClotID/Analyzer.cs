@@ -274,18 +274,14 @@ namespace BloodClotID
                 ImageSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
             }
         
-            
+            //preapare rois
             MROI[] rois = new MROI[calibInfo.circles.Count];
             for (int i = 0; i < rois.Length; i++)
             {
                 Circle cirlce = calibInfo.circles[i];
-
                 rois[i] = new MROI((int)cirlce.ptCenter.X, (int)cirlce.ptCenter.Y, (int)cirlce.radius);
             }
-            //Point ptStart = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.TopLeft);
-            //Point ptEnd = ConvertCoord2Real(xRatio, yRatio, calibInfo.rect.BottomRight);
-            //MRect boundingRect = new MRect(new MPoint((int)ptStart.X, (int)ptStart.Y),
-            //                               new MPoint((int)ptEnd.X, (int)ptEnd.Y));
+
             var tmpResults = new List<EngineDll.MAnalysisResult>();
             for (int i = 0; i < 24; i++)
             {
@@ -296,6 +292,7 @@ namespace BloodClotID
             tmpResults = iEngine.Analysis(file, rois).ToList();
             List<AnalysisResult> internalResults = new List<AnalysisResult>();
             tmpResults.ForEach(x => internalResults.Add(Convert2InternalResult(x)));
+            FilterHorizontalFakes(internalResults);
             if (plate_Result == null)
             {
                 Debug.WriteLine("interesting!");
@@ -307,6 +304,28 @@ namespace BloodClotID
             
             return internalResults;
             
+        }
+
+        private void FilterHorizontalFakes(List<AnalysisResult> results)
+        {
+            for(int i = 0; i< results.Count; i++)
+            {
+                if(IsFakeHorizontal(results[i]))
+                {
+                    results[i].val = 0;
+                }
+            }
+        }
+
+        private bool IsFakeHorizontal(AnalysisResult analysisResult)
+        {
+            double maxX = analysisResult.RotateRectPoints.Max(pt => pt.X);
+            double minX = analysisResult.RotateRectPoints.Min(pt => pt.X);
+            double maxY = analysisResult.RotateRectPoints.Max(pt => pt.Y);
+            double minY = analysisResult.RotateRectPoints.Max(pt => pt.Y);
+            double lenX = maxX - minX;
+            double lenY = maxY - minY;
+            return analysisResult.val > 80 && lenX > lenY;
         }
 
         private AnalysisResult Convert2InternalResult(MAnalysisResult x)

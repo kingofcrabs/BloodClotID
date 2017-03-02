@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -343,14 +344,20 @@ namespace BloodClotID
             //    Rect rc = new Rect(ptStart, sz);
             //    drawingContext.DrawRectangle(null, new Pen(brush, 1), rc);
             //}
-            CoordinationHelper coordinationHelper = new CoordinationHelper(new Size(this.ActualWidth, this.ActualHeight), new Size(2592, 1944));
+            if(this.Name == "pic1")
+            {
+                Debug.WriteLine("debug");
+            }
+
+            
             if (this.Background != null && analysisResults != null)
             {
+                CoordinationHelper coordinationHelper = new CoordinationHelper(new Size(this.ActualWidth, this.ActualHeight), bkImgSize);
                 for (int i = 0; i < analysisResults.Count; i++)// (AnalysisResult analysisResult in analysisResults)
                 {
+                    var result = analysisResults[i];
                     for (int j = 0; j < 4; j++)
                     {
-                        var result = analysisResults[i];
                         Point startPtOffset = result.RotateRectPoints[j];
                         Point endPtOffset = result.RotateRectPoints[(j + 1) % 4];
 
@@ -515,7 +522,7 @@ namespace BloodClotID
             double xRatio = this.UISize.Width / imgSize.Width;
             double yRatio = this.UISize.Height / imgSize.Height;
             Point ptCenter = ToUI(circle.ptCenter);
-            double radius = circle.radius * xRatio;
+            double radius = circle.radius * yRatio;
             return new Circle(ptCenter, radius);
         }
 

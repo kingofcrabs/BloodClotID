@@ -16,30 +16,6 @@ Analyzer::~Analyzer()
 {
 }
 
-
-
-
-
-//void  Analyzer::FindContours(const cv::Mat& thresholdImg,
-//	std::vector<std::vector<cv::Point>
-//	>& contours,
-//	int min, int max)
-//{
-//	std::vector< std::vector<cv::Point> > allContours;
-//
-//	cv::findContours(thresholdImg, allContours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-//	contours.clear();
-//	for (size_t i = 0; i<allContours.size(); i++)
-//	{
-//		int contourSize = allContours[i].size();
-//		
-//		if (contourSize > min && contourSize < max)
-//		{
-//			contours.push_back(allContours[i]);
-//		}
-//	}
-//}
-
 std::string WStringToString(const std::wstring &wstr)
 {
 	std::string str(wstr.length(), ' ');
@@ -122,8 +98,6 @@ void Analyzer::ThresholdByRed(Mat& hue, Mat& val)
 
 			for (int i = 0; i < channels; i++)
 				dataHue[i] = changedVal;
-
-
 		}
 	}
 }
@@ -151,80 +125,8 @@ std::vector<cv::Point> Analyzer::FindMaxContour(Mat& src)
 		}
 	}
 	return maxContour;
-
 }
 
-
-//}
-//
-//void Analyzer::Rotate90(cv::Mat &matImage, bool cw){
-//	//1=CW, 2=CCW, 3=180
-//	if (cw){
-//		transpose(matImage, matImage);
-//		flip(matImage, matImage, 1); //transpose+flip(1)=CW
-//	}
-//	else {
-//		transpose(matImage, matImage);
-//		flip(matImage, matImage, 0); //transpose+flip(0)=CCW     
-//	}
-//}
-//
-//
-//void Analyzer::CountRed(int x, int y, Point ptCenter, Circle& c, bool bLight)
-//{
-//	double dis = cv::norm(cv::Mat(ptCenter), Mat(Point(x, y)));
-//	if (dis < c.radius)
-//	{
-//		if (bLight)
-//			lightRedCnt++;
-//		else
-//			darkRedCnt++;
-//	}
-//}
-//
-//void Analyzer::CountLightRed(int x, int y, Point ptCenter, Circle& c)
-//{
-//	CountRed(x, y, ptCenter, c, true);
-//}
-//
-//void Analyzer::CountDarkRed(int x, int y, Point ptCenter, Circle& c)
-//{
-//	CountRed(x, y, ptCenter, c, false);
-//}
-//
-//void Analyzer::GoThrough(Mat& sub, Circle &c)
-//{
-//	int height = sub.rows;
-//	int width = sub.cols;
-//	int channels = sub.channels();
-//	int nc = width * channels;
-//	Point ptCenter = Point(width / 2, height / 2);
-//	for (int y = 0; y < height; y++)
-//	{
-//		uchar *data = sub.ptr(y);
-//		int col = 0;
-//		for (int x = 0; x < nc; x += channels)
-//		{
-//			int r = data[x + 2];
-//			int g = data[x + 1];
-//			int b = data[x];
-//			if (r > g && r > b)
-//			{
-//				if (g > 50 || b > 50)
-//				{
-//					CountLightRed(col, y, ptCenter, c);
-//				}
-//				else if (g < 30 && b < 30)
-//				{
-//					CountDarkRed(col, y, ptCenter, c);
-//				}
-//				col++;
-//				continue;
-//			}
-//			col++;
-//		}
-//	}
-//}
 
 Rect Analyzer::GetRect(Circle circle, Size imgSize)
 {
@@ -244,11 +146,9 @@ Rect Analyzer::GetRect(Circle circle, Size imgSize)
 }
 
 
-int Analyzer::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
+int Analyzer::AnalysisSub(Mat& sub,int id, vector<cv::Point2f>& pts)
 {
-
 #ifdef _DEBUG
-	static int id = 1;
 	Mat org = sub.clone();
 	wstringstream ss;
 	ss << "D:\\temp\\hue" << id<< ".jpg";
@@ -262,28 +162,19 @@ int Analyzer::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 	ss << "D:\\temp\\sat" << id++ << ".jpg";
 	ws = ss.str();
 	string sSat = WStringToString(ws);
+	imwrite(sOrg, org);
 #endif
-	//ThresholdByRed(sub);
-	//Mat gray;
-	//cvtColor(sub, gray, COLOR_BGR2GRAY);
-	//adaptiveThreshold(gray, gray, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 5);
-	//imwrite(sGray, gray);
-	cvtColor(sub, sub, COLOR_BGR2HLS);
+	
+	cvtColor(org, org, COLOR_BGR2HLS);
 	vector<Mat> channels;
 	split(sub, channels);
 	Mat& hue = channels[0];
 	Mat& light = channels[1];
 	Mat& saturation = channels[2];
 	Mat binary;
-
-	//cvtColor(sub, gray, COLOR_BGR2GRAY);
-
 	threshold(hue, hue, 15, 255, THRESH_BINARY_INV);
 	threshold(light, light, 130, 255, THRESH_BINARY_INV);
-	//adaptiveThreshold(gray, gray, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 5);
 	threshold(saturation, saturation, 0, 255, CV_THRESH_OTSU);
-
-	//equalizeHist(saturation, saturation);
 #ifdef _DEBUG
 	imwrite(sSat, saturation);
 #endif
@@ -301,10 +192,8 @@ int Analyzer::AnalysisSub(Mat& sub, vector<cv::Point2f>& pts)
 #ifdef _DEBUG
 	drawContours(org, contours, 0,Scalar(255,0,0),1);
 #endif
-	//imwrite(sOrg, org);
-	if (contour.size() == 0)
+	if (contour.size() < 30)
 	{
-
 		pts.push_back(Point(-3, -3));
 		pts.push_back(Point(3, -3));
 		pts.push_back(Point(3, 3));
@@ -340,11 +229,19 @@ vector<int> Analyzer::Analysis(string sFile, cv::Rect2f boundRect, vector<Circle
 {
 	Mat img = imread(sFile);
 	vector<int> results;
+	int startID = 1;
+	if (sFile.find("2.jpg") != -1)
+		startID = 25;
+	if (sFile.find("3.jpg") != -1)
+		startID = 49;
+	if (sFile.find("4.jpg") != -1)
+		startID = 73;
+
 	for (int i = 0; i < rois.size(); i++)
 	{
 		Rect rc = GetRect(rois[i], img.size());
 		vector<cv::Point2f> rotatedRect;
-		int val = AnalysisSub(img(rc), rotatedRect);
+		int val = AnalysisSub(img(rc), startID + i, rotatedRect);
 		results.push_back(val);
 		rotatedRects.push_back(rotatedRect);
 	}

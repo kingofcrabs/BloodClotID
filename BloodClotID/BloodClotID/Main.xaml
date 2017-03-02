@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:BloodClotID"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
+        Icon ="/Images/redcell.ico"
         Title="BloodClot" Height="800" Width="1000">
     <Grid Name="rootGrid">
         <Grid.RowDefinitions>
