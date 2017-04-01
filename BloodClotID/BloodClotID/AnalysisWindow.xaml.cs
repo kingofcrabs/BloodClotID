@@ -128,7 +128,7 @@ namespace BloodClotID
                     resultCanvas = pic3;
                 }
             }
-            resultCanvas.LeftMoseUp(adjustPt, false);
+            resultCanvas.LeftMouseUp(adjustPt, false);
         }
 
       

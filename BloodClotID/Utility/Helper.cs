@@ -123,15 +123,15 @@ namespace Utility
     {
     
         public List<Circle> circles;
-        public Rect rect;
+        //public Rect rect;
         public CalibrationInfo()
         {
             circles = new List<Circle>();
         }
-        public CalibrationInfo(List<Circle> cs,Rect rc)
+        public CalibrationInfo(List<Circle> cs)
         {
             circles = cs;
-            rect = rc;
+          
         }
     }
 

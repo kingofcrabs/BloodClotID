@@ -28,7 +28,7 @@ namespace BloodClotID
         Point ptStart;
         Circle selected = null;
         List<Circle> roi_Circles = new List<Circle>();
-        List<Circle> resultCircles = new List<Circle>(); 
+        List<int> resultIndexs = new List<int>(); 
         bool canMove = false;
 
         public void UpdateBackGroundImage(string file, int cameraID = 0)
@@ -40,7 +40,7 @@ namespace BloodClotID
             {
                 bkImgSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
             }
-            CalibrationInfo calibInfo = null;
+            calibInfo.circles.Clear();
             roi_Circles.Clear();
             if (cameraID != 0)
             {
@@ -66,38 +66,24 @@ namespace BloodClotID
             {
                 calibInfo.circles.Add(coordHelper.ToReal(circle));
             }
-
+            calibInfo.circles = calibInfo.circles.OrderBy(c => GetIndex(c)).ToList();
             SerializeHelper.SaveCalib(calibInfo, sFile);
             MessageBox.Show(string.Format("已经保存到{0}！", sFile));
         }
 
-        //void SaveCPlusPlusCalib(int cameraID)
-        //{
-        //    double xRatio = bkImgSize.Width / calibInfo.size.Width;
-        //    double yRatio = bkImgSize.Height / calibInfo.size.Height;
-            
-        //    double rRatio = Math.Max(xRatio, yRatio);
-        //    ROI[] rois = new ROI[calibInfo.circles.Count];
-        //    for (int i = 0; i < rois.Length; i++)
-        //    {
-        //        Circle cirlce = calibInfo.circles[i];
-        //        var pt = ConvertCoord2Real(xRatio, yRatio, cirlce.ptCenter);
-        //        var r = (int)(rRatio * cirlce.radius);
-        //        rois[i] = new ROI((int)pt.X, (int)pt.Y, r);
-        //    }
-        //    string sFile = FolderHelper.GetCalibFileCPlusPlus(cameraID);
-        //    List<string> strs = new List<string>();
-        //    var ptBound1 = ConvertCoord2Real(xRatio,yRatio,bound.TopLeft);
-        //    var ptBound2 = ConvertCoord2Real(xRatio,yRatio,bound.BottomRight);
-        //    calibInfo.rect = new Rect(ptBound1, ptBound2);
-        //    string sRect = Rect2String(calibInfo.rect);
-        //    strs.Add(sRect);
-        //    foreach(ROI roi in rois)
-        //    {
-        //        strs.Add(string.Format("{0} {1} {2}", roi.x, roi.y, roi.radius));
-        //    }
-        //    File.WriteAllLines(sFile, strs);
-        //}
+        private int GetIndex(Circle c)
+        {
+            double w = 2100;
+            double h = 1400;
+            double xUnit = w / 5;
+            double yUnit = h / 3;
+            int colIndex = (int)Math.Round(c.ptCenter.X / xUnit - 1);
+            int rowIndex = (int)Math.Round(c.ptCenter.Y / yUnit - 1);
+            return colIndex * 4 + rowIndex;
+
+        }
+
+        
 
         private string Rect2String(Rect rect)
         {
@@ -125,10 +111,10 @@ namespace BloodClotID
         {
             roi_Circles.Add(newCircle);
         }
-        private void SetRect(Rect rect)
-        {
-            calibInfo.rect = new Rect(Coord2Real(rect.TopLeft), Coord2Real(rect.BottomRight));
-        }
+        //private void SetRect(Rect rect)
+        //{
+        //    calibInfo.rect = new Rect(Coord2Real(rect.TopLeft), Coord2Real(rect.BottomRight));
+        //}
 
         public void RemoveCorrespondingCircle(Point pt)
         {
@@ -284,12 +270,12 @@ namespace BloodClotID
 
         internal void Highlight(int indexInPlate)
         {
-            resultCircles.Add(calibInfo.circles[indexInPlate]);
+            resultIndexs.Add(indexInPlate);
         }
 
         internal void ClearHight()
         {
-            resultCircles.Clear();
+            resultIndexs.Clear();
         }
         public void SetResult(List<AnalysisResult> result)
         {
@@ -322,16 +308,23 @@ namespace BloodClotID
                 return;
             Pen redPen = new Pen(Brushes.Red, 2);
             Pen blackPen = new Pen(Brushes.Black, 1);
-            foreach (Circle circle in roi_Circles)
+            //foreach (Circle circle in roi_Circles)
+            for (int i = 0; i < roi_Circles.Count; i++)
             {
+                Circle circle = roi_Circles[i];
                 Color green = Color.FromArgb(128, 0, 128, 50);
                 Color blue = Color.FromArgb(128, 0, 50, 128);
                 Brush brush = circle == selected ? new SolidColorBrush(blue) : null;
 
-                //Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
-                //Circle circleUI = Coord2UI(circle);
+                Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
                 Point ptCenter = circle.ptCenter;
-                Pen pen = resultCircles.Contains(circle) ? redPen : blackPen;
+                Pen pen = blackPen;
+                if(!GlobalVars.IsCalibration)
+                {
+                    Circle calibCircle = calibInfo.circles[i];
+                    if(resultIndexs.Contains(i))
+                        pen = redPen;
+                }
                 drawingContext.DrawEllipse(brush, pen, ptCenter, circle.radius, circle.radius);
                 circleID++;
             }
@@ -387,7 +380,7 @@ namespace BloodClotID
             return Keyboard.IsKeyDown(Key.LeftCtrl);
         }
 
-        internal void LeftMoseUp(Point pt, bool bAdd)
+        internal void LeftMoseDown(Point pt, bool bAdd)
         {
             if (LeftCtrlDown())
             {
@@ -415,15 +408,15 @@ namespace BloodClotID
         {
 
             canMove = false;
-            if (LeftCtrlDown())
-            {
-                SetRect(new Rect(ptStart, pt));
-                return;
-            }
-            //if (bAdd)
+            //if (LeftCtrlDown())
             //{
-            //    AddCircle(new Circle(ptStart, pt));
+            //    SetRect(new Rect(ptStart, pt));
+            //    return;
             //}
+            if (bAdd)
+            {
+                AddCircle(new Circle(ptStart, pt));
+            }
 
             InvalidateVisual();
         }
@@ -486,8 +479,8 @@ namespace BloodClotID
             //{
             //    SetRect(new Rect(ptStart, pt));
             //}
-            //else if (selected != null)
-            selected.ptCenter = pt;
+            if (selected != null)
+                selected.ptCenter = pt;
             InvalidateVisual();
         }
 

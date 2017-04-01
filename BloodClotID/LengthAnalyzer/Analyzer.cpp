@@ -148,24 +148,24 @@ Rect Analyzer::GetRect(Circle circle, Size imgSize)
 
 int Analyzer::AnalysisSub(Mat& sub,int id, vector<cv::Point2f>& pts)
 {
-#ifdef _DEBUG
-	Mat org = sub.clone();
-	wstringstream ss;
-	ss << "D:\\temp\\hue" << id<< ".jpg";
-	wstring ws = ss.str();
-	string sHue = WStringToString(ws);
-	ss.str(L"");
-	ss << "D:\\temp\\org" << id << ".jpg";
-	ws = ss.str();
-	string sOrg = WStringToString(ws);
-	ss.str(L"");
-	ss << "D:\\temp\\sat" << id++ << ".jpg";
-	ws = ss.str();
-	string sSat = WStringToString(ws);
-	imwrite(sOrg, org);
-#endif
+//#ifdef _DEBUG
+//	Mat org = sub.clone();
+//	wstringstream ss;
+//	ss << "D:\\temp\\hue" << id<< ".jpg";
+//	wstring ws = ss.str();
+//	string sHue = WStringToString(ws);
+//	ss.str(L"");
+//	ss << "D:\\temp\\org" << id << ".jpg";
+//	ws = ss.str();
+//	string sOrg = WStringToString(ws);
+//	ss.str(L"");
+//	ss << "D:\\temp\\sat" << id++ << ".jpg";
+//	ws = ss.str();
+//	string sSat = WStringToString(ws);
+//	imwrite(sOrg, org);
+//#endif
 	
-	cvtColor(org, org, COLOR_BGR2HLS);
+	cvtColor(sub, sub, COLOR_BGR2HLS);
 	vector<Mat> channels;
 	split(sub, channels);
 	Mat& hue = channels[0];
@@ -175,23 +175,23 @@ int Analyzer::AnalysisSub(Mat& sub,int id, vector<cv::Point2f>& pts)
 	threshold(hue, hue, 15, 255, THRESH_BINARY_INV);
 	threshold(light, light, 130, 255, THRESH_BINARY_INV);
 	threshold(saturation, saturation, 0, 255, CV_THRESH_OTSU);
-#ifdef _DEBUG
-	imwrite(sSat, saturation);
-#endif
+//#ifdef _DEBUG
+//	imwrite(sSat, saturation);
+//#endif
 	threshold(saturation, saturation, 80, 255, THRESH_BINARY);
 
 	bitwise_and(hue, light, hue);
 	bitwise_and(hue, saturation, binary);
-#ifdef _DEBUG
-	imwrite(sHue, hue);
-#endif
+//#ifdef _DEBUG
+//	imwrite(sHue, hue);
+//#endif
 	vector<cv::Point> contour = FindMaxContour(binary);
 	//vector<cv::Contours
 	std::vector< std::vector<cv::Point> > contours;
 	contours.push_back(contour);
-#ifdef _DEBUG
-	drawContours(org, contours, 0,Scalar(255,0,0),1);
-#endif
+//#ifdef _DEBUG
+//	drawContours(org, contours, 0,Scalar(255,0,0),1);
+//#endif
 	if (contour.size() < 30)
 	{
 		pts.push_back(Point(-3, -3));

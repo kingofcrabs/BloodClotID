@@ -73,7 +73,7 @@ namespace BloodClotID
         void scrollViewer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point pt = e.GetPosition(myCanvas);
-            myCanvas.LeftMoseUp(pt, (bool)rdbAdd.IsChecked);
+            myCanvas.LeftMoseDown(pt, (bool)rdbAdd.IsChecked);
         }
 
         void scrollViewer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

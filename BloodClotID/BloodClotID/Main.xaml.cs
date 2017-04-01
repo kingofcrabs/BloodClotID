@@ -21,7 +21,6 @@ namespace BloodClotID
         Stage reachedStage = Stage.Preapare;
         public MainWindow()
         {
-            
             InitializeComponent();
             this.Loaded += MainWindow_Loaded;
             settingWindow.stageSwitched += SettingWindow_stageSwitched;
@@ -105,8 +104,6 @@ namespace BloodClotID
         {
             return bVisible ? Visibility.Visible : Visibility.Hidden;
         }
-
-      
     }
 
 
