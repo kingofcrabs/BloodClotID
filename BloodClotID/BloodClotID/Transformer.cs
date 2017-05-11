@@ -47,7 +47,7 @@ namespace BloodClotID
 
         private void Shrink()
         {
-            double ratio = grid.ActualHeight/grid.ActualWidth;
+            double ratio = grid.ActualWidth / grid.ActualHeight;
             tg.Children.Add(new ScaleTransform(ratio, ratio));
         }
 

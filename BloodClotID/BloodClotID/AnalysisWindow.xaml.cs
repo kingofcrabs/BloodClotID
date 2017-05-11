@@ -51,24 +51,38 @@ namespace BloodClotID
             {
                 SetInfo(ex.Message);
             }
-            picturesContainer.SizeChanged += PictureContainers_SizeChanged;
+            this.SizeChanged += AnalysisWindow_SizeChanged;
+            if (!AcquireInfo.Instance.IsHorizontal)
+            {
+                parent.MaxWidth = 1080;
+            }
+                
             picturesContainer.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
-            picturesContainer.PreviewMouseMove += picturesContainer_PreviewMouseMove;
             parent.Closed += Parent_Closed;
-            
         }
 
-        void picturesContainer_PreviewMouseMove(object sender, MouseEventArgs e)
+        
+        void AnalysisWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            //Point pt = e.GetPosition(lblOriginal);
-            //SetInfo(string.Format("x:{0}y:{1}",pt.X,pt.Y), false);
+            Debug.WriteLine("new size :{0}-{1}", picturesContainer.ActualWidth, picturesContainer.ActualHeight);
+            FitNewSize();
         }
 
-        private void PictureContainers_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void FitNewSize()
         {
+            Dictionary<int, RenderCanvas> dict = new Dictionary<int, RenderCanvas>() { };
+            dict.Add(1, pic1);
+            dict.Add(2, pic2);
+            dict.Add(3, pic3);
+            dict.Add(4, pic4);
+            foreach (var pair in dict)
+            {
+                pair.Value.AdapteToUI();
+            }
             transformer.DoTransform();
         }
 
+      
 
         public override void Initialize()
         {
@@ -230,21 +244,17 @@ namespace BloodClotID
             SetInfo("正在拍照，请稍候。",false);
             this.IsEnabled = false;
             this.Refresh();
-       
+        
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
             //try
             {
                 bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
                 if(!bUseTestImage)
                 {
-                    imgAcquirer.Init();
+                    imgAcquirer.Start();
                     SetInfo("初始化完成！", false);
                     List<Task> tasks = new List<Task>();
 
-                    tasks.Add(Task.Factory.StartNew(TakePhoto1));
-                    tasks.Add(Task.Factory.StartNew(TakePhoto2));
-                    tasks.Add(Task.Factory.StartNew(TakePhoto3));
-                    tasks.Add(Task.Factory.StartNew(TakePhoto4));
                     tasks.ForEach(x => x.Wait());
                 }
                 Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
@@ -265,26 +275,7 @@ namespace BloodClotID
             this.IsEnabled = true;
         }
 
-        private void TakePhoto4()
-        {
-            imgAcquirer.Start(4);
-        }
-
-        private void TakePhoto3()
-        {
-            imgAcquirer.Start(3);
-        }
-
-        private void TakePhoto2()
-        {
-            imgAcquirer.Start(2);
-        }
-
-        private void TakePhoto1()
-        {
-            imgAcquirer.Start(1);
-        }
-
+       
 
 
 

@@ -46,14 +46,20 @@ namespace BloodClotID
             {
                 string sFile = FolderHelper.GetCalibFile(cameraID);
                 calibInfo = SerializeHelper.LoadCalib(sFile);
-                
-                foreach(var circle in calibInfo.circles)
-                {
-                    CoordinationHelper coordHelper = CreateCoordHelper();
-                    roi_Circles.Add(coordHelper.ToUI(circle));
-                }
+                AdapteToUI();
             }
             Background = RenderHelper.CreateBrushFromFile(file, calibInfo);
+        }
+
+        public void AdapteToUI()
+        {
+            CoordinationHelper coordHelper = CreateCoordHelper();
+            roi_Circles.Clear();
+            foreach(var circle in calibInfo.circles)
+            {
+                roi_Circles.Add(coordHelper.ToUI(circle));
+            }
+            InvalidateVisual();
         }
 
        
@@ -111,10 +117,7 @@ namespace BloodClotID
         {
             roi_Circles.Add(newCircle);
         }
-        //private void SetRect(Rect rect)
-        //{
-        //    calibInfo.rect = new Rect(Coord2Real(rect.TopLeft), Coord2Real(rect.BottomRight));
-        //}
+   
 
         public void RemoveCorrespondingCircle(Point pt)
         {
@@ -158,103 +161,6 @@ namespace BloodClotID
 
 
         #endregion
-
-
-        //#region coordinate translation
-        //private Point ConvertCoord2Calib(Point pt)
-        //{
-        //    if (GlobalVars.IsCalibration)
-        //    {
-        //        if (calibInfo.size.Width == 0)
-        //            return pt;
-        //        double xRatio = this.ActualWidth / calibInfo.size.Width;
-        //        double yRatio = this.ActualHeight / calibInfo.size.Height;
-        //        return new Point(pt.X / xRatio, pt.Y / yRatio);
-        //    }
-        //    else
-        //    {
-        //        double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
-        //        double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
-        //        double xRatio = virtualActualWidth / calibInfo.size.Width;
-        //        double yRatio = virtualActualHeight / calibInfo.size.Height;
-        //        double xOffset = (virtualActualWidth - this.ActualWidth) * calibInfo.rect.TopLeft.X / (calibInfo.size.Width - calibInfo.rect.Width);
-        //        double yOffset = (virtualActualHeight - this.ActualHeight) * calibInfo.rect.TopLeft.Y / (calibInfo.size.Height - calibInfo.rect.Height);
-        //        return new Point((pt.X + xOffset) / xRatio, (pt.Y + yOffset) / yRatio);
-        //    }
-        //}
-
-        //private Point ConvertCoordImage2RealRelative(Point pt, Size imgSize) //use point as size, 此处是相对位置，所以不需要减去offset
-        //{
-        //    if (GlobalVars.IsCalibration)
-        //    {
-        //        double xRatio = this.ActualWidth / imgSize.Width;
-        //        double yRatio = this.ActualHeight / imgSize.Height;
-        //        return new Point(pt.X * xRatio, pt.Y * yRatio);
-        //    }
-        //    else
-        //    {
-        //        double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
-        //        double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
-        //        double xRatio = virtualActualWidth / imgSize.Width;
-        //        double yRatio = virtualActualHeight / imgSize.Height;
-        //        return new Point(pt.X * xRatio, pt.Y * yRatio);
-        //    }
-        //}
-
-        //public Point ConvertCoordCalib2Real(Point pt)
-        //{
-        //    if (calibInfo.size.Width == 0)
-        //        return pt;
-        //    double xOffset = 0;
-        //    double yOffset = 0;
-
-        //    double xRatio, yRatio;
-        //    if (GlobalVars.IsCalibration)
-        //    {
-        //        xRatio = this.ActualWidth / calibInfo.size.Width;
-        //        yRatio = this.ActualHeight / calibInfo.size.Height;
-        //    }
-        //    else
-        //    {
-        //        double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
-        //        double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
-        //        xOffset = (virtualActualWidth - this.ActualWidth) * calibInfo.rect.TopLeft.X / (calibInfo.size.Width - calibInfo.rect.Width);
-        //        yOffset = (virtualActualHeight - this.ActualHeight) * calibInfo.rect.TopLeft.Y / (calibInfo.size.Height - calibInfo.rect.Height);
-        //        xRatio = virtualActualWidth / calibInfo.size.Width;
-        //        yRatio = virtualActualHeight / calibInfo.size.Height;
-        //    }
-
-        //    return new Point(pt.X * xRatio - xOffset, pt.Y * yRatio - yOffset);
-        //}
-
-        //private void ConvertCoordCalib2Real(Circle circle, ref Point ptCenter, ref Size sz)
-        //{
-        //    ptCenter = ConvertCoordCalib2Real(circle.ptCenter);
-        //    sz = ConvertCoordCalib2Real(new Size(circle.radius, circle.radius));
-        //}
-
-        //private Size ConvertCoordCalib2Real(Size sz)
-        //{
-        //    if (calibInfo.size.Width == 0)
-        //        return sz;
-
-        //    double xRatio, yRatio;
-        //    if (GlobalVars.IsCalibration)
-        //    {
-        //        xRatio = this.ActualWidth / calibInfo.size.Width;
-        //        yRatio = this.ActualHeight / calibInfo.size.Height;
-        //    }
-        //    else
-        //    {
-        //        double virtualActualWidth = calibInfo.size.Width / calibInfo.rect.Width * this.ActualWidth;
-        //        double virtualActualHeight = calibInfo.size.Height / calibInfo.rect.Height * this.ActualHeight;
-        //        xRatio = virtualActualWidth / calibInfo.size.Width;
-        //        yRatio = virtualActualHeight / calibInfo.size.Height;
-        //    }
-
-        //    return new Size(sz.Width * xRatio, sz.Height * yRatio);
-        //}
-        //#endregion
 
         public void SelectCircleAtPosition(Point pt)
         {
@@ -329,19 +235,6 @@ namespace BloodClotID
                 circleID++;
             }
 
-            //if (GlobalVars.IsCalibration && calibInfo.rect.Width != 0 && calibInfo.rect.Height != 0)
-            //{
-            //    Brush brush = new SolidColorBrush(Colors.Blue);
-            //    Point ptStart = ConvertCoordCalib2Real(calibInfo.rect.Location);
-            //    Size sz = ConvertCoordCalib2Real(calibInfo.rect.Size);
-            //    Rect rc = new Rect(ptStart, sz);
-            //    drawingContext.DrawRectangle(null, new Pen(brush, 1), rc);
-            //}
-            if(this.Name == "pic1")
-            {
-                Debug.WriteLine("debug");
-            }
-
             
             if (this.Background != null && analysisResults != null)
             {
@@ -406,17 +299,12 @@ namespace BloodClotID
 
         internal void LeftMouseUp(Point pt, bool bAdd)
         {
-
-            canMove = false;
-            //if (LeftCtrlDown())
-            //{
-            //    SetRect(new Rect(ptStart, pt));
-            //    return;
-            //}
             if (bAdd)
             {
                 AddCircle(new Circle(ptStart, pt));
             }
+            else
+                SelectCircleAtPosition(pt);
 
             InvalidateVisual();
         }
