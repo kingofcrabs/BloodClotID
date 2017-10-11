@@ -18,6 +18,42 @@ namespace EngineDll
 		delete m_EngineImpl;
 	}
 
+	array<MAnalysisResult^>^ IEngine::Analysis(array<uchar>^ red, array<uchar>^ green, array<uchar>^ blue,  int width, int height, array<MROI^>^ rois)
+	{
+		std::vector<MCircle> circles;
+		for each(MROI^ roi in rois)
+		{
+			MCircle circle(roi->x, roi->y, roi->radius);
+			circles.push_back(circle);
+		}
+		
+		std::vector<std::vector<cv::Point2f>> rotatedRects;
+		pin_ptr<uchar> pinRed = &red[0];
+		pin_ptr<uchar> pinGreen = &green[0];
+		pin_ptr<uchar> pinBlue = &blue[0];
+
+		uchar * pRedData = pinRed;
+		uchar * pGreenData = pinGreen;
+		uchar * pBlueData = pinBlue;
+
+		std::vector<int> results = m_EngineImpl->Analysis(pRedData, pGreenData, pBlueData, width, height, circles, rotatedRects);
+		array<MAnalysisResult^>^ vals = gcnew array<MAnalysisResult^>(results.size());
+		for (int i = 0; i < results.size(); i++)
+		{
+			array<MPoint^>^ points = gcnew array<MPoint^>(4);
+			auto rotatedRect = rotatedRects[i];
+			for (int ii = 0; ii < 4; ii++)
+			{
+				auto pt = rotatedRect[ii];
+				points[ii] = gcnew MPoint(pt.x, pt.y);
+			}
+
+			RotatedRect^ rc = gcnew RotatedRect(points);
+			vals[i] = gcnew MAnalysisResult(rc, results[i], circles[i].radius);
+		}
+		return vals;
+	}
+
 	cv::Rect2f IEngine::Convert2Rect2f(MRect^ rc)
 	{
 		cv::Point2f ptStart(rc->ptStart->x, rc->ptStart->y);
@@ -27,7 +63,6 @@ namespace EngineDll
 
 	array<MAnalysisResult^>^ IEngine::Analysis(System::String^ sFile, array<MROI^>^ rois)
 	{
-		
 		std::string nativeFileName = msclr::interop::marshal_as< std::string >(sFile);
 		std::vector<MCircle> circles;
 		for each(MROI^ roi in rois)

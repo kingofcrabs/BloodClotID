@@ -30,8 +30,6 @@ namespace BloodClotID
         private void SettingWindow_stageSwitched(object sender, SwitchEventArgs e)
         {
             btnAnalysis.IsEnabled = true;
-          
-                
             SwitchTo(Stage.Analysis);
         }
 

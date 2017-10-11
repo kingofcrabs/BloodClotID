@@ -237,26 +237,26 @@ Rect EngineImpl::GetRect(MCircle circle, Size imgSize)
 
 int EngineImpl::AnalysisSub(Mat& org,int id, vector<cv::Point2f>& pts)
 {
-	Mat clone = org.clone();
+	//Mat clone = org.clone();
 #if _DEBUG
-	wstringstream ss;
-	ss << "D:\\temp\\hue" << id<< ".jpg";
-	wstring ws = ss.str();
-	string sHue = WStringToString(ws);
-	ss.str(L"");
-	ss << "D:\\temp\\org" << id << ".jpg";
-	ws = ss.str();
-	string sOrg = WStringToString(ws);
-	ss.str(L"");
-	ss << "D:\\temp\\final" << id++ << ".jpg";
-	ws = ss.str();
-	string sFinal = WStringToString(ws);
-	ss.str(L"");
-	imwrite(sOrg, clone);
+	//wstringstream ss;
+	//ss << "D:\\temp\\hue" << id<< ".jpg";
+	//wstring ws = ss.str();
+	//string sHue = WStringToString(ws);
+	//ss.str(L"");
+	//ss << "D:\\temp\\org" << id << ".jpg";
+	//ws = ss.str();
+	//string sOrg = WStringToString(ws);
+	//ss.str(L"");
+	//ss << "D:\\temp\\final" << id++ << ".jpg";
+	//ws = ss.str();
+	//string sFinal = WStringToString(ws);
+	//ss.str(L"");
+	//imwrite(sOrg, clone);
 #endif
 	
 	Mat hls;
-	cvtColor(clone, hls, COLOR_BGR2HLS);
+	cvtColor(org, hls, COLOR_BGR2HLS);
 	vector<Mat> channels;
 	split(hls, channels);
 	Mat& hue = channels[0];
@@ -288,8 +288,8 @@ int EngineImpl::AnalysisSub(Mat& org,int id, vector<cv::Point2f>& pts)
 	rotatedRect.points(vertices);
 	double maxDistance = 0;
 
-	int height = clone.rows;
-	int width = clone.cols;
+	int height = org.rows;
+	int width = org.cols;
 	int xCenter = width / 2;
 	int yCenter = height / 2;
 
@@ -305,7 +305,29 @@ int EngineImpl::AnalysisSub(Mat& org,int id, vector<cv::Point2f>& pts)
 	return maxDistance;
 }
 
+vector<int> EngineImpl::Analysis(uchar* pRedData, uchar* pGreenData, uchar* pBlueData, int width, int height, vector<MCircle> rois, vector<vector<cv::Point2f>>& rotatedRects)
+{
+	vector<Mat> pDatas;
+	Mat red = Mat(height, width, CV_8UC1, pRedData);
+	Mat green = Mat(height, width, CV_8UC1, pGreenData);
+	Mat blue = Mat(height, width, CV_8UC1, pBlueData);
+	pDatas.push_back(red);
+	pDatas.push_back(green);
+	pDatas.push_back(blue);
+	Mat rgb;
+	merge(pDatas, rgb);
+	vector<int> results;
+	for (int i = 0; i < rois.size(); i++)
+	{
+		Rect rc = GetRect(rois[i], rgb.size());
+		vector<cv::Point2f> rotatedRect;
+		int val = AnalysisSub(rgb(rc), 1 + i, rotatedRect);
+		results.push_back(val);
+		rotatedRects.push_back(rotatedRect);
+	}
+	return results;
 
+}
 
 vector<int> EngineImpl::Analysis(string sFile,vector<MCircle> rois, vector<vector<cv::Point2f>>& rotatedRects)
 {

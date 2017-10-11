@@ -22,6 +22,7 @@ class EngineImpl
 public:
 	EngineImpl();
 	std::vector<int> Analysis(std::string sFile, std::vector<MCircle> rois, std::vector<std::vector<cv::Point2f>>&);
+	std::vector<int> Analysis(uchar* pRedData, uchar* pGreenData, uchar* pBlueData, int width, int height, std::vector<MCircle> rois, std::vector<std::vector<cv::Point2f>>& rotatedRects);
 private:
 	cv::Rect GetRect(MCircle circle, cv::Size imgSize);
 	int AnalysisSub(cv::Mat& sub,int id, std::vector<cv::Point2f>& rotatedRect);

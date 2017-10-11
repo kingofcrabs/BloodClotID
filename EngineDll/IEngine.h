@@ -95,6 +95,7 @@ namespace EngineDll
 		~IEngine();
 		cv::Rect2f Convert2Rect2f(MRect^ rc);
 		array<MAnalysisResult^>^ Analysis(System::String^ sFile, array<MROI^>^ rois);
+		array<MAnalysisResult^>^ Analysis(array<uchar>^ red, array<uchar>^ green, array<uchar>^ blue,int width, int height, array<MROI^>^ rois);
 	private :
 		EngineImpl* m_EngineImpl;
 	};
