@@ -43,7 +43,7 @@ void Analyzer::RemovePtsNotInCircle(Mat& src)
 	int innerRadius = min(xx, yy);
 	for (int y = 0; y < height; y++)
 	{
-		uchar *data = src.ptr(y);
+		unsigned char *data = src.ptr(y);
 		for (int x = 0; x < width; x++)
 		{
 			if (GetDistance(x, y, xx, yy) > innerRadius)
@@ -88,8 +88,8 @@ void Analyzer::ThresholdByRed(Mat& hue, Mat& val)
 	int nc = width * channels;
 	for (int y = 0; y < height; y++)
 	{
-		uchar *dataHue = hue.ptr(y);
-		uchar *dataVal = val.ptr(y);
+		unsigned char *dataHue = hue.ptr(y);
+		unsigned char *dataVal = val.ptr(y);
 		for (int x = 0; x < nc; x += channels)
 		{
 			int hue = dataHue[x];

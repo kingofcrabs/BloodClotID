@@ -1,4 +1,4 @@
-﻿using CameraControl;
+﻿using Nikon;
 using PieControls;
 using System;
 using System.Collections.Generic;
@@ -7,19 +7,10 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Utility;
 
@@ -33,18 +24,24 @@ namespace BloodClotID
     {
         Thread _progressThread = null;
         Loader loaderWindow;
-        IImageAcquirer imgAcquirer;
+        NikonDevice _device;
+        AutoResetEvent waitDeviceAdded = new AutoResetEvent(false);
         ObservableCollection<PieSegment> pieCollection = new ObservableCollection<PieSegment>();
+        protected static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public event EventHandler onReportReady;
         Transformer transformer;
         Window container;
+        NikonManager nikonManager;
         public AnalysisWindow(Window parent)
         {
+            log.Info("AnalysisWindow");
             InitializeComponent();
             try
             {
                 this.container = parent;
-                imgAcquirer = ImageAcquirerFactory.CreateImageAcquirer();
+                btnAcquire.IsEnabled = false;
+                nikonManager = new NikonManager("Type0011.md3");
+                nikonManager.DeviceAdded += NikonManager_DeviceAdded;
                 transformer = new Transformer(picturesContainer);
             }
             catch (Exception ex)
@@ -54,32 +51,62 @@ namespace BloodClotID
             this.SizeChanged += AnalysisWindow_SizeChanged;
             if (!AcquireInfo.Instance.IsHorizontal)
             {
-                parent.MaxWidth = 1080;
+                parent.MaxWidth = 1920;
             }
-                
-            picturesContainer.PreviewMouseLeftButtonUp += PictureContainers_PreviewMouseLeftButtonUp;
+            pic1.PreviewMouseLeftButtonUp += pic1_PreviewMouseLeftButtonUp;
             parent.Closed += Parent_Closed;
+        }
+
+        private void NikonManager_DeviceAdded(NikonManager sender, NikonDevice device)
+        {
+            Console.WriteLine("=> {0}, {1}", sender.Id, sender.Name);
+            waitDeviceAdded.Set();
+            if (_device == null)
+            {
+                // Save device
+                _device = device;
+
+            }
+            _device.CaptureComplete += _device_CaptureComplete;
+            _device.ImageReady += _device_ImageReady;
+            btnAcquire.IsEnabled = true;
+        }
+
+        void _device_ImageReady(NikonDevice sender, NikonImage image)
+        {
+            string dts = DateTime.Now.ToString("HHmmss");
+            string filename = FolderHelper.GetImagePath();
+            filename += dts + ".jpg";
+            // Save captured image to disk
+            using (FileStream s = new FileStream(filename, FileMode.Create, FileAccess.Write))
+            {
+                s.Write(image.Buffer, 0, image.Buffer.Length);
+            }
+
+            File.Copy(filename, FolderHelper.GetLatestImagePath(),true);
+        }
+
+
+        private void _device_CaptureComplete(NikonDevice sender, int data)
+        {
+            RefreshImage();
+        }
+
+        void pic1_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            //throw new NotImplementedException();
         }
 
         
         void AnalysisWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Debug.WriteLine("new size :{0}-{1}", picturesContainer.ActualWidth, picturesContainer.ActualHeight);
-            FitNewSize();
+            
         }
 
         private void FitNewSize()
         {
-            Dictionary<int, RenderCanvas> dict = new Dictionary<int, RenderCanvas>() { };
-            dict.Add(1, pic1);
-            dict.Add(2, pic2);
-            dict.Add(3, pic3);
-            dict.Add(4, pic4);
-            foreach (var pair in dict)
-            {
-                pair.Value.AdapteToUI();
-            }
-            transformer.DoTransform();
+            pic1.AdapteToUI();
         }
 
       
@@ -88,10 +115,8 @@ namespace BloodClotID
         {
             if (bInitialized)
                 return;
-            pieCollection.Clear();
-            pieCollection.Add(new PieSegment { Color = Colors.Green, Value = 0, Name = "已完成" });
-            pieCollection.Add(new PieSegment { Color = Colors.Yellow, Value = AcquireInfo.Instance.GetTotalPlateCnt(), Name = "未完成" });
-            chart1.Data = pieCollection;
+            
+            
             if (!AcquireInfo.Instance.IsHorizontal)
             {
                 Application.Current.MainWindow.Width = 1040;
@@ -102,7 +127,8 @@ namespace BloodClotID
        
         private void Parent_Closed(object sender, EventArgs e)
         {
-            imgAcquirer.Stop();
+            if (nikonManager != null)
+                nikonManager.Shutdown();
         }
 
         
@@ -111,38 +137,7 @@ namespace BloodClotID
         private void PictureContainers_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             Point pt = e.GetPosition(lblOriginal);
-            if(!AcquireInfo.Instance.IsHorizontal)
-            {
-                pt = transformer.TransformBack(pt);
-            }
-            RenderCanvas resultCanvas;
-            Point adjustPt = new Point(pt.X, pt.Y);
-            if (pt.X > pic1.ActualWidth)
-            {
-                adjustPt.X -= pic1.ActualWidth;
-                if (pt.Y <= pic2.ActualHeight)
-                {
-                    resultCanvas = pic2;
-                }
-                else
-                {
-                    adjustPt.Y -= pic2.ActualHeight;
-                    resultCanvas = pic4;
-                }
-            }
-            else
-            {
-                if (pt.Y <= pic1.ActualHeight)
-                {
-                    resultCanvas = pic1;
-                }
-                else
-                {
-                    adjustPt.Y -= pic1.ActualHeight;
-                    resultCanvas = pic3;
-                }
-            }
-            resultCanvas.LeftMouseUp(adjustPt, false);
+          
         }
 
       
@@ -160,81 +155,40 @@ namespace BloodClotID
 
         #region take photo
 
-        private void Analysis()
-        {
-            Analyzer.Instance.Reset();
-            List<int> plateIDs = new List<int>() { 1, 2, 3, 4 };
-            Parallel.ForEach(plateIDs, x => AnalysisPlate(x));
-            ShowResult();
-            transformer.DoTransform();
-            HighlightWell(Analyzer.Instance.Results);
-            Report.Instance.AddResult(AcquireInfo.Instance.CurrentAssay, Analyzer.Instance.Results);
-        }
+
 
         private void HighlightWell(List<int> eachRowPositions)
         {
-            Dictionary<int, RenderCanvas> dict = new Dictionary<int, RenderCanvas>() { };
-            dict.Add(1, pic1);
-            dict.Add(2, pic2);
-            dict.Add(3, pic3);
-            dict.Add(4, pic4);
-            foreach(var pair in dict)
+            pic1.ClearHight();
+            for (int rowIndex = 0; rowIndex < eachRowPositions.Count; rowIndex++)
             {
-                pair.Value.ClearHight();
-            }
-            for(int rowIndex = 0; rowIndex < eachRowPositions.Count; rowIndex++)
-            {
-                var colIndex = eachRowPositions[rowIndex] - 1;
-                int plateID = 1;
-                int indexInPlate = 0;
-                Analyzer.Instance.CalculatePlateAndPosition(rowIndex, colIndex,ref plateID, ref indexInPlate);
-                dict[plateID].Highlight(indexInPlate);
+                pic1.Highlight(eachRowPositions[rowIndex]);
             }
         }
 
-        private void AnalysisPlate(int plateID)
-        {
-            Dictionary<int, RenderCanvas> dict = new Dictionary<int, RenderCanvas>() { };
-            dict.Add(1, pic1);
-            dict.Add(2, pic2);
-            dict.Add(3, pic3);
-            dict.Add(4, pic4);
-            var result = Analyzer.Instance.AnalysisPlate(plateID);
-            
-            dict[plateID].SetResult(result);
-        }
+ 
 
         private void ShowResult()
         {
             var tbl3 = new DataTable("template");
             tbl3.Columns.Add("Seq", typeof(string));
             tbl3.Columns.Add("Result", typeof(string));
-            for (int i = 0; i < Analyzer.Instance.Results.Count; i++)
-            {
-                object[] objs = new object[2] { i + AcquireInfo.Instance.BatchStartID, Analyzer.Instance.Results[i] };
-                tbl3.Rows.Add(objs);
-            }
+            //for (int i = 0; i < OldAnalyzer.Instance.Results.Count; i++)
+            //{
+            //    object[] objs = new object[2] { i + AcquireInfo.Instance.BatchStartID, OldAnalyzer.Instance.Results[i] };
+            //    tbl3.Rows.Add(objs);
+            //}
             lvResult.ItemsSource = tbl3.DefaultView;
         }
 
         private void RefreshImage()
         {
-            int id = 1;
-            foreach (var uiElement in picturesContainer.Children)
+            string file = FolderHelper.GetLatestImagePath();
+            
+            if (File.Exists(file))
             {
-                string file = FolderHelper.GetImagePath(id);
-                RenderCanvas canvas = (RenderCanvas)uiElement;
-                if (File.Exists(file))
-                {
-                    canvas.UpdateBackGroundImage(file, id);
-                    canvas.LoadCalib(id);
-                }
-
-                else
-                    canvas.Background = null;
-                id++;
+                pic1.UpdateBackGroundImage(file,new Size(picturesContainer.ActualWidth,picturesContainer.ActualHeight));
             }
-
         }
 
         private void btnTakePhote_Click(object sender, RoutedEventArgs e)
@@ -246,32 +200,27 @@ namespace BloodClotID
             this.Refresh();
         
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
-            //try
+            try
             {
                 bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
                 if(!bUseTestImage)
                 {
-                    imgAcquirer.Start();
+                    
                     SetInfo("初始化完成！", false);
-                    List<Task> tasks = new List<Task>();
-
-                    tasks.ForEach(x => x.Wait());
+                    _device.Capture();
                 }
                 Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
                 btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
                 RefreshImage();
-                Debug.WriteLine("refresh:" + watcher.Elapsed.Milliseconds);
-                watcher.Start();
-                Analysis();
-                Debug.WriteLine("analysis:" + watcher.Elapsed.Milliseconds);
-               
+                //OldAnalyzer.Instance.Analysis();
+                //pic1.SetResult(OldAnalyzer.Instance.AnalysisResults);
                 UpdateProgress();
-                SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.TotalMilliseconds / 1000.0), false);
+                SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.Milliseconds/1000.0), false);
             }
-            //catch (Exception ex)
-            //{
-            //    SetInfo(ex.Message);
-            //}
+            catch (Exception ex)
+            {
+                SetInfo(ex.Message);
+            }
             this.IsEnabled = true;
         }
 
@@ -316,15 +265,8 @@ namespace BloodClotID
         {
             string assayName = AcquireInfo.Instance.CurrentAssay;
             lblProgress.Content = string.Format("{0}:{1}-{2}", assayName, AcquireInfo.Instance.BatchStartID, AcquireInfo.Instance.BatchEndID);
-            pieCollection[0].Value = AcquireInfo.Instance.curPlateID;
-            int notFinishedCnt = AcquireInfo.Instance.GetTotalPlateCnt() - AcquireInfo.Instance.curPlateID;
-            pieCollection[1].Value = notFinishedCnt;
+            var prgInfo =  string.Format( "进度：{0}/{1}", AcquireInfo.Instance.curPlateID, AcquireInfo.Instance.GetTotalPlateCnt());
             this.Refresh();
-            if (notFinishedCnt == 0)
-            {
-                if (onReportReady != null)
-                    onReportReady(this, null);
-            }
         }
         private void SetInfo(string message, bool error = true)
         {

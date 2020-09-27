@@ -28,9 +28,9 @@ namespace Utility
         {
 
         }
-        public Circle(Point ptEnd, double r)
+        public Circle(Point center, double r)
         {
-            ptCenter = ptEnd;
+            ptCenter = center;
             radius = r;
         }
 

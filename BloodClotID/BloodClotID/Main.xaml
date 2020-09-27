@@ -7,7 +7,7 @@
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Icon ="/Images/redcell.ico"
-        Title="BloodClot" Height="900" Width="1000">
+        Title="BloodClot" Height="900" MaxWidth="1400" Width="1400">
     <Grid Name="rootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>

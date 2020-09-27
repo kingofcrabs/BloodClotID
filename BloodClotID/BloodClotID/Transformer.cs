@@ -38,8 +38,7 @@ namespace BloodClotID
             if (AcquireInfo.Instance.IsHorizontal)
                 return;
             tg.Children.Clear();
-            Rotate90Degree();
-            Move2Original();
+           
             Shrink();
             
             grid.RenderTransform = tg;

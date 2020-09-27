@@ -39,7 +39,7 @@ void RemovePtsNotInCircle(Mat& src)
 	int innerRadius = min(xx, yy);
 	for (int y = 0; y < height; y++)
 	{
-		uchar *data = src.ptr(y);
+		unsigned char *data = src.ptr(y);
 		for (int x = 0; x < width; x++)
 		{
 			if (GetDistance(x, y, xx, yy) > innerRadius)
@@ -62,7 +62,7 @@ void FilterRed(Mat& sub)
 	int nc = width * channels;
 	for (int y = 0; y < height; y++)
 	{
-		uchar *data = sub.ptr(y);
+		unsigned char *data = sub.ptr(y);
 		for (int x = 0; x < nc; x += channels)
 		{
 			int r = data[x + 2];

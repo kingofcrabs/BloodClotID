@@ -8,13 +8,13 @@
              xmlns:pie="clr-namespace:PieControls;assembly=PieControls"
              mc:Ignorable="d" 
              xmlns:myCanvas="clr-namespace:BloodClotID"
-             d:DesignHeight="500" d:DesignWidth="500">
+             d:DesignHeight="700" d:DesignWidth="1000">
     <Grid>
         <Grid.RowDefinitions>
 
             <RowDefinition Height="30"/>
             <RowDefinition Height="4*"/>
-            <RowDefinition Height="100"/>
+        
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"/>
@@ -26,34 +26,25 @@
         </StackPanel>
         <Label Background="Red" Name="lblOriginal" Width="0.5" Height="0.5" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,0,0,0"></Label>
         <Grid Name="picturesContainer" Grid.Row="1" Background="LightBlue"  Margin="5,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+         
             <myCanvas:RenderCanvas x:Name="pic1" >
             </myCanvas:RenderCanvas>
-            <myCanvas:RenderCanvas Grid.Column="1" x:Name="pic2" >
-            </myCanvas:RenderCanvas>
-
-            <myCanvas:RenderCanvas Grid.Row="1" x:Name="pic3" >
-            </myCanvas:RenderCanvas>
-
-            <myCanvas:RenderCanvas Grid.Row="1" Grid.Column="1" x:Name="pic4" >
-            </myCanvas:RenderCanvas>
+         
         </Grid>
 
         <Grid Grid.Column="1" Grid.Row="1" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="160"/>
+                <RowDefinition Height="300"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal">
-                <pie:PieChart x:Name="chart1" Width="220" Height="150" PieWidth="130" PieHeight="130" Margin="5,5,5,15" HorizontalAlignment="Left"/>
+            <!--<StackPanel Orientation="Horizontal">
+                <pie:PieChart x:Name="chart1" Width="150" Height="150" PieWidth="130" PieHeight="130" Margin="5,5,5,15" HorizontalAlignment="Left"/>
 
+            </StackPanel>-->
+            <StackPanel>
+                <Label Content="信息：" FontSize="16"/>
+                <TextBox Grid.Row="1" Margin="5,0,0,5" Height="100" Name="txtInfo"></TextBox>
             </StackPanel>
             <ListView Grid.Row="1" Name="lvResult" FontSize="14" FontFamily="SimSun"   Margin="5,0,0,0">
                 <ListView.View>
@@ -63,20 +54,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-        </Grid>
-
-        <Grid Grid.Row="3" Grid.ColumnSpan="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Label Content="信息：" FontSize="16"/>
-            <TextBox Grid.Row="1" Margin="5,0,0,5" Name="txtInfo"></TextBox>
-            <StackPanel  Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+            <StackPanel  Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
                 <Button Margin="5,5,2,5" Name="btnAcquire" Click="btnTakePhote_Click" HorizontalAlignment="Left" Height="50" Width="50">
                     <StackPanel>
                         <TextBlock Text="拍照"/>
@@ -90,6 +68,19 @@
                     </StackPanel>
                 </Button>
             </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="3" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            
             
            
             

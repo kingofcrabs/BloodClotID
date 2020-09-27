@@ -137,7 +137,8 @@ namespace Utility
 
     public class FolderHelper
     {
-        
+
+        static bool thisStartImageFolderCreated = false;
         static public string GetExeFolder()
         {
             string s = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -185,12 +186,7 @@ namespace Utility
             return s;
         }
 
-        static public string GetDataFolder()
-        {
-            string sDataFolder = GetExeParentFolder() + "Data\\";
-            CreateIfNotExist(sDataFolder);
-            return sDataFolder;
-        }
+    
 
         static private string GetCalibFolder()
         {
@@ -221,17 +217,17 @@ namespace Utility
         private static string GetLatestImagePathInner()
         {
 
-            return GetDataFolder() + "latest.jpg";
+            return GetImagePath() + "latest.jpg";
         }
 
         internal static string GetTestImagePath()
         {
-            return GetDataFolder() + "test.jpg";
+            return GetAcquiredImageRootFolder() + "test.jpg";
         }
 
-        public static string GetImagePath(int cameraId)
+        public static string GetImagePath()
         {
-            return CurrentAcquiredImageFolder + string.Format("{0}.jpg", cameraId);
+            return CurrentAcquiredImageFolder;
         }
 
         internal static string GetIconFolder()
@@ -243,21 +239,17 @@ namespace Utility
 
         public static void CreateAcquiredImageFolder()
         {
+            if (thisStartImageFolderCreated)
+                return;
             //bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
-            string subFolder = GlobalVars.UseTestImage ? "" : DateTime.Now.ToString("yyMMddhhmm") + "\\";
+            string subFolder = GlobalVars.UseTestImage ? "" : DateTime.Now.ToString("yyyyMMdd") + "\\";
             CurrentAcquiredImageFolder = GetAcquiredImageRootFolder() + subFolder ;
             CreateIfNotExist(CurrentAcquiredImageFolder);
+            thisStartImageFolderCreated = true;
         }
     }
 
-    public struct RegistInfo
-    {
-        public static List<string> allowedCameraNames = new List<string>()
-        {
-
-              "UE500000033","UE500000031","UE500000022","UE500000034"
-        };
-    }
+  
 
     public class AcquireInfo
     {
@@ -493,6 +485,27 @@ where T : DependencyObject
             //transform.RotateAt(90, 0.5, 0.5);
             //imgBrush.RelativeTransform = new MatrixTransform(transform);
             imgBrush.ViewportUnits = BrushMappingMode.RelativeToBoundingBox;
+            return imgBrush;
+        }
+
+        public static System.Windows.Media.Brush CreateBrush(Bitmap bitmap, System.Windows.Size size)
+        {
+              BitmapImage bitmapImage;                                                                                                                                                                                                                                     
+            System.Drawing.Bitmap cloneBitmap = (System.Drawing.Bitmap)bitmap.Clone();
+            using (MemoryStream memory = new MemoryStream())
+            {
+                cloneBitmap.Save(memory, ImageFormat.Jpeg);
+                memory.Position = 0;
+                bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.EndInit();
+            }
+
+            ImageBrush imgBrush = new ImageBrush();
+            imgBrush.Stretch = Stretch.Fill;
+            imgBrush.ImageSource = bitmapImage;
             return imgBrush;
         }
     }

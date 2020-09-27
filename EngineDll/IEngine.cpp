@@ -18,16 +18,11 @@ namespace EngineDll
 		delete m_EngineImpl;
 	}
 
-	array<MAnalysisResult^>^ IEngine::Analysis(array<uchar>^ red, array<uchar>^ green, array<uchar>^ blue,  int width, int height, array<MROI^>^ rois)
+	MAnalysisResult^ IEngine::Analysis(array<uchar>^ red, array<uchar>^ green, array<uchar>^ blue,  int width, int height)
 	{
-		std::vector<MCircle> circles;
-		for each(MROI^ roi in rois)
-		{
-			MCircle circle(roi->x, roi->y, roi->radius);
-			circles.push_back(circle);
-		}
 		
-		std::vector<std::vector<cv::Point2f>> rotatedRects;
+		
+		std::vector<cv::Point2f> pts;
 		pin_ptr<uchar> pinRed = &red[0];
 		pin_ptr<uchar> pinGreen = &green[0];
 		pin_ptr<uchar> pinBlue = &blue[0];
@@ -36,22 +31,18 @@ namespace EngineDll
 		uchar * pGreenData = pinGreen;
 		uchar * pBlueData = pinBlue;
 
-		std::vector<int> results = m_EngineImpl->Analysis(pRedData, pGreenData, pBlueData, width, height, circles, rotatedRects);
-		array<MAnalysisResult^>^ vals = gcnew array<MAnalysisResult^>(results.size());
-		for (int i = 0; i < results.size(); i++)
+		int len = m_EngineImpl->Analysis(pRedData, pGreenData, pBlueData, width, height, pts);
+		array<MPoint^>^ points = gcnew array<MPoint^>(4);
+		
+		for (int ii = 0; ii < 4; ii++)
 		{
-			array<MPoint^>^ points = gcnew array<MPoint^>(4);
-			auto rotatedRect = rotatedRects[i];
-			for (int ii = 0; ii < 4; ii++)
-			{
-				auto pt = rotatedRect[ii];
-				points[ii] = gcnew MPoint(pt.x, pt.y);
-			}
-
-			RotatedRect^ rc = gcnew RotatedRect(points);
-			vals[i] = gcnew MAnalysisResult(rc, results[i], circles[i].radius);
+			auto pt = pts[ii];
+			points[ii] = gcnew MPoint(pt.x, pt.y);
 		}
-		return vals;
+
+		RotatedRect^ rc = gcnew RotatedRect(points);
+		auto result = gcnew MAnalysisResult(rc, len, 225);
+		return result;
 	}
 
 	cv::Rect2f IEngine::Convert2Rect2f(MRect^ rc)

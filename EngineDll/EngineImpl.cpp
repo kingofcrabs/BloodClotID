@@ -305,27 +305,33 @@ int EngineImpl::AnalysisSub(Mat& org,int id, vector<cv::Point2f>& pts)
 	return maxDistance;
 }
 
-vector<int> EngineImpl::Analysis(uchar* pRedData, uchar* pGreenData, uchar* pBlueData, int width, int height, vector<MCircle> rois, vector<vector<cv::Point2f>>& rotatedRects)
+int EngineImpl::Analysis(uchar* pRedData, uchar* pGreenData, uchar* pBlueData, int width, int height,  vector<cv::Point2f>& pts)
 {
 	vector<Mat> pDatas;
+	static int imgID = 1;
 	Mat red = Mat(height, width, CV_8UC1, pRedData);
 	Mat green = Mat(height, width, CV_8UC1, pGreenData);
 	Mat blue = Mat(height, width, CV_8UC1, pBlueData);
-	pDatas.push_back(red);
-	pDatas.push_back(green);
+	
 	pDatas.push_back(blue);
+	pDatas.push_back(green);
+	
+	pDatas.push_back(red);
+	
 	Mat rgb;
 	merge(pDatas, rgb);
-	vector<int> results;
-	for (int i = 0; i < rois.size(); i++)
-	{
-		Rect rc = GetRect(rois[i], rgb.size());
-		vector<cv::Point2f> rotatedRect;
-		int val = AnalysisSub(rgb(rc), 1 + i, rotatedRect);
-		results.push_back(val);
-		rotatedRects.push_back(rotatedRect);
-	}
-	return results;
+	wstringstream ss;
+	ss << "D:\\test\\" << imgID++<< ".jpg";
+	wstring ws = ss.str();
+	
+	imwrite(WStringToString(ws), rgb);
+	Rect rc;
+	rc.width = width;
+	rc.height = height;
+	rc.x = 0;
+	rc.y = 0;
+	int len = AnalysisSub(rgb(rc), 1, pts);
+	return len;
 
 }
 
