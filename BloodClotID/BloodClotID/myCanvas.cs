@@ -22,7 +22,7 @@ namespace BloodClotID
         protected Rect bound;
 
         protected Dictionary<int, AnalysisResult> analysisResults = new Dictionary<int, AnalysisResult>();
-        protected CalibrationInfo calibInfo = new CalibrationInfo();
+        protected PlatePositon platePositon = PlatePositon.Load();
         protected Size bkImgSize;
 
         Point ptStart;
@@ -45,15 +45,9 @@ namespace BloodClotID
           
             
         }
-
+      
         private List<Circle> CreateROIs()
         {
-            Point ptTopLeft = new Point(1426, 1079);
-            Point ptBottomRight = new Point(4615, 3111);
-            double width = ptBottomRight.X - ptTopLeft.X;
-            double height = ptBottomRight.Y - ptTopLeft.Y;
-            double widthUnit = width / 11;
-            double heightUnit = height / 7;
             int radius = 88;
             int ID = 1;
             List<Circle> circles = new List<Circle>();
@@ -61,9 +55,7 @@ namespace BloodClotID
             {
                 for (int col = 0; col< 12; col++)
                 {
-                    double x = ptTopLeft.X + col * widthUnit;
-                    double y = ptTopLeft.Y + row * heightUnit;
-                    Point ptCenter = new Point(x,y);
+                    Point ptCenter = platePositon.GetAffinePosition(row, col);
                     circles.Add(new Circle(ptCenter, radius));
                 }
             }
@@ -80,14 +72,7 @@ namespace BloodClotID
             //}
             InvalidateVisual();
         }
-
-       
-     
-
-
-
-       
-
+        
         #region coordination translation, only real & UI coordination now.
         private Point Coord2UI(Point pt)//go smaller
         {

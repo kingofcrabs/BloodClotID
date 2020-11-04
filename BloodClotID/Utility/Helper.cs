@@ -34,7 +34,7 @@ namespace Utility
     public class SerializeHelper
     {
 
-        static public void SaveCalib(CalibrationInfo calibInfo, string sFile)
+        static public void SaveCalib(PlatePositon platePosition, string sFile)
         {
             int pos = sFile.LastIndexOf("\\");
             string sDir = sFile.Substring(0, pos);
@@ -47,7 +47,7 @@ namespace Utility
 
             XmlSerializer xs = new XmlSerializer(typeof(CalibrationInfo));
             Stream stream = new FileStream(sFile, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite);
-            xs.Serialize(stream, calibInfo);
+            xs.Serialize(stream, platePosition);
             stream.Close();
         }
 
@@ -95,16 +95,16 @@ namespace Utility
             return (T)obj;
         }
 
-        static public CalibrationInfo LoadCalib(string sFile)
+        static public PlatePositon LoadCalib(string sFile)
         {
-            CalibrationInfo calibInfo;
+            PlatePositon platePosition = new PlatePositon();
             if (!File.Exists(sFile))
-                throw new FileNotFoundException(string.Format("位于：{0}的配置文件不存在", sFile));
+                return platePosition;
             Stream stream = new FileStream(sFile, FileMode.Open, FileAccess.Read, FileShare.Read);
             try
             {
-                XmlSerializer xs = new XmlSerializer(typeof(CalibrationInfo));
-                calibInfo = xs.Deserialize(stream) as CalibrationInfo;
+                XmlSerializer xs = new XmlSerializer(typeof(PlatePositon));
+                platePosition = xs.Deserialize(stream) as PlatePositon;
             }
             catch (Exception ex)
             {
@@ -114,7 +114,7 @@ namespace Utility
             {
                 stream.Close();
             }
-            return calibInfo;
+            return platePosition;
         }
     }
 
@@ -196,16 +196,13 @@ namespace Utility
             return sFolder;
         }
 
-        static public string GetCalibFile(int cameraID)
+        static public string GetCalibFile()
         {
-            return GetCalibFolder() + string.Format("ROIs_{0}.xml", cameraID);
+            return GetCalibFolder() + string.Format("calib.xml");
         }
 
 
-        static public string GetCalibFileCPlusPlus(int cameraID)
-        {
-            return GetCalibFolder() + string.Format("ROIs_{0}.txt", cameraID);
-        }
+      
 
 
         private static void CreateIfNotExist(string sFolder)
@@ -222,7 +219,7 @@ namespace Utility
 
         internal static string GetTestImagePath()
         {
-            return GetAcquiredImageRootFolder() + "test.jpg";
+            return GetAcquiredImageRootFolder() + "test2.jpg";
         }
 
         public static string GetImagePath()
@@ -360,29 +357,7 @@ namespace Utility
         }
     }
 
-    [Serializable]
-    public class CameraSettings
-    {
-        public bool IsAE { get; set; }
-        public ulong ExposeTime { get; set; }
-
-        public double Gain { get; set; }
-
-        public CameraSettings(ulong gain, ulong exposeTime, bool isAE)
-        {
-            IsAE = isAE;
-            ExposeTime = exposeTime;
-            Gain = gain;
-        }
-
-        public CameraSettings()
-        {
-            // TODO: Complete member initialization
-            IsAE = true;
-            ExposeTime = 500;
-            Gain = 1;
-        }
-    }
+    
 
     public static class UIHelper
     {
@@ -526,13 +501,7 @@ where T : DependencyObject
                 isCalib = value;
             }
         }
-        //static public string Vendor
-        //{
-        //    get
-        //    {
-        //        return "OV";
-        //    }
-        //}
+       
         static public bool UseTestImage
         {
             get
@@ -541,23 +510,7 @@ where T : DependencyObject
             }
         }
 
-        //static public List<CalibrationInfo> CalibInfos
-        //{
-        //    get
-        //    {
-        //        if(calibInfos == null)
-        //        {
-        //            calibInfos = new List<CalibrationInfo>();
-        //            for (int i = 0; i< 4; i++)
-        //            {
-        //                int cameraID = i + 1;
-        //                string sFile = FolderHelper.GetCalibFile(cameraID);
-        //                calibInfos.Add(SerializeHelper.LoadCalib(sFile));
-        //            }
-        //        }
-        //        return calibInfos;
-        //    }
-        //}
+    
 
 
         public static List<AssayGroup> ReadGroups()
@@ -579,34 +532,6 @@ where T : DependencyObject
         }
 
 
-        static CameraSettings cameraSettings = LoadCameraSettings();
-
-        private static Utility.CameraSettings LoadCameraSettings()
-        {
-            string sCameraSetting = Utility.FolderHelper.GetExeFolder() + "cameraSetting.xml";
-            if(File.Exists(sCameraSetting))
-            {
-                return SerializeHelper.Deserialize<CameraSettings>(sCameraSetting);
-            }
-            else
-            {
-                var cameraSettings = new CameraSettings();
-                string content = SerializeHelper.Serialize(cameraSettings);
-                File.WriteAllText(sCameraSetting, content);
-                return cameraSettings;
-            }
-            
-        }
-        public static CameraSettings CameraSettings
-        {
-            get
-            {
-                return cameraSettings;
-            }
-            set
-            {
-                cameraSettings = value;
-            }
-        }
+      
     }
 }

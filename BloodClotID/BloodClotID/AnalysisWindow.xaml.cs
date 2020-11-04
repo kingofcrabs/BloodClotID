@@ -39,9 +39,18 @@ namespace BloodClotID
             try
             {
                 this.container = parent;
-                btnAcquire.IsEnabled = false;
-                nikonManager = new NikonManager("Type0011.md3");
-                nikonManager.DeviceAdded += NikonManager_DeviceAdded;
+                
+                if(GlobalVars.UseTestImage)
+                {
+                    btnAcquire.IsEnabled = true;
+                }
+                else
+                {
+                    btnAcquire.IsEnabled = false;
+                    nikonManager = new NikonManager("Type0011.md3");
+                    nikonManager.DeviceAdded += NikonManager_DeviceAdded;
+                }
+              
                 transformer = new Transformer(picturesContainer);
             }
             catch (Exception ex)
@@ -202,7 +211,7 @@ namespace BloodClotID
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
             try
             {
-                bool bUseTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
+                bool bUseTestImage = GlobalVars.UseTestImage;
                 if(!bUseTestImage)
                 {
                     
@@ -266,6 +275,10 @@ namespace BloodClotID
             string assayName = AcquireInfo.Instance.CurrentAssay;
             lblProgress.Content = string.Format("{0}:{1}-{2}", assayName, AcquireInfo.Instance.BatchStartID, AcquireInfo.Instance.BatchEndID);
             var prgInfo =  string.Format( "进度：{0}/{1}", AcquireInfo.Instance.curPlateID, AcquireInfo.Instance.GetTotalPlateCnt());
+            if(AcquireInfo.Instance.curPlateID == AcquireInfo.Instance.GetTotalPlateCnt())
+            {
+                SetInfo("全部完成！");
+            }
             this.Refresh();
         }
         private void SetInfo(string message, bool error = true)

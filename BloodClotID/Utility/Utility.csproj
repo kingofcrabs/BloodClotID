@@ -66,6 +66,7 @@
     <Compile Include="ExcelWorker.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="PanelTreeView.cs" />
+    <Compile Include="PlatePositon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
