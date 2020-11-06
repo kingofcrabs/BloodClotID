@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
@@ -14,20 +15,23 @@ namespace AnalysisiLength
     {
         public double CalculateLength(Mat srcImg,int wellID, List<System.Windows.Point> cornerPts)
         {
+            Mat clone = srcImg.Clone();
             CvInvoke.CvtColor(srcImg, srcImg, Emgu.CV.CvEnum.ColorConversion.Bgr2Hls);
             Mat[] channels = srcImg.Split();
             Mat hue = channels[0];
             Mat light = channels[1];
             Mat saturation = channels[2];
-            Mat binary = hue.Clone();
-            CvInvoke.Threshold(hue, hue, 15, 255, Emgu.CV.CvEnum.ThresholdType.BinaryInv);
-            CvInvoke.Threshold(light, light, 130, 255, Emgu.CV.CvEnum.ThresholdType.BinaryInv);
-            CvInvoke.Threshold(saturation, saturation, 80, 255, Emgu.CV.CvEnum.ThresholdType.Otsu);
-            CvInvoke.BitwiseAnd(hue, light, hue);
-            CvInvoke.BitwiseAnd(hue, saturation, binary);
+            CvInvoke.Threshold(saturation, saturation, 120, 255, Emgu.CV.CvEnum.ThresholdType.Binary);
+            saturation.Save(@"d:\temp\saturation.jpg");
+            Mat binary = saturation.Clone();
+            VectorOfPoint white_pixels = new VectorOfPoint();
+            CvInvoke.FindNonZero(saturation, white_pixels);
+            if(white_pixels.Size < 100)
+            {
+                cornerPts = null;
+                return 0;
+            }
             CvInvoke.Canny(binary, binary, 255, 255, 5, true);
-
-
             VectorOfPoint contour = FindMaxContour(binary);
          
             if (contour.Size < 30)
@@ -48,6 +52,8 @@ namespace AnalysisiLength
             {
                 var pt1 = vertices[i];
                 var pt2 = vertices[(i + 1) % 4];
+                CvInvoke.Line(srcImg, new Point((int)pt1.X, (int)pt1.Y), new Point((int)pt2.X, (int)pt2.Y), 
+                    new MCvScalar(0, 255, 0), 2);
                 var distance = GetDistance(pt1.X, pt1.Y, pt2.X, pt2.Y);
                 if (distance > maxDistance)
                     maxDistance = distance;

@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Utility;
 
 namespace BloodClotID
@@ -22,45 +15,51 @@ namespace BloodClotID
         protected Rect bound;
 
         protected Dictionary<int, AnalysisResult> analysisResults = new Dictionary<int, AnalysisResult>();
-        protected PlatePositon platePositon = PlatePositon.Load();
+
         protected Size bkImgSize;
 
         Point ptStart;
         Circle selected = null;
-        List<Circle> roi_Circles = new List<Circle>();
-        List<int> resultIndexs = new List<int>(); 
+        //List<Circle> roi_Circles = new List<Circle>();
+        List<int> resultIDs = new List<int>();
         bool canMove = false;
 
-        public void UpdateBackGroundImage(string file,Size containerSize)
+
+        public RenderCanvas()
+        {
+            //platePositon.Save();
+        }
+        public void UpdateBackGroundImage(string file, Size containerSize)
         {
             if (!File.Exists(file))
                 throw new Exception("没找到图片！");
 
             using (var bmpTemp = new System.Drawing.Bitmap(file))
             {
+                // bmpTemp.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipX);
                 bkImgSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
                 Background = RenderHelper.CreateBrush(bmpTemp, containerSize);
             }
-            roi_Circles = CreateROIs();
-          
-            
+            //roi_Circles = CreateROIs();
+
+
         }
-      
-        private List<Circle> CreateROIs()
-        {
-            int radius = 88;
-            int ID = 1;
-            List<Circle> circles = new List<Circle>();
-            for (int row = 0; row< 8; row++)
-            {
-                for (int col = 0; col< 12; col++)
-                {
-                    Point ptCenter = platePositon.GetAffinePosition(row, col);
-                    circles.Add(new Circle(ptCenter, radius));
-                }
-            }
-            return circles;
-        }
+
+        //private List<Circle> CreateROIs()
+        //{
+        //    int radius = 88;
+        //    int ID = 1;
+        //    List<Circle> circles = new List<Circle>();
+        //    for (int col = 0; col < 12; col++) 
+        //    {
+        //        for (int row = 0; row < 8; row++)
+        //        {
+        //            Point ptCenter = platePositon.GetAffinePosition(row, col);
+        //            circles.Add(new Circle(ptCenter, radius));
+        //        }
+        //    }
+        //    return circles;
+        //}
 
         public void AdapteToUI()
         {
@@ -72,7 +71,7 @@ namespace BloodClotID
             //}
             InvalidateVisual();
         }
-        
+
         #region coordination translation, only real & UI coordination now.
         private Point Coord2UI(Point pt)//go smaller
         {
@@ -111,30 +110,44 @@ namespace BloodClotID
 
         public void SelectCircleAtPosition(Point pt)
         {
-            ClearSelectFlag();
-            Circle firstMatch = roi_Circles.Find(x => x.IsPointInside(pt));
-            if (firstMatch != null)
-            {
-                selected = firstMatch;
-                canMove = true;
-            }
-            InvalidateVisual();
+            //ClearSelectFlag();
+            //Circle firstMatch = roi_Circles.Find(x => x.IsPointInside(pt));
+            //if (firstMatch != null)
+            //{
+            //    selected = firstMatch;
+            //    canMove = true;
+            //}
+            //InvalidateVisual();
         }
 
         internal void Highlight(int indexInPlate)
         {
-            resultIndexs.Add(indexInPlate);
+            if (indexInPlate == -1)
+                return;
+            resultIDs.Add(indexInPlate);
         }
 
         internal void ClearHight()
         {
-            resultIndexs.Clear();
+            resultIDs.Clear();
         }
-        public void SetResult(Dictionary<int,AnalysisResult> eachWellResult)
+
+
+        public void SetResult(List<double> lengths, List<List<Point>> eachWellCornerPts, List<Point> centerPts)
         {
+            Dictionary<int, AnalysisResult> eachWellResult = new Dictionary<int, AnalysisResult>();
+            int ID = 1;
+            for (int i = 0; i < lengths.Count; i++)
+            {
+                int len = (int)Math.Round(lengths[i]);
+                var rotateRectPts = eachWellCornerPts[i];
+                var pt = centerPts[i];
+                eachWellResult.Add(ID++, new AnalysisResult(pt, len, rotateRectPts));
+            }
             analysisResults = eachWellResult;
             InvalidateVisual();
         }
+
 
         public void ClearSelectFlag()
         {
@@ -151,64 +164,78 @@ namespace BloodClotID
             return false;
         }
 
+        public void GetRowCol(int wellID, out int row, out int col)
+        {
+            int _row = 8;
+            col = (wellID - 1) / _row;
+            row = wellID - col * _row - 1;
+        }
+
+
         protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
             if (IsInDesignMode())
                 return;
-            
-           
+
+
             Pen redPen = new Pen(Brushes.Red, 2);
             Pen blackPen = new Pen(Brushes.Black, 1);
-           
-            int circleID = 1;
+
+
             drawingContext.DrawRectangle(null, blackPen, new Rect(0, 0, this.ActualWidth, this.ActualHeight));
             CoordinationHelper coordinationHelper = new CoordinationHelper(new Size(this.ActualWidth, this.ActualHeight), bkImgSize);
-            for (int i = 0; i < roi_Circles.Count; i++)
-            {
-                Circle circle = roi_Circles[i];
-                circle = coordinationHelper.ToUI(circle);
-                Color green = Color.FromArgb(128, 0, 128, 50);
-                Color blue = Color.FromArgb(128, 0, 50, 128);
-                Brush brush = circle == selected ? new SolidColorBrush(blue) : null;
 
-                Size sz = new Size(circle.ptCenter.X, circle.ptCenter.Y);
-                Point ptCenter = circle.ptCenter;
-                Pen pen = blackPen;
-              
-                drawingContext.DrawEllipse(brush, pen, ptCenter, circle.radius, circle.radius);
-                circleID++;
-            }
 
-            
+
             if (analysisResults != null)
             {
-                
+
                 for (int i = 0; i < analysisResults.Count; i++)// (AnalysisResult analysisResult in analysisResults)
                 {
-                    var result = analysisResults[i+1]; //ID, not index
-                    Circle circle = roi_Circles[i];
-                    for (int j = 0; j < 4; j++)
+                    var result = analysisResults[i + 1]; //ID, not index
+                    //Circle circle = roi_Circles[i];
+                    if (result.RotateRectPoints.Count == 4)
                     {
-                        Point startPtOffset = result.RotateRectPoints[j];
-                        Point endPtOffset = result.RotateRectPoints[(j + 1) % 4];
-
-                        var translateStartOffset = coordinationHelper.ToUI(startPtOffset);//ConvertCoordImage2RealRelative(startPtOffset, bkImgSize);
-                        var translateEndOffset = coordinationHelper.ToUI(endPtOffset);
-
-                        var ptCenter = coordinationHelper.ToUI(circle.ptCenter);
-                        int val = result.val;
-                        FormattedText formattedText = new FormattedText(val.ToString(), CultureInfo.CurrentCulture,
-                        FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Green);
-                        if (j == 3)
+                        for (int j = 0; j < 4; j++)
                         {
-                            var ptText = new Point(ptCenter.X, ptCenter.Y);
-                            drawingContext.PushTransform(new RotateTransform(-90, ptText.X, ptText.Y));
-                            drawingContext.DrawText(formattedText, new Point(ptCenter.X, ptCenter.Y));
-                            drawingContext.Pop();
+
+                            Point startPtOffset = result.RotateRectPoints[j];
+                            Point endPtOffset = result.RotateRectPoints[(j + 1) % 4];
+
+                            var translateStartOffset = coordinationHelper.ToUI(startPtOffset);//ConvertCoordImage2RealRelative(startPtOffset, bkImgSize);
+                            var translateEndOffset = coordinationHelper.ToUI(endPtOffset);
+
+                            var ptCenter = coordinationHelper.ToUI(result.ptCenter);
+                            int val = result.val;
+                            FormattedText formattedText = new FormattedText(val.ToString(), CultureInfo.CurrentCulture,
+                            FlowDirection.LeftToRight, new Typeface("Tahoma"), 20, Brushes.Green);
+                            if (j == 3)
+                            {
+                                var ptText = new Point(ptCenter.X, ptCenter.Y);
+                                drawingContext.PushTransform(new RotateTransform(-90, ptText.X, ptText.Y));
+                                drawingContext.DrawText(formattedText, new Point(ptCenter.X, ptCenter.Y));
+                                drawingContext.Pop();
+                            }
+                            drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(ptCenter.X + translateStartOffset.X, ptCenter.Y + translateStartOffset.Y),
+                                new Point(ptCenter.X + translateEndOffset.X, ptCenter.Y + translateEndOffset.Y));
                         }
-                        drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(ptCenter.X + translateStartOffset.X, ptCenter.Y + translateStartOffset.Y),
-                            new Point(ptCenter.X + translateEndOffset.X, ptCenter.Y + translateEndOffset.Y));
+                    }
+                }
+                if (resultIDs.Count > 0)
+                {
+                    foreach (var highlightID in resultIDs)
+                    {
+                        int wellID = highlightID;
+                        int row, col;
+                        GetRowCol(wellID, out row, out col);
+                        Point ptStart = PlatePositon.Instance.GetAffinePosition(row, col);
+                        Point ptEnd = PlatePositon.Instance.GetAffinePosition(row + 1, col + 1);
+                        Point ptCenter = new Point((ptStart.X + ptEnd.X) / 2, (ptStart.Y + ptEnd.Y) / 2);
+                        Circle circle = new Circle(ptCenter, PlatePositon.radius);
+                        var translateCircle = coordinationHelper.ToUI(circle);
+                        drawingContext.DrawEllipse(Brushes.Transparent, new Pen(Brushes.Red, 2), translateCircle.ptCenter, translateCircle.radius,translateCircle.radius);
+                        //drawingContext.DrawRectangle( ,new Rect(translateStartOffset, translateEndOffset));
                     }
                 }
             }
@@ -244,16 +271,16 @@ namespace BloodClotID
             return Math.Sqrt(xx * xx + yy * yy);
         }
 
-      
 
 
-       
+
+
         CoordinationHelper CreateCoordHelper()
         {
-            return new CoordinationHelper(new Size(this.ActualWidth,this.ActualHeight),bkImgSize);
+            return new CoordinationHelper(new Size(this.ActualWidth, this.ActualHeight), bkImgSize);
         }
 
-     
+
 
         internal void MoveMouse(Point pt)
         {
@@ -269,7 +296,7 @@ namespace BloodClotID
             InvalidateVisual();
         }
 
-      
+
     }
 
     public class CoordinationHelper
@@ -292,7 +319,7 @@ namespace BloodClotID
         public double ToUIYDir(double len)//go smaller
         {
             double yRatio = UISize.Height / imgSize.Height;
-            return len* yRatio;
+            return len * yRatio;
         }
 
         public Circle ToUI(Circle circle) //go smaller
@@ -323,5 +350,5 @@ namespace BloodClotID
 
         #endregion
     }
-        
+
 }

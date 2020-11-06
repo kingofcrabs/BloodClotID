@@ -39,7 +39,7 @@ namespace CreateImage
             double height = ptBottomRight.Y - ptTopLeft.Y;
             double widthUnit = width / 11;
             double heightUnit = height / 7;
-            int radius = 88;
+            
             Random rnd = new Random((int)DateTime.Now.Ticks);
             
             using (var g = Graphics.FromImage(bmp))

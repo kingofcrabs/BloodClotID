@@ -45,7 +45,7 @@ namespace Utility
             if (File.Exists(sFile))
                 File.Delete(sFile);
 
-            XmlSerializer xs = new XmlSerializer(typeof(CalibrationInfo));
+            XmlSerializer xs = new XmlSerializer(typeof(PlatePositon));
             Stream stream = new FileStream(sFile, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite);
             xs.Serialize(stream, platePosition);
             stream.Close();
@@ -255,8 +255,8 @@ namespace Utility
      
         public int curPlateID;
         public int samplesPerCamera;
+        public bool hasControl;
         public bool isHITest;
-        
         public List<string> assays;
         public static int samplesPerPlate;
         private static AcquireInfo instance;
@@ -279,6 +279,19 @@ namespace Utility
             }
             
         }
+
+        public bool HasControl
+        {
+            get
+            {
+                return hasControl;
+            }
+            set
+            {
+                hasControl = value;
+            }
+        }
+
 
         public bool IsHI
         {
@@ -489,7 +502,7 @@ where T : DependencyObject
     {
         static bool useTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
         static bool isCalib = false;
-        static List<CalibrationInfo> calibInfos = null;
+       
         static public bool IsCalibration
         {
             get

@@ -86,7 +86,8 @@
     <Compile Include="AnalysisWindow.xaml.cs">
       <DependentUpon>AnalysisWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="OldAnalyzer.cs" />
+    <Compile Include="Analyzer.cs" />
+    <Compile Include="LengthAnalyzer.cs" />
     <Compile Include="BaseUserControl.cs" />
     <Compile Include="loaderControl\Block.xaml.cs" />
     <Compile Include="loaderControl\LoadingAnimation.xaml.cs" />

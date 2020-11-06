@@ -56,10 +56,11 @@
                 HorizontalAlignment="Left" VerticalAlignment="Top"  Height="auto"/>
             </GroupBox>
             <StackPanel Orientation="Horizontal" Grid.Row="1" >
-                <GroupBox  Header="实验类型" Margin="5,5,5,5"  HorizontalAlignment="Left">
+                <GroupBox  Header="对照设置" Margin="5,5,5,5"  HorizontalAlignment="Left">
                     <StackPanel Orientation="Horizontal" >
-                        <RadioButton Name="rdbHI" IsChecked="True" Margin="5,5,0,5">抑制</RadioButton>
-                        <RadioButton Name="rdbHA" Margin="15,5,10,5">血凝</RadioButton>
+                        <RadioButton Name="rdbNoControl" IsChecked="True" Margin="5,5,10,5">无对照</RadioButton>
+                        <RadioButton Name="rdbControl"  Margin="15,5,0,5">阴阳对照</RadioButton>
+                       
                     </StackPanel>
                 </GroupBox>
             </StackPanel>

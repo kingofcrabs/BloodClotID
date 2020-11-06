@@ -1,4 +1,5 @@
-﻿using Nikon;
+﻿using Emgu.CV;
+using Nikon;
 using PieControls;
 using System;
 using System.Collections.Generic;
@@ -98,7 +99,7 @@ namespace BloodClotID
 
         private void _device_CaptureComplete(NikonDevice sender, int data)
         {
-            RefreshImage();
+            //RefreshImage();
         }
 
         void pic1_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -163,16 +164,14 @@ namespace BloodClotID
     
 
         #region take photo
-
-
-
-        private void HighlightWell(List<int> eachRowPositions)
+        public void HighlightWell(List<int> eachRowPositions)
         {
             pic1.ClearHight();
             for (int rowIndex = 0; rowIndex < eachRowPositions.Count; rowIndex++)
             {
-                pic1.Highlight(eachRowPositions[rowIndex]);
+                pic1.Highlight( PlatePositon.GetWellID(rowIndex, eachRowPositions[rowIndex]));
             }
+            pic1.InvalidateVisual();
         }
 
  
@@ -190,10 +189,8 @@ namespace BloodClotID
             lvResult.ItemsSource = tbl3.DefaultView;
         }
 
-        private void RefreshImage()
+        private void RefreshImage(string file)
         {
-            string file = FolderHelper.GetLatestImagePath();
-            
             if (File.Exists(file))
             {
                 pic1.UpdateBackGroundImage(file,new Size(picturesContainer.ActualWidth,picturesContainer.ActualHeight));
@@ -209,66 +206,69 @@ namespace BloodClotID
             this.Refresh();
         
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
-            try
+            //try
             {
                 bool bUseTestImage = GlobalVars.UseTestImage;
-                if(!bUseTestImage)
+                string file = "";
+                if (!bUseTestImage)
                 {
                     
                     SetInfo("初始化完成！", false);
                     _device.Capture();
                 }
+                else
+                {
+
+                    Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+                    // Set filter for file extension and default file extension 
+                    dlg.DefaultExt = ".jpg";
+                    dlg.InitialDirectory = FolderHelper.GetAcquiredImageRootFolder();
+                    dlg.Filter = "image files (.jpg)|*.jpg";
+
+                    Nullable<bool> result = dlg.ShowDialog();
+                    if (result == true)
+                        file = dlg.FileName;
+                }
                 Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
                 btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
-                RefreshImage();
-                //OldAnalyzer.Instance.Analysis();
-                //pic1.SetResult(OldAnalyzer.Instance.AnalysisResults);
+                string newFile = GetROI(file);
+
+                RefreshImage(newFile);
+                LengthAnalyzer analyzer = new LengthAnalyzer();
+                List<List<System.Windows.Point>> eachWellCornerPts = new List<List<System.Windows.Point>>();
+                List<System.Windows.Point> centerPts = new List<Point>();
+            
+                List<double> lengths = analyzer.GetEachWellLength(newFile,
+                   eachWellCornerPts, centerPts); //AcquireInfo.Instance.CalculateSamplesThisBatch(),AcquireInfo.Instance.IsHorizontal,
+                
+                pic1.SetResult(lengths, eachWellCornerPts,centerPts);
+                var highlightIndexEachRow = HighLightAnalyzer.Instance.Go(lengths);
+                HighlightWell(highlightIndexEachRow);
+
                 UpdateProgress();
                 SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.Milliseconds/1000.0), false);
             }
-            catch (Exception ex)
-            {
-                SetInfo(ex.Message);
-            }
+            //catch (Exception ex)
+            //{
+            //    SetInfo(ex.Message);
+            //}
             this.IsEnabled = true;
         }
 
-       
-
-
-
-#endregion
-        #region loader
-
-        protected void ShowLoader()
+        private string GetROI(string file)
         {
-            if (_progressThread != null)
-                return;
-            Window mainWindow = UIHelper.TryFindParent<Window>(this);
-            double x = mainWindow.Left + mainWindow.Width/3;
-            double y = mainWindow.Top + mainWindow.Height / 2;
-            _progressThread = new Thread(() =>
-            {
-                loaderWindow = new Loader();
-                loaderWindow.Show();
-                loaderWindow.Left = x - loaderWindow.Width / 2;
-                loaderWindow.Top = y - loaderWindow.Height / 2;
-                Dispatcher.Run();
-            });
-
-            _progressThread.SetApartmentState(ApartmentState.STA);
-            _progressThread.Start();
-        }
-
-        protected void HideLoader()
-        {
-            if (_progressThread == null)
-                return;
-            loaderWindow.Dispatcher.InvokeShutdown();
-            _progressThread = null;
+            System.Drawing.Point ptStart = new System.Drawing.Point(1100, 700);
+            System.Drawing.Size sz = new System.Drawing.Size(4920 - 1100, 3400 - 700);
+            Mat img = new Mat(file);
+            Mat subImg = new Mat(img, new System.Drawing.Rectangle(ptStart, sz));
+            string newFile = file.Replace(".jpg", "_small.jpg");
+            subImg.Save(newFile);
+            return newFile;
         }
 
         #endregion
+        
         #region helper functions
         private void UpdateProgress()
         {
