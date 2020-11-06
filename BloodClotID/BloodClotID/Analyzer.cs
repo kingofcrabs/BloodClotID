@@ -149,13 +149,7 @@ namespace BloodClotID
         
 
       
-        public static void Convert(int wellID, out int col, out int row)
-        {
-            int _row = 8;
-            col = (wellID - 1) / _row;
-            row = wellID - col * _row - 1;
-        }
-  
+   
 
 
         

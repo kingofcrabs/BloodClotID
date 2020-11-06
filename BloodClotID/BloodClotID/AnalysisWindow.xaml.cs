@@ -104,7 +104,7 @@ namespace BloodClotID
 
         void pic1_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            //throw new NotImplementedException();
+            pic1.LeftMoseUp(e.GetPosition(this));
         }
 
         
@@ -114,11 +114,7 @@ namespace BloodClotID
             
         }
 
-        private void FitNewSize()
-        {
-            pic1.AdapteToUI();
-        }
-
+      
       
 
         public override void Initialize()
@@ -176,16 +172,16 @@ namespace BloodClotID
 
  
 
-        private void ShowResult()
+        private void ShowResult(List<int> eachRowSelectedWellIDs)
         {
             var tbl3 = new DataTable("template");
             tbl3.Columns.Add("Seq", typeof(string));
             tbl3.Columns.Add("Result", typeof(string));
-            //for (int i = 0; i < OldAnalyzer.Instance.Results.Count; i++)
-            //{
-            //    object[] objs = new object[2] { i + AcquireInfo.Instance.BatchStartID, OldAnalyzer.Instance.Results[i] };
-            //    tbl3.Rows.Add(objs);
-            //}
+            for (int i = 0; i < eachRowSelectedWellIDs.Count; i++)
+            {
+                object[] objs = new object[2] { i + AcquireInfo.Instance.BatchStartID, eachRowSelectedWellIDs[i]+1 };
+                tbl3.Rows.Add(objs);
+            }
             lvResult.ItemsSource = tbl3.DefaultView;
         }
 
@@ -206,7 +202,7 @@ namespace BloodClotID
             this.Refresh();
         
             Debug.WriteLine("update progress:" + watcher.Elapsed.Milliseconds);
-            //try
+            try
             {
                 bool bUseTestImage = GlobalVars.UseTestImage;
                 string file = "";
@@ -245,14 +241,14 @@ namespace BloodClotID
                 pic1.SetResult(lengths, eachWellCornerPts,centerPts);
                 var highlightIndexEachRow = HighLightAnalyzer.Instance.Go(lengths);
                 HighlightWell(highlightIndexEachRow);
-
+                ShowResult(highlightIndexEachRow);
                 UpdateProgress();
                 SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.Milliseconds/1000.0), false);
             }
-            //catch (Exception ex)
-            //{
-            //    SetInfo(ex.Message);
-            //}
+            catch (Exception ex)
+            {
+                SetInfo(ex.Message);
+            }
             this.IsEnabled = true;
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,15 +16,11 @@ namespace BloodClotID
         protected Rect bound;
 
         protected Dictionary<int, AnalysisResult> analysisResults = new Dictionary<int, AnalysisResult>();
-
         protected Size bkImgSize;
-
-        Point ptStart;
-        Circle selected = null;
-        //List<Circle> roi_Circles = new List<Circle>();
         List<int> resultIDs = new List<int>();
+        Dictionary<int, int> adjustResult = new Dictionary<int, int>();
         bool canMove = false;
-
+        private List<Point> eachWellPt = new List<Point>();
 
         public RenderCanvas()
         {
@@ -40,37 +37,9 @@ namespace BloodClotID
                 bkImgSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
                 Background = RenderHelper.CreateBrush(bmpTemp, containerSize);
             }
-            //roi_Circles = CreateROIs();
-
-
         }
 
-        //private List<Circle> CreateROIs()
-        //{
-        //    int radius = 88;
-        //    int ID = 1;
-        //    List<Circle> circles = new List<Circle>();
-        //    for (int col = 0; col < 12; col++) 
-        //    {
-        //        for (int row = 0; row < 8; row++)
-        //        {
-        //            Point ptCenter = platePositon.GetAffinePosition(row, col);
-        //            circles.Add(new Circle(ptCenter, radius));
-        //        }
-        //    }
-        //    return circles;
-        //}
-
-        public void AdapteToUI()
-        {
-            //CoordinationHelper coordHelper = CreateCoordHelper();
-            //roi_Circles.Clear();
-            //foreach(var circle in calibInfo.circles)
-            //{
-            //    roi_Circles.Add(coordHelper.ToUI(circle));
-            //}
-            InvalidateVisual();
-        }
+    
 
         #region coordination translation, only real & UI coordination now.
         private Point Coord2UI(Point pt)//go smaller
@@ -110,6 +79,27 @@ namespace BloodClotID
 
         public void SelectCircleAtPosition(Point pt)
         {
+
+            if (eachWellPt.Count == 0)
+                return;
+            const int radius = 50;
+            
+            for(int wellIndex =0; wellIndex < 96; wellIndex++)
+            {
+                var wellPt = eachWellPt[wellIndex];
+                if(GetDistance(wellPt,pt) <= radius)
+                {
+                    int colIndex, rowIndex;
+                    PlatePositon.Convert(wellIndex + 1, out colIndex, out rowIndex);
+                    if (adjustResult.ContainsKey(rowIndex))
+                        adjustResult[rowIndex] = colIndex;
+                    else
+                        adjustResult.Add(rowIndex, colIndex);
+                    break;
+                }
+            }
+            InvalidateVisual();
+            //int wellID = FindNearestCircle(pt);
             //ClearSelectFlag();
             //Circle firstMatch = roi_Circles.Find(x => x.IsPointInside(pt));
             //if (firstMatch != null)
@@ -149,11 +139,7 @@ namespace BloodClotID
         }
 
 
-        public void ClearSelectFlag()
-        {
-            selected = null;
-            canMove = false;
-        }
+       
 
         public static bool IsInDesignMode()
         {
@@ -224,45 +210,55 @@ namespace BloodClotID
                 }
                 if (resultIDs.Count > 0)
                 {
-                    foreach (var highlightID in resultIDs)
+                    eachWellPt.Clear();
+                    for (int i = 0; i< 96; i++)
                     {
-                        int wellID = highlightID;
-                        int row, col;
-                        GetRowCol(wellID, out row, out col);
-                        Point ptStart = PlatePositon.Instance.GetAffinePosition(row, col);
-                        Point ptEnd = PlatePositon.Instance.GetAffinePosition(row + 1, col + 1);
-                        Point ptCenter = new Point((ptStart.X + ptEnd.X) / 2, (ptStart.Y + ptEnd.Y) / 2);
-                        Circle circle = new Circle(ptCenter, PlatePositon.radius);
-                        var translateCircle = coordinationHelper.ToUI(circle);
-                        drawingContext.DrawEllipse(Brushes.Transparent, new Pen(Brushes.Red, 2), translateCircle.ptCenter, translateCircle.radius,translateCircle.radius);
-                        //drawingContext.DrawRectangle( ,new Rect(translateStartOffset, translateEndOffset));
+                        int wellID = i+1;
+                        Circle translateCircle = GetTranslateCircle(wellID, coordinationHelper);
+                        eachWellPt.Add(translateCircle.ptCenter);
+                        if (resultIDs.Contains(wellID) )
+                            drawingContext.DrawEllipse(Brushes.Transparent, new Pen(Brushes.Red, 2), translateCircle.ptCenter, translateCircle.radius,translateCircle.radius);
+                        
+                    }
+                }
+
+                if(adjustResult.Count > 0)
+                {
+                    foreach(var pair in adjustResult)
+                    {
+                        int rowIndex = pair.Key;
+                        int colIndex = pair.Value;
+                        int wellID = PlatePositon.GetWellID(rowIndex, colIndex);
+                        Circle translateCircle = GetTranslateCircle(wellID, coordinationHelper);
+                        drawingContext.DrawEllipse(Brushes.Transparent, new Pen(Brushes.Blue, 2), translateCircle.ptCenter, translateCircle.radius, translateCircle.radius);
                     }
                 }
             }
         }
 
+        private Circle GetTranslateCircle(int wellID, CoordinationHelper coordinationHelper)
+        {
+            int row, col;
+            GetRowCol(wellID, out row, out col);
+            Point ptStart = PlatePositon.Instance.GetAffinePosition(row, col);
+            Point ptEnd = PlatePositon.Instance.GetAffinePosition(row + 1, col + 1);
+            Point ptCenter = new Point((ptStart.X + ptEnd.X) / 2, (ptStart.Y + ptEnd.Y) / 2);
+            Circle circle = new Circle(ptCenter, PlatePositon.radius);
+            var translateCircle = coordinationHelper.ToUI(circle);
+            return translateCircle;
+        }
 
         bool LeftCtrlDown()
         {
             return Keyboard.IsKeyDown(Key.LeftCtrl);
         }
 
-        //internal void LeftMoseDown(Point pt, bool bAdd)
-        //{
-        //    if (LeftCtrlDown())
-        //    {
-        //        ptStart = pt;
-        //        canMove = true;
-        //        return;
-        //    }
-
-        //    if (bAdd)
-        //    {
-        //        ptStart = pt;
-        //    }
-        //    else
-        //        SelectCircleAtPosition(pt);
-        //}
+        internal void LeftMoseUp(Point pt)
+        {
+            if (!LeftCtrlDown())
+                return;          
+             SelectCircleAtPosition(pt);
+        }
 
         double GetDistance(Point pt1, Point pt2)
         {
@@ -282,20 +278,7 @@ namespace BloodClotID
 
 
 
-        internal void MoveMouse(Point pt)
-        {
-            if (!canMove)
-                return;
-
-            //if (LeftCtrlDown())
-            //{
-            //    SetRect(new Rect(ptStart, pt));
-            //}
-            if (selected != null)
-                selected.ptCenter = pt;
-            InvalidateVisual();
-        }
-
+     
 
     }
 

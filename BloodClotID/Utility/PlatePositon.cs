@@ -43,8 +43,14 @@ namespace Utility
             bottomLeft = new Point(0, 0);
  
         }
+        public static void Convert(int wellID, out int colIndex, out int rowIndex)
+        {
+            int _row = 8;
+            colIndex = (wellID - 1) / _row;
+            rowIndex = wellID - colIndex * _row - 1;
+        }
 
-       public  static int GetWellID(int rowIndex, int colIndex)
+        public static int GetWellID(int rowIndex, int colIndex)
        {
             return colIndex * 8 + rowIndex + 1;
         }
