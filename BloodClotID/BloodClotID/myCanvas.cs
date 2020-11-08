@@ -15,13 +15,12 @@ namespace BloodClotID
     {
         protected Rect bound;
 
-        protected Dictionary<int, AnalysisResult> analysisResults = new Dictionary<int, AnalysisResult>();
+        protected Dictionary<int, LengthResult> lengthResults = new Dictionary<int, LengthResult>();
         protected Size bkImgSize;
         List<int> resultIDs = new List<int>();
         Dictionary<int, int> adjustResult = new Dictionary<int, int>();
-        bool canMove = false;
         private List<Point> eachWellPt = new List<Point>();
-
+        public event EventHandler<KeyValuePair<int, int>> onAdjustResult;
         public RenderCanvas()
         {
             //platePositon.Save();
@@ -95,19 +94,13 @@ namespace BloodClotID
                         adjustResult[rowIndex] = colIndex;
                     else
                         adjustResult.Add(rowIndex, colIndex);
+
+                    if (onAdjustResult != null)
+                        onAdjustResult(this, new KeyValuePair<int, int>(rowIndex, colIndex));
                     break;
                 }
             }
             InvalidateVisual();
-            //int wellID = FindNearestCircle(pt);
-            //ClearSelectFlag();
-            //Circle firstMatch = roi_Circles.Find(x => x.IsPointInside(pt));
-            //if (firstMatch != null)
-            //{
-            //    selected = firstMatch;
-            //    canMove = true;
-            //}
-            //InvalidateVisual();
         }
 
         internal void Highlight(int indexInPlate)
@@ -125,16 +118,16 @@ namespace BloodClotID
 
         public void SetResult(List<double> lengths, List<List<Point>> eachWellCornerPts, List<Point> centerPts)
         {
-            Dictionary<int, AnalysisResult> eachWellResult = new Dictionary<int, AnalysisResult>();
+            Dictionary<int, LengthResult> eachWellResult = new Dictionary<int, LengthResult>();
             int ID = 1;
             for (int i = 0; i < lengths.Count; i++)
             {
                 int len = (int)Math.Round(lengths[i]);
                 var rotateRectPts = eachWellCornerPts[i];
                 var pt = centerPts[i];
-                eachWellResult.Add(ID++, new AnalysisResult(pt, len, rotateRectPts));
+                eachWellResult.Add(ID++, new LengthResult(pt, len, rotateRectPts));
             }
-            analysisResults = eachWellResult;
+            lengthResults = eachWellResult;
             InvalidateVisual();
         }
 
@@ -174,12 +167,12 @@ namespace BloodClotID
 
 
 
-            if (analysisResults != null)
+            if (lengthResults != null)
             {
 
-                for (int i = 0; i < analysisResults.Count; i++)// (AnalysisResult analysisResult in analysisResults)
+                for (int i = 0; i < lengthResults.Count; i++)// (AnalysisResult analysisResult in analysisResults)
                 {
-                    var result = analysisResults[i + 1]; //ID, not index
+                    var result = lengthResults[i + 1]; //ID, not index
                     //Circle circle = roi_Circles[i];
                     if (result.RotateRectPoints.Count == 4)
                     {

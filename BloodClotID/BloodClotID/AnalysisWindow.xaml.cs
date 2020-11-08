@@ -23,13 +23,12 @@ namespace BloodClotID
     /// </summary>
     public partial class AnalysisWindow : BaseUserControl
     {
-        Thread _progressThread = null;
-        Loader loaderWindow;
+
         NikonDevice _device;
         AutoResetEvent waitDeviceAdded = new AutoResetEvent(false);
-        ObservableCollection<PieSegment> pieCollection = new ObservableCollection<PieSegment>();
         protected static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public event EventHandler onReportReady;
+        List<int> eachRowSelectedWellIDs = new List<int>();
         Transformer transformer;
         Window container;
         NikonManager nikonManager;
@@ -40,7 +39,7 @@ namespace BloodClotID
             try
             {
                 this.container = parent;
-                
+                pic1.onAdjustResult += Pic1_onAdjustResult;
                 if(GlobalVars.UseTestImage)
                 {
                     btnAcquire.IsEnabled = true;
@@ -65,6 +64,12 @@ namespace BloodClotID
             }
             pic1.PreviewMouseLeftButtonUp += pic1_PreviewMouseLeftButtonUp;
             parent.Closed += Parent_Closed;
+        }
+
+        private void Pic1_onAdjustResult(object sender, KeyValuePair<int, int> e)
+        {
+            eachRowSelectedWellIDs[e.Key] = e.Value;
+            ShowResult();
         }
 
         private void NikonManager_DeviceAdded(NikonManager sender, NikonDevice device)
@@ -160,19 +165,19 @@ namespace BloodClotID
     
 
         #region take photo
-        public void HighlightWell(List<int> eachRowPositions)
+        public void HighlightWell()
         {
             pic1.ClearHight();
-            for (int rowIndex = 0; rowIndex < eachRowPositions.Count; rowIndex++)
+            for (int rowIndex = 0; rowIndex < eachRowSelectedWellIDs.Count; rowIndex++)
             {
-                pic1.Highlight( PlatePositon.GetWellID(rowIndex, eachRowPositions[rowIndex]));
+                pic1.Highlight( PlatePositon.GetWellID(rowIndex, eachRowSelectedWellIDs[rowIndex]));
             }
             pic1.InvalidateVisual();
         }
 
  
 
-        private void ShowResult(List<int> eachRowSelectedWellIDs)
+        private void ShowResult()
         {
             var tbl3 = new DataTable("template");
             tbl3.Columns.Add("Seq", typeof(string));
@@ -239,9 +244,9 @@ namespace BloodClotID
                    eachWellCornerPts, centerPts); //AcquireInfo.Instance.CalculateSamplesThisBatch(),AcquireInfo.Instance.IsHorizontal,
                 
                 pic1.SetResult(lengths, eachWellCornerPts,centerPts);
-                var highlightIndexEachRow = HighLightAnalyzer.Instance.Go(lengths);
-                HighlightWell(highlightIndexEachRow);
-                ShowResult(highlightIndexEachRow);
+                eachRowSelectedWellIDs = HighLightAnalyzer.Instance.Go(lengths);
+                HighlightWell();
+                ShowResult();
                 UpdateProgress();
                 SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.Milliseconds/1000.0), false);
             }
