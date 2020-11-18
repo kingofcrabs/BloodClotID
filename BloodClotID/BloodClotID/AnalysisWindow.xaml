@@ -61,10 +61,16 @@
                         <Image Source="/Images/camera.png" Height="30" Width="40"/>
                     </StackPanel>
                 </Button>
-                <Button Margin="0,5,5,5"  Grid.Column="1" Name="btnNext" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnNext_Click">
+                <Button Margin="0,5,5,5"   Name="btnNext" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnNext_Click">
                     <StackPanel>
                         <TextBlock Text="下一块"/>
                         <Image Source="/Images/Next.jpg" Stretch="Uniform" Height="30" Width="40"/>
+                    </StackPanel>
+                </Button>
+                <Button Margin="0,5,5,5"   Name="btnReport" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnReport_Click">
+                    <StackPanel>
+                        <TextBlock Text="报告"/>
+                        <Image Source="/Images/report.jpg" Stretch="Uniform" Height="30" Width="40"/>
                     </StackPanel>
                 </Button>
             </StackPanel>

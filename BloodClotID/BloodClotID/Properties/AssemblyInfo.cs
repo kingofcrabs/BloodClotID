@@ -8,7 +8,7 @@ using System.Windows;
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("BloodClotID")]
-[assembly: AssemblyDescription("血凝，抗血凝自动识别程序。")]
+[assembly: AssemblyDescription("血凝自动识别程序")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("盈开生物科技（上海）有限公司")]
 [assembly: AssemblyProduct("BloodClotID")]
@@ -51,6 +51,6 @@ using System.Windows;
 // 可以指定所有这些值，也可以使用“生成号”和“修订号”的默认值，
 // 方法是按如下所示使用“*”: 
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.1.0")]
-[assembly: AssemblyFileVersion("0.0.1.0")]
+[assembly: AssemblyVersion("0.0.1.1")]
+[assembly: AssemblyFileVersion("0.0.1.1")]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = @".\log4net.xml", Watch = true)]

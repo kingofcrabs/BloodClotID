@@ -205,7 +205,7 @@ namespace BloodClotID
                     //subMat.Save(FolderHelper.GetOutputFolder() + string.Format("{0}org.jpg", ID));
                     Mat subMat = new Mat(img, rect);
                     lengths.Add(CalculateLength(subMat, col + 1, cornerPts));
-                    subMat.Save(FolderHelper.GetOutputFolder() + string.Format("{0}.jpg", ID++));
+                    //subMat.Save(FolderHelper.GetOutputFolder() + string.Format("{0}.jpg", ID++));
                     eachWellCornerPts.Add(cornerPts);
                     centerPts.Add(new System.Windows.Point((pt.X + ptEnd.X) / 2, (pt.Y + ptEnd.Y) / 2));
 

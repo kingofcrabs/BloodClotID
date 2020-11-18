@@ -184,7 +184,7 @@ namespace BloodClotID
             tbl3.Columns.Add("Result", typeof(string));
             for (int i = 0; i < eachRowSelectedWellIDs.Count; i++)
             {
-                object[] objs = new object[2] { i + AcquireInfo.Instance.BatchStartID, eachRowSelectedWellIDs[i]+1 };
+                object[] objs = new object[2] { i + AcquireInfo.Instance.curPlateID, eachRowSelectedWellIDs[i]+1 };
                 tbl3.Rows.Add(objs);
             }
             lvResult.ItemsSource = tbl3.DefaultView;
@@ -232,7 +232,9 @@ namespace BloodClotID
                         file = dlg.FileName;
                 }
                 Debug.WriteLine("take photo:" + watcher.Elapsed.Milliseconds);
-                btnNext.IsEnabled = AcquireInfo.Instance.curPlateID != AcquireInfo.Instance.GetTotalPlateCnt();//if not last one, allow user press next.
+                bool isLastOne = AcquireInfo.Instance.curPlateID == AcquireInfo.Instance.GetTotalPlateCnt();
+                btnNext.IsEnabled = !isLastOne;//if not last one, allow user press next.
+            
                 string newFile = GetROI(file);
 
                 RefreshImage(newFile);
@@ -247,8 +249,16 @@ namespace BloodClotID
                 eachRowSelectedWellIDs = HighLightAnalyzer.Instance.Go(lengths);
                 HighlightWell();
                 ShowResult();
+                GlobalVars.Instance.SetResult(eachRowSelectedWellIDs);
                 UpdateProgress();
                 SetInfo(string.Format("分析完成。用时{0:f1}秒。", watcher.Elapsed.Milliseconds/1000.0), false);
+
+                if (isLastOne)
+                {
+                    if(onReportReady != null)
+                        onReportReady(this, null);
+                }
+                    
             }
             catch (Exception ex)
             {
@@ -274,7 +284,7 @@ namespace BloodClotID
         private void UpdateProgress()
         {
             string assayName = AcquireInfo.Instance.CurrentAssay;
-            lblProgress.Content = string.Format("{0}:{1}-{2}", assayName, AcquireInfo.Instance.BatchStartID, AcquireInfo.Instance.BatchEndID);
+            lblProgress.Content = string.Format("{0}", assayName);
             var prgInfo =  string.Format( "进度：{0}/{1}", AcquireInfo.Instance.curPlateID, AcquireInfo.Instance.GetTotalPlateCnt());
             if(AcquireInfo.Instance.curPlateID == AcquireInfo.Instance.GetTotalPlateCnt())
             {
@@ -292,8 +302,12 @@ namespace BloodClotID
         {
             return bVisible ? Visibility.Visible : Visibility.Hidden;
         }
-      
+
         #endregion
 
+        private void btnReport_Click(object sender, RoutedEventArgs e)
+        {
+           
+        }
     }
 }

@@ -92,16 +92,16 @@ namespace BloodClotID
                 if (val / max > 0.85)
                     bigVals.Add(val);
             }
-            //from right search first > 0.8
-            int startIndex = AcquireInfo.Instance.HasControl ? Math.Max(vals.Count - 3, 0): vals.Count - 1;
+            //from right search first > 0.75
+            int startIndex = AcquireInfo.Instance.HasControl ?vals.Count - 2 : vals.Count - 1;
             for(int i = startIndex; i >=0; i--)
             {
                 double v = vals[i];
                 if (v == 0)
                     continue;
-                if(v / max < 0.8)
+                if(v / max >= 0.75)
                 {
-                    return Math.Max( i - 1,0);
+                    return i;
                 }
             }
             return -1;

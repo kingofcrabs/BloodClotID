@@ -46,15 +46,30 @@
                 </StackPanel>
 
             </GroupBox>
-            <GroupBox Header="实验选择" HorizontalAlignment="Left" Margin="5,5,5,5" Width="200" Grid.Column="1">
-                <TreeView 
-                    x:Name="treeview" BorderThickness="0"
-                    ItemContainerStyle="{StaticResource TreeViewItemStyle}"
-                    ItemsSource="{Binding Mode=OneTime}"
-                    ItemTemplate="{StaticResource CheckBoxItemTemplate}"
+
+            <StackPanel Grid.Column="1" Grid.RowSpan="2">
+                <Label Height="25" Content="分组">
+                </Label>
+                <ListBox Grid.Column="1" Margin="2,2,5,2" Name="lstAllGroups" ItemsSource="{Binding Groups}" SelectedItem="{ Binding SelectedGroup}">
+                
+                    <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal"  Margin="0,2,0,2">
+                            <Label VerticalAlignment="Center" Content="{Binding Name}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
                    
-                HorizontalAlignment="Left" VerticalAlignment="Top"  Height="auto"/>
-            </GroupBox>
+                </ListBox>
+                <Label Height="25" Content="测试">
+                </Label>
+
+                <ListBox  x:Name="lstCurrentGroup" 
+                         ItemsSource="{Binding SelectedGroup.AssayNames}"
+                         SelectedItem="{Binding SelectedGroup.SelectedAssay,Mode=TwoWay}">
+                </ListBox>
+            </StackPanel>
+            
             <StackPanel Orientation="Horizontal" Grid.Row="1" >
                 <GroupBox  Header="对照设置" Margin="5,5,5,5"  HorizontalAlignment="Left">
                     <StackPanel Orientation="Horizontal" >

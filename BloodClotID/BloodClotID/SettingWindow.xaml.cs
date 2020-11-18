@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,29 +23,22 @@ namespace BloodClotID
     /// </summary>
     public partial class SettingWindow : BaseUserControl
     {
-        PanelViewModel panelVM;
+
+        GroupViewModel groupViewModel;
+        DateTime lastChangeTime = DateTime.Now;
 
         public SettingWindow()
         {
             InitializeComponent();
+            this.Loaded += SettingWindow_Loaded;
+          
+        }
+
+        private void SettingWindow_Loaded(object sender, RoutedEventArgs e)
+        {
             List<AssayGroup> assayGroups = GlobalVars.ReadGroups();
-            InitTreeview(assayGroups);
-            panelVM.UpdateState(new ObservableCollection<string>() { "H5R-6" });
-        }
-
-        private void InitTreeview(List<AssayGroup> assayGroups)
-        {
-            panelVM = PanelViewModel.CreateViewModel(assayGroups);
-            treeview.ItemsSource = new ObservableCollection<PanelViewModel>() { panelVM };
-            this.treeview.Focus();
-            
-            panelVM.PropertyChanged += panelVM_PropertyChanged;
-        }
-
-        private void panelVM_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var assays = panelVM.GetAssays().ToList();
-            AcquireInfo.Instance.assays = assays;
+            groupViewModel = new GroupViewModel(assayGroups);
+            this.DataContext = groupViewModel;
         }
 
         private void btnConfirm_Click(object sender, RoutedEventArgs e)
@@ -71,7 +65,8 @@ namespace BloodClotID
 
         private void CheckSettings()
         {
-            if (AcquireInfo.Instance.assays == null || AcquireInfo.Instance.assays.Count == 0)
+            AcquireInfo.Instance.assayName = groupViewModel.SelectedGroup.SelectedAssay;
+            if (AcquireInfo.Instance.assayName == null)
                 throw new Exception("请先选择测试项目！");
 
             string smpCnt = txtSampleCnt.Text;

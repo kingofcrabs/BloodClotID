@@ -37,15 +37,16 @@ namespace BloodClotID
         {
             userControlContainer.Children.Add(settingWindow);
             analysisWindow = new AnalysisWindow(this);
-            reportWindow = new ReportWindow();
-
+            reportWindow = new ReportWindow(this);
             analysisWindow.onReportReady += AnalysisWindow_onReportReady;
             FolderHelper.CreateAcquiredImageFolder();
         }
 
+     
         private void AnalysisWindow_onReportReady(object sender, EventArgs e)
         {
             btnReport.IsEnabled = true;
+            //SwitchTo(Stage.Report);
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)

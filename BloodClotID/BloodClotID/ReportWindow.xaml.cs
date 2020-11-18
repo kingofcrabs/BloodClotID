@@ -22,15 +22,16 @@ namespace BloodClotID
     /// </summary>
     public partial class ReportWindow : BaseUserControl
     {
-        ExcelWorker excelWorker = new ExcelWorker();
-        public ReportWindow()
+        Window parent;
+        public ReportWindow(Window parent)
         {
+            this.parent = parent;
             InitializeComponent();
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-
+            parent.Close();
         }
 
         private void btnGenerateExcel_Click(object sender, RoutedEventArgs e)
@@ -39,9 +40,10 @@ namespace BloodClotID
             SetInfo(string.Format("正在创建Excel文件，请稍候"), false);
             this.Refresh();
             string path = FolderHelper.GetOutputFolder() + DateTime.Now.ToString("YYMMDDhhmmss") + ".xlsx";
-            excelWorker.CreateExcelFile(path, Report.Instance.AssayResults);
+            ExcelWriter.Save("testUser");
             SetInfo(string.Format("Excel文件已经创建于：{0}",path),false);
             this.IsEnabled = true;
+            btnExit.IsEnabled = true;
         }
 
         private void SetInfo(string message, bool error = true)
@@ -61,36 +63,22 @@ namespace BloodClotID
 
         private void InitDataGrid()
         {
-            int totalAssayCnt = AcquireInfo.Instance.assays.Count;
-            var results = Report.Instance.AssayResults;
-            int i = 0;
-            foreach (var pair in results)
-            {
-                DataGridViewTextBoxColumn column = new DataGridViewTextBoxColumn();
-                column.HeaderText = pair.Key;
-                dataGridView.Columns.Add(column);
-                dataGridView.Columns[i].SortMode = DataGridViewColumnSortMode.Programmatic;
-                i++;
-            }
-            
-            dataGridView.RowHeadersWidth = 80;
-            Dictionary<int, List<string>> sampleID_allTestResults = new Dictionary<int, List<string>>();
+           
+            var results = GlobalVars.Instance.Result;
+            DataGridViewTextBoxColumn columnID = new DataGridViewTextBoxColumn();
+            columnID.HeaderText = "样品ID";
+            dataGridView.Columns.Add(columnID);
+          
+            DataGridViewTextBoxColumn columnPosition = new DataGridViewTextBoxColumn();
+            columnPosition.HeaderText = "判定位置";
+            dataGridView.Columns.Add(columnPosition);
+
+           
+
             foreach(var pair in results)
             {
-                for(i = 0; i< pair.Value.Count;i++)
-                {
-                    int sampleID = i + 1;
-                    if (sampleID_allTestResults.ContainsKey(sampleID))
-                        sampleID_allTestResults[sampleID].Add(pair.Value[i].ToString());
-                    else
-                        sampleID_allTestResults.Add(sampleID, new List<string> { pair.Value[i].ToString() });
-                }
-            }
-            for (i = 0; i < AcquireInfo.Instance.totalSample; i++)
-            {
-                int sampleID = i + 1;
-                dataGridView.Rows.Add(sampleID_allTestResults[sampleID].ToArray());
-                dataGridView.Rows[i].HeaderCell.Value = string.Format("样品{0}", i + 1);
+                object[] objects = new string[2] { string.Format("样品{0}", pair.Key + 1), pair.Value.ToString() };
+                dataGridView.Rows.Add(objects);
             }
         }
     }
