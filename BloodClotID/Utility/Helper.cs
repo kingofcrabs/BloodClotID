@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -158,7 +160,13 @@ namespace Utility
             CreateIfNotExist(sConfigFolder);
             return sConfigFolder;
         }
-
+        public static string GetDataFolder()
+        {
+            string sExeParent = GetExeParentFolder();
+            string sDataFolder = sExeParent + "Data\\";
+            CreateIfNotExist(sDataFolder);
+            return sDataFolder;
+        }
         public static string GetOutputFolder()
         {
             string sExeParent = GetExeParentFolder();
@@ -251,13 +259,11 @@ namespace Utility
     public class AcquireInfo
     {
         public int totalSample;
-        public int curBatchID;  //for sample's id between 1-8, if there are three tests, so the 1-3 plate are in the same batch.
-     
         public int curPlateID;
         public int samplesPerCamera;
         public bool hasControl;
         public bool isHITest;
-        public List<string> assays;
+        public string assayName;
         public static int samplesPerPlate;
         private static AcquireInfo instance;
         private const int  horizontalSampleCnt = 8;
@@ -305,47 +311,32 @@ namespace Utility
             }
         }
 
-        public int BatchStartID
-        {
-            get
-            {
-                int sampleRangeStart = (curBatchID - 1) * samplesPerPlate + 1;
-                return sampleRangeStart;
-            }
-        }
-
-        public int BatchEndID
-        {
-            get
-            {
-
-                return BatchStartID + CalculateSamplesThisBatch() - 1;
-            }
-        }
+    
+     
         public string CurrentAssay
         {
             get
             {
-                return assays[(curPlateID-1) % assays.Count];
+                return assayName;
             }
         }
+
+        public string SnapShot { get; set; }
+        public string OriginalImage { get; set; }
+
         public void NextPlate()
         {
             curPlateID++;
-            if ((curPlateID-1) % assays.Count == 0)
-                NextBatch();
+       
             //samplesThisBatch = CalculateSamplesThisBatch();
         }
 
-        private void NextBatch()
-        {
-            curBatchID++;
-        }
+      
 
         public int CalculateSamplesThisBatch()
         {
             int cnt = samplesPerPlate;
-            if (totalSample < samplesPerPlate * curBatchID)
+            if (totalSample < samplesPerPlate)
                 cnt = totalSample % samplesPerPlate;
             return cnt;
         }
@@ -353,7 +344,6 @@ namespace Utility
         public void SetSampleCount(int val)
         {
             totalSample = val;
-            curBatchID = 1;
             curPlateID = 1;
             //samplesThisBatch = CalculateSamplesThisBatch();
         }
@@ -366,7 +356,7 @@ namespace Utility
 
         public  int GetTotalPlateCnt()
         {
-            return  (totalSample + samplesPerPlate - 1) / samplesPerPlate * assays.Count;
+            return  (totalSample + samplesPerPlate - 1) / samplesPerPlate;
         }
     }
 
@@ -497,12 +487,55 @@ where T : DependencyObject
             return imgBrush;
         }
     }
- 
+
     public class GlobalVars
     {
         static bool useTestImage = bool.Parse(ConfigurationManager.AppSettings["useTestImage"]);
         static bool isCalib = false;
-       
+        private Dictionary<int, int> eachSampleResult = new Dictionary<int, int>();
+        static GlobalVars instance;
+        DateTime dateTime;
+        public static GlobalVars Instance{
+            get
+            {
+                if(instance == null)
+                {
+                    instance = new GlobalVars();
+                }
+                return instance;
+            }
+        }
+
+        public DateTime AcquiredDateTime
+        {
+            get
+            {
+                return dateTime;
+            }
+        }
+
+        public Dictionary<int,int> Result
+        {
+            get
+            {
+                return eachSampleResult;
+            }
+        }
+
+        public void SetResult(List<int> indexs)
+        {
+            dateTime = DateTime.Now;
+            int startWellID = AcquireInfo.Instance.curPlateID * AcquireInfo.Instance.samplesPerCamera;
+            foreach (var result in indexs)
+            {
+                if (eachSampleResult.ContainsKey(startWellID))
+                    eachSampleResult[startWellID] = result+1;
+                else
+                    eachSampleResult.Add(startWellID, result+1);
+                startWellID++;
+            }
+        }
+
         static public bool IsCalibration
         {
             get
@@ -546,5 +579,94 @@ where T : DependencyObject
 
 
       
+    }
+
+    public abstract class BindableBase : INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Checks if a property already matches a desired value. Sets the property and
+        /// notifies listeners only when necessary.
+        /// </summary>
+        /// <typeparam name="T">Type of the property.</typeparam>
+        /// <param name="storage">Reference to a property with both getter and setter.</param>
+        /// <param name="value">Desired value for the property.</param>
+        /// <param name="propertyName">Name of the property used to notify listeners. This
+        /// value is optional and can be provided automatically when invoked from compilers that
+        /// support CallerMemberName.</param>
+        /// <returns>True if the value was changed, false if the existing value matched the
+        /// desired value.</returns>
+        protected virtual bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(storage, value)) return false;
+
+            storage = value;
+            RaisePropertyChanged(propertyName);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if a property already matches a desired value. Sets the property and
+        /// notifies listeners only when necessary.
+        /// </summary>
+        /// <typeparam name="T">Type of the property.</typeparam>
+        /// <param name="storage">Reference to a property with both getter and setter.</param>
+        /// <param name="value">Desired value for the property.</param>
+        /// <param name="propertyName">Name of the property used to notify listeners. This
+        /// value is optional and can be provided automatically when invoked from compilers that
+        /// support CallerMemberName.</param>
+        /// <param name="onChanged">Action that is called after the property value has been changed.</param>
+        /// <returns>True if the value was changed, false if the existing value matched the
+        /// desired value.</returns>
+        protected virtual bool SetProperty<T>(ref T storage, T value, Action onChanged, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(storage, value)) return false;
+
+            storage = value;
+            onChanged?.Invoke();
+            RaisePropertyChanged(propertyName);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Raises this object's PropertyChanged event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property used to notify listeners. This
+        /// value is optional and can be provided automatically when invoked from compilers
+        /// that support <see cref="CallerMemberNameAttribute"/>.</param>
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            //TODO: when we remove the old OnPropertyChanged method we need to uncomment the below line
+            //OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+            OnPropertyChanged(propertyName);
+        }
+
+        /// <summary>
+        /// Notifies listeners that a property value has changed.
+        /// </summary>
+        /// <param name="propertyName">Name of the property used to notify listeners. This
+        /// value is optional and can be provided automatically when invoked from compilers
+        /// that support <see cref="CallerMemberNameAttribute"/>.</param>
+        [Obsolete("Please use the new RaisePropertyChanged method. This method will be removed to comply wth .NET coding standards. If you are overriding this method, you should overide the OnPropertyChanged(PropertyChangedEventArgs args) signature instead.")]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Raises this object's PropertyChanged event.
+        /// </summary>
+        /// <param name="args">The PropertyChangedEventArgs</param>
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs args)
+        {
+            PropertyChanged?.Invoke(this, args);
+        }
+
     }
 }

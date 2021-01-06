@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("盈开生物科技（上海）有限公司")]
 [assembly: AssemblyProduct("BloodClotID")]
-[assembly: AssemblyCopyright("盈开生物 © 2016")]
+[assembly: AssemblyCopyright("盈开生物 © 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

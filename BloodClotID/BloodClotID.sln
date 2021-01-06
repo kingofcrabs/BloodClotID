@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloodClotID", "BloodClotID\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateImage", "CreateImage\CreateImage.csproj", "{2FDD131E-A4FC-439C-9DCF-E371DC6DA4C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nikoncswrapper", "..\..\..\2019\PlantRecorder\trunk\nikoncswrapper\nikoncswrapper.csproj", "{AADE1DF5-4C46-4760-B72B-474D90336F5B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SplitImage", "SplitImage\SplitImage.csproj", "{6105D6FD-A9D3-4CCD-9E4B-0198AF441D11}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisiLength", "AnalysisiLength\AnalysisiLength.csproj", "{AFB0C914-0B48-4DAB-9737-815D5701B7C7}"
@@ -95,22 +93,6 @@ Global
 		{2FDD131E-A4FC-439C-9DCF-E371DC6DA4C3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2FDD131E-A4FC-439C-9DCF-E371DC6DA4C3}.Release|Win32.ActiveCfg = Release|Any CPU
 		{2FDD131E-A4FC-439C-9DCF-E371DC6DA4C3}.Release|x64.ActiveCfg = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|Win32.Build.0 = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Debug|x64.Build.0 = Debug|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|Win32.ActiveCfg = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|Win32.Build.0 = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|x64.ActiveCfg = Release|Any CPU
-		{AADE1DF5-4C46-4760-B72B-474D90336F5B}.Release|x64.Build.0 = Release|Any CPU
 		{6105D6FD-A9D3-4CCD-9E4B-0198AF441D11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6105D6FD-A9D3-4CCD-9E4B-0198AF441D11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6105D6FD-A9D3-4CCD-9E4B-0198AF441D11}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

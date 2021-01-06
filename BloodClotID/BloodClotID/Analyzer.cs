@@ -36,13 +36,7 @@ namespace BloodClotID
                 cnt = Math.Min(cnt, 12);
                 for (int rowIndex = 0; rowIndex < cnt; rowIndex++)
                 {
-                    int startID = rowIndex * 8 + 1;
-                    List<int> wellIDs = new List<int>();
-                    for(int colIndex = 0; colIndex < 8; colIndex++)
-                    {
-                        wellIDs.Add(startID + colIndex);
-                    }
-                    wellIDs.Reverse();
+                    var wellIDs = GetRowWellIDs(rowIndex, 8, 12);
                     eachRowWellIDs.Add(wellIDs);
                 }
             }

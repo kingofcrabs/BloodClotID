@@ -98,12 +98,12 @@ namespace Utility
         }
     }
 
-    public class AnalysisResult
+    public class LengthResult
     {
         public List<Point> RotateRectPoints;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         public int val;
         public Point ptCenter;
-        public AnalysisResult(Point pt, int len, List<Point> pts)
+        public LengthResult(Point pt, int len, List<Point> pts)
         {
             val = len;
             ptCenter = pt;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Utility;
 
 namespace BloodClotID
@@ -29,13 +31,10 @@ namespace BloodClotID
         {
             if (!File.Exists(file))
                 throw new Exception("没找到图片！");
-
-            using (var bmpTemp = new System.Drawing.Bitmap(file))
-            {
-                // bmpTemp.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipX);
-                bkImgSize = new Size(bmpTemp.Size.Width, bmpTemp.Size.Height);
-                Background = RenderHelper.CreateBrush(bmpTemp, containerSize);
-            }
+            var bitmap = new System.Drawing.Bitmap(file);
+            System.Drawing.Bitmap cloneBitmap = (System.Drawing.Bitmap)bitmap.Clone();
+            Background = RenderHelper.CreateBrush(cloneBitmap, containerSize);
+            bkImgSize = new Size(bitmap.Size.Width, bitmap.Size.Height);
         }
 
     
@@ -145,7 +144,7 @@ namespace BloodClotID
 
         public void GetRowCol(int wellID, out int row, out int col)
         {
-            int _row = 8;
+            int _row = PlatePositon.RowCnt;
             col = (wellID - 1) / _row;
             row = wellID - col * _row - 1;
         }

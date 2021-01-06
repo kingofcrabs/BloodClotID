@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:BloodClotID"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
-             xmlns:pie="clr-namespace:PieControls;assembly=PieControls"
              mc:Ignorable="d" 
              xmlns:myCanvas="clr-namespace:BloodClotID"
              d:DesignHeight="700" d:DesignWidth="1000">
@@ -67,12 +66,12 @@
                         <Image Source="/Images/Next.jpg" Stretch="Uniform" Height="30" Width="40"/>
                     </StackPanel>
                 </Button>
-                <Button Margin="0,5,5,5"   Name="btnReport" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnReport_Click">
+                <!--<Button Margin="0,5,5,5"   Name="btnReport" IsEnabled="False"  Width="50" Height="50" HorizontalAlignment="Left" Click="btnReport_Click">
                     <StackPanel>
                         <TextBlock Text="报告"/>
                         <Image Source="/Images/report.jpg" Stretch="Uniform" Height="30" Width="40"/>
                     </StackPanel>
-                </Button>
+                </Button>-->
             </StackPanel>
         </Grid>
 

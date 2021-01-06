@@ -39,10 +39,6 @@ namespace BloodClotID
             Mat binary = saturation.Clone();
             CvInvoke.Threshold(hue, hue, 15, 255, Emgu.CV.CvEnum.ThresholdType.BinaryInv);
             CvInvoke.BitwiseAnd(hue, binary, binary);
-            //CvInvoke.Threshold(light, light, 130, 255, Emgu.CV.CvEnum.ThresholdType.BinaryInv);
-            //CvInvoke.Threshold(channels[2], saturation, 80, 255, Emgu.CV.CvEnum.ThresholdType.Otsu);
-            //CvInvoke.BitwiseAnd(hue, light, hue);
-            //CvInvoke.BitwiseAnd(hue, saturation, binary);
             CvInvoke.Canny(binary, binary, 255, 255, 5, true);
 
 
@@ -55,7 +51,7 @@ namespace BloodClotID
             }
 
             var rotatedRect = CvInvoke.MinAreaRect(contour);
-            //CvInvoke.Rectangle(srcImg, rotatedRect, new MCvScalar(0, 255, 0), 1, LineType.EightConnected, 0);
+            
             var vertices = rotatedRect.GetVertices();
             double maxDistance = 0;
 
@@ -74,6 +70,7 @@ namespace BloodClotID
                     maxDistance = distance;
                 cornerPts.Add(new System.Windows.Point((vertices[i].X - xCenter), (vertices[i].Y - yCenter)));
             }
+          
             return maxDistance;
         }
 
@@ -187,10 +184,22 @@ namespace BloodClotID
             Mat mapMatrix = new Mat();
             CvInvoke.GetRotationMatrix2D(rotateRect.Center, rotateRect.Angle, 1, mapMatrix);
             var vertices = rotateRect.GetVertices();
-            SetPlatePosition(vertices);
 
+
+            for (int i = 0; i < 4; i++)
+            {
+                var pt1 = vertices[i];
+                var pt2 = vertices[(i + 1) % 4];
+                CvInvoke.Line(img, new Point((int)pt1.X, (int)pt1.Y), new Point((int)pt2.X, (int)pt2.Y), new MCvScalar(0, 255, 0), 2);
+   
+            }
+           // img.Save("d:\\test\\contour.jpg");
+
+
+            SetPlatePosition(vertices);
             int ID = 1;
             List<double> lengths = new List<double>();
+            
             for (int col = 0; col < PlatePositon.ColCnt; col++)
             {
                 for (int row = 0; row < PlatePositon.RowCnt; row++)
@@ -199,18 +208,15 @@ namespace BloodClotID
                     var ptEnd = PlatePositon.Instance.GetAffinePosition(row + 1, col + 1);
                     System.Drawing.Rectangle rect = new System.Drawing.Rectangle(new System.Drawing.Point((int)pt.X, (int)pt.Y),
                         new System.Drawing.Size((int)(ptEnd.X - pt.X), (int)(ptEnd.Y - pt.Y)));
-                    //CvInvoke.Rectangle(colorImg, rect, new MCvScalar(0, 0, 255), 2);
                     List<System.Windows.Point> cornerPts = new List<System.Windows.Point>();
-
-                    //subMat.Save(FolderHelper.GetOutputFolder() + string.Format("{0}org.jpg", ID));
                     Mat subMat = new Mat(img, rect);
+                    subMat.Save(string.Format("d:\\test\\sub{0}.jpg",ID++));
                     lengths.Add(CalculateLength(subMat, col + 1, cornerPts));
-                    //subMat.Save(FolderHelper.GetOutputFolder() + string.Format("{0}.jpg", ID++));
                     eachWellCornerPts.Add(cornerPts);
                     centerPts.Add(new System.Windows.Point((pt.X + ptEnd.X) / 2, (pt.Y + ptEnd.Y) / 2));
-
                 }
             }
+
             //colorImg.Save(folder + string.Format("{0}.jpg", index + 1));
             return lengths;
 

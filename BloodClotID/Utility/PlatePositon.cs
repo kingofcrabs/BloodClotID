@@ -16,8 +16,22 @@ namespace Utility
         public Point topRight;
         public Point bottomLeft;
         public const int radius = 88;
-        public const int ColCnt = 12;
-        public const int RowCnt = 8;
+        public static int ColCnt = 12;
+        public static int RowCnt = 8;
+
+        public static void SetAlignment(bool horizontal)
+        {
+            if(horizontal)
+            {
+                ColCnt = 12;
+                RowCnt = 8;
+            }
+            else
+            {
+                ColCnt = 8;
+                RowCnt = 12;
+            }
+        }
         public Point GetAffinePosition(int row, int col)
         {
             Vector vec1 = new Vector(topRight.X - topLeft.X,
@@ -45,14 +59,14 @@ namespace Utility
         }
         public static void Convert(int wellID, out int colIndex, out int rowIndex)
         {
-            int _row = 8;
+            int _row = RowCnt;
             colIndex = (wellID - 1) / _row;
             rowIndex = wellID - colIndex * _row - 1;
         }
 
         public static int GetWellID(int rowIndex, int colIndex)
        {
-            return colIndex * 8 + rowIndex + 1;
+            return colIndex * RowCnt + rowIndex + 1;
         }
 
         static PlatePositon instance;

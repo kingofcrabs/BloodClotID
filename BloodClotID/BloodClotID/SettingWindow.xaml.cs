@@ -81,8 +81,9 @@ namespace BloodClotID
             AcquireInfo.Instance.SetSampleCount(val);
             AcquireInfo.Instance.IsHI = true;
             AcquireInfo.Instance.HasControl = (bool)rdbControl.IsChecked;
-            AcquireInfo.Instance.SetLayout((bool)rdbHorizontalLayout.IsChecked);
-           
+            bool isHorizontal = (bool)rdbHorizontalLayout.IsChecked;
+            AcquireInfo.Instance.SetLayout(isHorizontal);
+            PlatePositon.SetAlignment(isHorizontal);
 
         }
     }

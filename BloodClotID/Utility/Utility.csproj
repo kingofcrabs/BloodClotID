@@ -63,9 +63,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Circle.cs" />
-    <Compile Include="ExcelWorker.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="PanelTreeView.cs" />
+    <Compile Include="GroupViewModel.cs" />
     <Compile Include="PlatePositon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

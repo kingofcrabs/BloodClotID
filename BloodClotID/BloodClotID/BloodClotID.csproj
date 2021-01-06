@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BloodClotID</RootNamespace>
     <AssemblyName>BloodClotID</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -61,12 +61,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="nikoncswrapper, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\nikoncswrapper.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -184,14 +187,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\2019\PlantRecorder\trunk\nikoncswrapper\nikoncswrapper.csproj">
-      <Project>{aade1df5-4c46-4760-b72b-474d90336f5b}</Project>
-      <Name>nikoncswrapper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\PieControls\PieControls.csproj">
-      <Project>{cec6e596-d667-4068-bf48-188825f52c82}</Project>
-      <Name>PieControls</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Utility\Utility.csproj">
       <Project>{c198c3f8-053c-4da9-9eb8-e424cb882fac}</Project>
       <Name>Utility</Name>
